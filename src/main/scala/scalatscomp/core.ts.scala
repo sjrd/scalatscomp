@@ -32,37 +32,31 @@ object Core {
       (if (isRootedDiskPath(fileName)) normalizePath(fileName)
        else getNormalizedAbsolutePath(fileName, basePath))
     return getCanonicalFileName(nonCanonicalizedPath).asInstanceOf[Path]
-
   }
+
   sealed abstract class Comparison
   object Comparison {
     case object LessThan extends Comparison
     case object EqualTo extends Comparison
     case object GreaterThan extends Comparison
   }
-  def forEach[T, U](array: (Array[T] | undefined),
-                    callback: ((T, Int) => (U | undefined))): (U | undefined) = {
-    if (array) {
-      {
-        var i = 0
-        var len = array.length
-        while ((i < len)) {
-          {
-            val result = callback(array(i), i)
-            if (result) {
-              return result
 
-            }
-
-          }
-          (i += 1)
+  def forEach[T, U](array: Array[T],
+                    callback: (T, Int) => Option[U]): U = {
+    if (array != null) {
+      var i = 0
+      val len = array.length
+      while (i < len) {
+        val result = callback(array(i), i)
+        if (result.isNonEmpty) {
+          return result.get
         }
+        i += 1
       }
-
     }
-    return undefined
-
+    return null.asInstanceOf[U]
   }
+
   def every[T](array: Array[T], callback: ((T, Int) => Boolean)): Boolean = {
     if (array) {
       {
