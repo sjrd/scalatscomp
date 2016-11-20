@@ -1,4 +1,8 @@
 package scalatscomp
+
+import scala.collection.mutable
+import Types._
+
 object Core {
   sealed abstract class Ternary
   object Ternary {
@@ -6,82 +10,21 @@ object Core {
     case object Maybe extends Ternary
     case object True extends Ternary
   }
-  val createObject = Object.create
-  val collator: { def compare(a: String, b: String): Int } =
-    (if (((typeof(Intl) === "object") && (typeof(Intl.Collator) === "function")))
-       new Intl.Collator()
-     else undefined)
-  def createMap[T](template: MapLike[T]): Map[T] = {
-    val map: Map[T] = createObject(null)
-    (map("___") = undefined)
-    map.remove("___")
-    (template).keys.foreach { fresh1 =>
-      val key = zeroOfMyType = fresh1
-      if (`hasOwnProperty`.call(template, key)) {
-        (map(key) = template(key))
 
-      }
-    }
-    return map
+  // val createObject = Object.create
 
-  }
-  def createFileMap[T](keyMapper: ((String) => String)): FileMap[T] = {
-    var files = createMap[T]()
-    return Map(
-      "get" -> get,
-      "set" -> set,
-      "contains" -> contains,
-      "remove" -> remove,
-      "forEachValue" -> forEachValueInMap,
-      "getKeys" -> getKeys,
-      "clear" -> clear)
-    def forEachValueInMap(f: ((Path, T) => Unit)) = {
-      (files).keys.foreach { fresh2 =>
-        val key = zeroOfMyType = fresh2 {
-          f(key.asInstanceOf[Path], files(key))
+  // More efficient to create a collator once and use its `compare` than to call `a.localeCompare(b)` many times.
+  //val collator: { def compare(a: String, b: String): Int } =
+  //  (if (((typeof(Intl) === "object") && (typeof(Intl.Collator) === "function")))
+  //     new Intl.Collator()
+  //   else undefined)
 
-        }
-      }
+  def createMap[T](template: mutable.Map[String, T] = mutable.Map.empty): mutable.Map[String, T] =
+    mutable.Map.empty[String, T] ++= template
 
-    }
-    def getKeys() = {
-      val keys: Array[Path] = Array()
-      (files).keys.foreach { fresh3 =>
-        val key = zeroOfMyType = fresh3 {
-          keys.push(key.asInstanceOf[Path])
+  def createFileMap[T](keyMapper: Option[(String) => String] = None): FileMap[T] =
+    new FileMap(keyMapper)
 
-        }
-      }
-      return keys
-
-    }
-    def get(path: Path): T = {
-      return files(toKey(path))
-
-    }
-    def set(path: Path, value: T) = {
-      (files(toKey(path)) = value)
-
-    }
-    def contains(path: Path) = {
-      return (toKey(path) infiles)
-
-    }
-    def remove(path: Path) = {
-      val key = toKey(path)
-      files.remove(key)
-
-    }
-    def clear() = {
-      (files = createMap[T]())
-
-    }
-    def toKey(path: Path): String = {
-      return (if (keyMapper) keyMapper(path) else path)
-
-    }
-
-  }
   def toPath(fileName: String,
              basePath: String,
              getCanonicalFileName: ((String) => String)): Path = {
@@ -98,8 +41,7 @@ object Core {
     case object GreaterThan extends Comparison
   }
   def forEach[T, U](array: (Array[T] | undefined),
-                    callback: ((T,
-                                Int) => (U | undefined))): (U | undefined) = {
+                    callback: ((T, Int) => (U | undefined))): (U | undefined) = {
     if (array) {
       {
         var i = 0

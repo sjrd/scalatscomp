@@ -4,7 +4,32 @@ import scala.collection.mutable
 
 object Types {
   type Path = String
-  type FileMap[T] = mutable.Map[Path, T]
+
+  class FileMap[T](keyMapper: Option[String => String]) {
+    private var files = mutable.Map.empty[String, T]
+
+    def forEachValueInMap(f: ((Path, T) => Unit)) =
+      files.keys.foreach { key =>
+          f(key, files(key))
+      }
+    def getKeys() =
+      files.keys
+    def get(path: Path): T =
+      files(toKey(path))
+    def set(path: Path, value: T) =
+      files(toKey(path)) = value
+    def contains(path: Path) =
+      files.contains(toKey(path))
+    def remove(path: Path) = {
+      val key = toKey(path)
+      files.remove(key)
+    }
+    def clear() =
+      files = mutable.Map.empty[String, T]
+    def toKey(path: Path): String =
+      keyMapper.fold(path)(_(path))
+  }
+
   trait TextRange {
     var pos: Int = -1
     var end: Int = -1
