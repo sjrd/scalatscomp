@@ -482,29 +482,29 @@ object Types {
 
   class Token[+TKind <: SyntaxKind](override val kind: TKind) extends Node(kind)
 
-  final class DotDotDotToken extends Token(SyntaxKind.DotDotDotToken)
-  final class QuestionToken extends Token(SyntaxKind.QuestionToken)
-  final class ColonToken extends Token(SyntaxKind.ColonToken)
-  final class EqualsToken extends Token(SyntaxKind.EqualsToken)
-  final class AsteriskToken extends Token(SyntaxKind.AsteriskToken)
-  final class EqualsGreaterThanToken extends Token(SyntaxKind.EqualsGreaterThanToken)
-  final class EndOfFileToken extends Token(SyntaxKind.EndOfFileToken)
-  final class AtToken extends Token(SyntaxKind.AtToken)
+  final case class DotDotDotToken() extends Token(SyntaxKind.DotDotDotToken)
+  final case class QuestionToken() extends Token(SyntaxKind.QuestionToken)
+  final case class ColonToken() extends Token(SyntaxKind.ColonToken)
+  final case class EqualsToken() extends Token(SyntaxKind.EqualsToken)
+  final case class AsteriskToken() extends Token(SyntaxKind.AsteriskToken)
+  final case class EqualsGreaterThanToken() extends Token(SyntaxKind.EqualsGreaterThanToken)
+  final case class EndOfFileToken() extends Token(SyntaxKind.EndOfFileToken)
+  final case class AtToken() extends Token(SyntaxKind.AtToken)
 
   sealed abstract class Modifier[+TKind <: SyntaxKind](kd: TKind)
       extends Token[TKind](kd)
 
-  final class AbstractKeyword extends Modifier(SyntaxKind.AbstractKeyword)
-  final class AsyncKeyword extends Modifier(SyntaxKind.AsyncKeyword)
-  final class ConstKeyword extends Modifier(SyntaxKind.ConstKeyword)
-  final class DeclareKeyword extends Modifier(SyntaxKind.DeclareKeyword)
-  final class DefaultKeyword extends Modifier(SyntaxKind.DefaultKeyword)
-  final class ExportKeyword extends Modifier(SyntaxKind.ExportKeyword)
-  final class PublicKeyword extends Modifier(SyntaxKind.PublicKeyword)
-  final class PrivateKeyword extends Modifier(SyntaxKind.PrivateKeyword)
-  final class ProtectedKeyword extends Modifier(SyntaxKind.ProtectedKeyword)
-  final class ReadonlyKeyword extends Modifier(SyntaxKind.ReadonlyKeyword)
-  final class StaticKeyword extends Modifier(SyntaxKind.StaticKeyword)
+  final case class AbstractKeyword() extends Modifier(SyntaxKind.AbstractKeyword)
+  final case class AsyncKeyword() extends Modifier(SyntaxKind.AsyncKeyword)
+  final case class ConstKeyword() extends Modifier(SyntaxKind.ConstKeyword)
+  final case class DeclareKeyword() extends Modifier(SyntaxKind.DeclareKeyword)
+  final case class DefaultKeyword() extends Modifier(SyntaxKind.DefaultKeyword)
+  final case class ExportKeyword() extends Modifier(SyntaxKind.ExportKeyword)
+  final case class PublicKeyword() extends Modifier(SyntaxKind.PublicKeyword)
+  final case class PrivateKeyword() extends Modifier(SyntaxKind.PrivateKeyword)
+  final case class ProtectedKeyword() extends Modifier(SyntaxKind.ProtectedKeyword)
+  final case class ReadonlyKeyword() extends Modifier(SyntaxKind.ReadonlyKeyword)
+  final case class StaticKeyword() extends Modifier(SyntaxKind.StaticKeyword)
 
   type ModifiersArray = Vector[Modifier[_]]
 
@@ -517,10 +517,9 @@ object Types {
     case object Node extends GeneratedIdentifierKind
   }
 
-  class Identifier extends Node(SyntaxKind.Identifier)
+  case class Identifier(text: String) extends Node(SyntaxKind.Identifier)
       with EntityName with PrimaryExpression with PropertyName
       with DeclarationName with DeclarationStatementName {
-    var text: String = ""
     var originalKeywordKind: Option[SyntaxKind] = None
     var autoGenerateKind: GeneratedIdentifierKind = GeneratedIdentifierKind.None
     var autoGenerateId: Option[Int] = None
@@ -531,7 +530,7 @@ object Types {
     var resolvedSymbol: Symbol
   }
 
-  final class QualifiedName(val left: EntityName, val right: Identifier)
+  final case class QualifiedName(left: EntityName, right: Identifier)
       extends Node(SyntaxKind.QualifiedName) with EntityName
 
   sealed trait EntityName extends Node
@@ -540,7 +539,7 @@ object Types {
 
   trait Declaration extends Node {
     type NameType <: DeclarationName
-    var name: NameType
+    val name: NameType
   }
 
   sealed trait DeclarationStatementName extends DeclarationName
@@ -549,14 +548,14 @@ object Types {
     type NameType <: DeclarationStatementName
   }
 
-  final class ComputedPropertyName(val expression: Expression)
+  final case class ComputedPropertyName(expression: Expression)
       extends Node(SyntaxKind.ComputedPropertyName)
       with PropertyName with DeclarationName
 
-  final class Decorator(val expression: LeftHandSideExpression)
+  final case class Decorator(expression: LeftHandSideExpression)
       extends Node(SyntaxKind.Decorator)
 
-  final class TypeParameterDeclaration(val name: Identifier,
+  final case class TypeParameterDeclaration(name: Identifier,
       val constraint: Option[TypeNode], expression: Option[Expression])
       extends Node(SyntaxKind.TypeParameter) with Declaration
 
