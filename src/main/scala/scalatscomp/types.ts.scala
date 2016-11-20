@@ -603,7 +603,7 @@ object Types {
     type NameType <: PropertyName
     val typeParameters: NodeArray[TypeParameterDeclaration]
     val parameters: NodeArray[ParameterDeclaration]
-    val `type`: TypeNode
+    val `type`: Option[TypeNode]
   }
 
   object DummyPropertyName extends Identifier("<none>")
@@ -658,7 +658,8 @@ object Types {
       dotDotDotToken: Option[DotDotDotToken],
       name: BindingName,
       initializer: Option[Expression])
-      extends Node(SyntaxKind.BindingElement) with Declaration {
+      extends Node(SyntaxKind.BindingElement) with Declaration
+      with BindingPatternElement with ArrayBindingElement {
     type NameType = BindingName
   }
 
@@ -720,44 +721,73 @@ object Types {
     type NameType <: PropertyName
   }
 
+  trait BindingPatternElement extends Node
+
   trait BindingPattern extends Node with DeclarationName with BindingName {
-    var elements: NodeArray[(BindingElement | ArrayBindingElement)]
+    type BindingElementType <: BindingPatternElement
+    val elements: NodeArray[BindingElementType]
   }
-  trait ObjectBindingPattern extends BindingPattern {
-    var kind: SyntaxKind.ObjectBindingPattern
-    var elements: NodeArray[BindingElement]
+
+  final case class ObjectBindingPattern(
+      elements: NodeArray[BindingPatternElement])
+      extends Node(SyntaxKind.ObjectBindingPattern) with BindingPattern {
+    type BindingElementType = BindingPatternElement
   }
-  type ArrayBindingElement = (BindingElement | OmittedExpression)
-  trait ArrayBindingPattern extends BindingPattern {
-    var kind: SyntaxKind.ArrayBindingPattern
-    var elements: NodeArray[ArrayBindingElement]
+
+  trait ArrayBindingElement extends BindingPatternElement
+
+  final case class ArrayBindingPattern(
+      elements: NodeArray[ArrayBindingElement])
+      extends Node(SyntaxKind.ArrayBindingPattern) with BindingPattern {
+    type BindingElementType = ArrayBindingElement
   }
+
+  trait FunctionLikeDeclarationBody extends Node
+
   trait FunctionLikeDeclaration extends SignatureDeclaration {
-    var _functionLikeDeclarationBrand: Any
-    var asteriskToken: AsteriskToken
-    var questionToken: QuestionToken
-    var body: (Block | Expression)
+    type BodyType <: FunctionLikeDeclarationBody
+
+    def asteriskToken: Option[AsteriskToken]
+    def questionToken: Option[QuestionToken]
+    val body: BodyType
   }
-  trait FunctionDeclaration
-      extends FunctionLikeDeclaration
+
+  final case class FunctionDeclaration(
+      name: Identifier,
+      body: FunctionBody)
+      extends Node(SyntaxKind.FunctionDeclaration)
+      with FunctionLikeDeclaration
       with DeclarationStatement {
-    var kind: SyntaxKind.FunctionDeclaration
-    var name: Identifier
-    var body: FunctionBody
+    type BodyType = FunctionBody
+
+    def asteriskToken: None.type = None
+    def questionToken: None.type = None
   }
-  trait MethodSignature extends SignatureDeclaration with TypeElement {
-    var kind: SyntaxKind.MethodSignature
-    var name: PropertyName
+
+  final case class MethodSignature(
+      name: PropertyName,
+      typeParameters: NodeArray[TypeParameterDeclaration],
+      parameters: NodeArray[ParameterDeclaration],
+      `type`: Option[TypeNode])
+      extends Node(SyntaxKind.MethodSignature)
+      with SignatureDeclaration with TypeElement {
+    type NameType = PropertyName
   }
-  trait MethodDeclaration
-      extends FunctionLikeDeclaration
+
+  final case class MethodDeclaration(
+      name: PropertyName,
+      typeParameters: NodeArray[TypeParameterDeclaration],
+      parameters: NodeArray[ParameterDeclaration],
+      `type`: Option[TypeNode],
+      body: Option[FunctionBody])
+      extends Node(SyntaxKind.MethodDeclaration)
+      with FunctionLikeDeclaration
       with ClassElement
       with ObjectLiteralElement
       with ObjectLiteralElementLike {
-    var kind: SyntaxKind.MethodDeclaration
-    var name: PropertyName
-    var body: FunctionBody
+    type NameType = PropertyName
   }
+
   trait ConstructorDeclaration
       extends FunctionLikeDeclaration
       with ClassElement {
@@ -863,11 +893,11 @@ object Types {
     var kind: SyntaxKind.StringLiteral
     var textSourceNode: (Identifier | StringLiteral)
   }
-  trait Expression extends Node {
+  trait Expression extends Node with FunctionLikeDeclarationBody {
     var _expressionBrand: Any
     var contextualType: Type
   }
-  trait OmittedExpression extends Expression {
+  trait OmittedExpression extends Expression with ArrayBindingElement {
     var kind: SyntaxKind.OmittedExpression
   }
   trait PartiallyEmittedExpression extends LeftHandSideExpression {
@@ -1195,7 +1225,7 @@ object Types {
     var name: Identifier
   }
   type BlockLike = (SourceFile | Block | ModuleBlock | CaseClause)
-  trait Block extends Statement {
+  trait Block extends Statement with FunctionLikeDeclarationBody {
     var kind: SyntaxKind.Block
     var statements: NodeArray[Statement]
     var multiLine: Boolean
