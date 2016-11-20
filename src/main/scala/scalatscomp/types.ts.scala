@@ -480,23 +480,34 @@ object Types {
     var hasTrailingComma: Boolean = false
   }
 
-  class Token[TKind <: SyntaxKind](override val kind: TKind) extends Node(kind)
+  class Token[+TKind <: SyntaxKind](override val kind: TKind) extends Node(kind)
 
-  type DotDotDotToken = Token[SyntaxKind.DotDotDotToken.type]
-  type QuestionToken = Token[SyntaxKind.QuestionToken.type]
-  type ColonToken = Token[SyntaxKind.ColonToken.type]
-  type EqualsToken = Token[SyntaxKind.EqualsToken.type]
-  type AsteriskToken = Token[SyntaxKind.AsteriskToken.type]
-  type EqualsGreaterThanToken = Token[SyntaxKind.EqualsGreaterThanToken.type]
-  type EndOfFileToken = Token[SyntaxKind.EndOfFileToken.type]
-  type AtToken = Token[SyntaxKind.AtToken.type]
-  type Modifier = (Token[SyntaxKind.AbstractKeyword] | Token[
-      SyntaxKind.AsyncKeyword] | Token[SyntaxKind.ConstKeyword] | Token[
-      SyntaxKind.DeclareKeyword] | Token[SyntaxKind.DefaultKeyword] | Token[
-      SyntaxKind.ExportKeyword] | Token[SyntaxKind.PublicKeyword] | Token[
-      SyntaxKind.PrivateKeyword] | Token[SyntaxKind.ProtectedKeyword] | Token[
-      SyntaxKind.ReadonlyKeyword] | Token[SyntaxKind.StaticKeyword])
-  type ModifiersArray = NodeArray[Modifier]
+  final class DotDotDotToken extends Token(SyntaxKind.DotDotDotToken)
+  final class QuestionToken extends Token(SyntaxKind.QuestionToken)
+  final class ColonToken extends Token(SyntaxKind.ColonToken)
+  final class EqualsToken extends Token(SyntaxKind.EqualsToken)
+  final class AsteriskToken extends Token(SyntaxKind.AsteriskToken)
+  final class EqualsGreaterThanToken extends Token(SyntaxKind.EqualsGreaterThanToken)
+  final class EndOfFileToken extends Token(SyntaxKind.EndOfFileToken)
+  final class AtToken extends Token(SyntaxKind.AtToken)
+
+  sealed abstract class Modifier[+TKind <: SyntaxKind](kd: TKind)
+      extends Token[TKind](kd)
+
+  final class AbstractKeyword extends Modifier(SyntaxKind.AbstractKeyword)
+  final class AsyncKeyword extends Modifier(SyntaxKind.AsyncKeyword)
+  final class ConstKeyword extends Modifier(SyntaxKind.ConstKeyword)
+  final class DeclareKeyword extends Modifier(SyntaxKind.DeclareKeyword)
+  final class DefaultKeyword extends Modifier(SyntaxKind.DefaultKeyword)
+  final class ExportKeyword extends Modifier(SyntaxKind.ExportKeyword)
+  final class PublicKeyword extends Modifier(SyntaxKind.PublicKeyword)
+  final class PrivateKeyword extends Modifier(SyntaxKind.PrivateKeyword)
+  final class ProtectedKeyword extends Modifier(SyntaxKind.ProtectedKeyword)
+  final class ReadonlyKeyword extends Modifier(SyntaxKind.ReadonlyKeyword)
+  final class StaticKeyword extends Modifier(SyntaxKind.StaticKeyword)
+
+  type ModifiersArray = Vector[Modifier[_]]
+
   sealed abstract class GeneratedIdentifierKind
   object GeneratedIdentifierKind {
     case object None extends GeneratedIdentifierKind
@@ -505,47 +516,50 @@ object Types {
     case object Unique extends GeneratedIdentifierKind
     case object Node extends GeneratedIdentifierKind
   }
-  trait Identifier extends PrimaryExpression {
-    var kind: SyntaxKind.Identifier
-    var text: String
-    var originalKeywordKind: SyntaxKind
-    var autoGenerateKind: GeneratedIdentifierKind
-    var autoGenerateId: Int
-    var isInJSDocNamespace: Boolean
+
+  class Identifier extends Node(SyntaxKind.Identifier)
+      with EntityName with PrimaryExpression with PropertyName
+      with DeclarationName with DeclarationStatementName {
+    var text: String = ""
+    var originalKeywordKind: Option[SyntaxKind] = None
+    var autoGenerateKind: GeneratedIdentifierKind = GeneratedIdentifierKind.None
+    var autoGenerateId: Option[Int] = None
+    var isInJSDocNamespace: Boolean = false
   }
+
   trait TransientIdentifier extends Identifier {
     var resolvedSymbol: Symbol
   }
-  trait QualifiedName extends Node {
-    var kind: SyntaxKind.QualifiedName
-    var left: EntityName
-    var right: Identifier
-  }
-  type EntityName = (Identifier | QualifiedName)
-  type PropertyName = (Identifier | LiteralExpression | ComputedPropertyName)
-  type DeclarationName =
-    (Identifier | LiteralExpression | ComputedPropertyName | BindingPattern)
+
+  final class QualifiedName(val left: EntityName, val right: Identifier)
+      extends Node(SyntaxKind.QualifiedName) with EntityName
+
+  sealed trait EntityName extends Node
+  sealed trait PropertyName extends Node
+  sealed trait DeclarationName extends Node
+
   trait Declaration extends Node {
-    var _declarationBrand: Any
-    var name: DeclarationName
+    type NameType <: DeclarationName
+    var name: NameType
   }
+
+  sealed trait DeclarationStatementName extends DeclarationName
+
   trait DeclarationStatement extends Declaration with Statement {
-    var name: (Identifier | LiteralExpression)
+    type NameType <: DeclarationStatementName
   }
-  trait ComputedPropertyName extends Node {
-    var kind: SyntaxKind.ComputedPropertyName
-    var expression: Expression
-  }
-  trait Decorator extends Node {
-    var kind: SyntaxKind.Decorator
-    var expression: LeftHandSideExpression
-  }
-  trait TypeParameterDeclaration extends Declaration {
-    var kind: SyntaxKind.TypeParameter
-    var name: Identifier
-    var constraint: TypeNode
-    var expression: Expression
-  }
+
+  final class ComputedPropertyName(val expression: Expression)
+      extends Node(SyntaxKind.ComputedPropertyName)
+      with PropertyName with DeclarationName
+
+  final class Decorator(val expression: LeftHandSideExpression)
+      extends Node(SyntaxKind.Decorator)
+
+  final class TypeParameterDeclaration(val name: Identifier,
+      val constraint: Option[TypeNode], expression: Option[Expression])
+      extends Node(SyntaxKind.TypeParameter) with Declaration
+
   trait SignatureDeclaration extends Declaration {
     var name: PropertyName
     var typeParameters: NodeArray[TypeParameterDeclaration]
@@ -631,7 +645,7 @@ object Types {
   trait PropertyLikeDeclaration extends Declaration {
     var name: PropertyName
   }
-  trait BindingPattern extends Node {
+  trait BindingPattern extends Node with DeclarationName {
     var elements: NodeArray[(BindingElement | ArrayBindingElement)]
   }
   trait ObjectBindingPattern extends BindingPattern {
@@ -902,7 +916,8 @@ object Types {
     var hasExtendedUnicodeEscape: Boolean
     var isOctalLiteral: Boolean
   }
-  trait LiteralExpression extends LiteralLikeNode with PrimaryExpression {
+  trait LiteralExpression extends LiteralLikeNode with PrimaryExpression
+      with PropertyName with DeclarationName with DeclarationStatementName {
     var _literalExpressionBrand: Any
   }
   trait RegularExpressionLiteral extends LiteralExpression {
