@@ -6,9 +6,18 @@ object Types {
   type Path = String
   type FileMap[T] = mutable.Map[Path, T]
   trait TextRange {
-    var pos: Int
-    var end: Int
+    var pos: Int = -1
+    var end: Int = -1
   }
+
+  class Symbol(val flags: SymbolFlags, val name: String) {
+    var declarations: Option[Any] = None
+  }
+
+  class Type(_checker: TypeChecker, val flags: TypeFlags)
+
+  class Signature
+
   sealed abstract class SyntaxKind
   object SyntaxKind {
     case object Unknown extends SyntaxKind
@@ -331,97 +340,148 @@ object Types {
     case object FirstJSDocTagNode extends SyntaxKind
     case object LastJSDocTagNode extends SyntaxKind
   }
-  sealed abstract class NodeFlags
+
+  final class NodeFlags(val bits: Int) extends AnyVal {
+    def |(that: NodeFlags): NodeFlags = new NodeFlags(this.bits | that.bits)
+    def &(that: NodeFlags): NodeFlags = new NodeFlags(this.bits & that.bits)
+
+    def test(that: NodeFlags): Boolean = (bits & that.bits) != 0
+    def hasAll(that: NodeFlags): Boolean = (bits & that.bits) == that.bits
+  }
+
   object NodeFlags {
-    case object None extends NodeFlags
-    case object Let extends NodeFlags
-    case object Const extends NodeFlags
-    case object NestedNamespace extends NodeFlags
-    case object Synthesized extends NodeFlags
-    case object Namespace extends NodeFlags
-    case object ExportContext extends NodeFlags
-    case object ContainsThis extends NodeFlags
-    case object HasImplicitReturn extends NodeFlags
-    case object HasExplicitReturn extends NodeFlags
-    case object GlobalAugmentation extends NodeFlags
-    case object HasClassExtends extends NodeFlags
-    case object HasDecorators extends NodeFlags
-    case object HasParamDecorators extends NodeFlags
-    case object HasAsyncFunctions extends NodeFlags
-    case object HasJsxSpreadAttributes extends NodeFlags
-    case object DisallowInContext extends NodeFlags
-    case object YieldContext extends NodeFlags
-    case object DecoratorContext extends NodeFlags
-    case object AwaitContext extends NodeFlags
-    case object ThisNodeHasError extends NodeFlags
-    case object JavaScriptFile extends NodeFlags
-    case object ThisNodeOrAnySubNodesHasError extends NodeFlags
-    case object HasAggregatedChildData extends NodeFlags
-    case object BlockScoped extends NodeFlags
-    case object ReachabilityCheckFlags extends NodeFlags
-    case object EmitHelperFlags extends NodeFlags
-    case object ReachabilityAndEmitFlags extends NodeFlags
-    case object ContextFlags extends NodeFlags
-    case object TypeExcludesFlags extends NodeFlags
+    val None = new NodeFlags(0)
+    val Let = new NodeFlags(1 << 0)
+    val Const = new NodeFlags(1 << 1)
+    val NestedNamespace = new NodeFlags(1 << 2)
+    val Synthesized = new NodeFlags(1 << 3)
+    val Namespace = new NodeFlags(1 << 4)
+    val ExportContext = new NodeFlags(1 << 5)
+    val ContainsThis = new NodeFlags(1 << 6)
+    val HasImplicitReturn = new NodeFlags(1 << 7)
+    val HasExplicitReturn = new NodeFlags(1 << 8)
+    val GlobalAugmentation = new NodeFlags(1 << 9)
+    val HasClassExtends = new NodeFlags(1 << 10)
+    val HasDecorators = new NodeFlags(1 << 11)
+    val HasParamDecorators = new NodeFlags(1 << 12)
+    val HasAsyncFunctions = new NodeFlags(1 << 13)
+    val HasJsxSpreadAttributes = new NodeFlags(1 << 14)
+    val DisallowInContext = new NodeFlags(1 << 15)
+    val YieldContext = new NodeFlags(1 << 16)
+    val DecoratorContext = new NodeFlags(1 << 17)
+    val AwaitContext = new NodeFlags(1 << 18)
+    val ThisNodeHasError = new NodeFlags(1 << 19)
+    val JavaScriptFile = new NodeFlags(1 << 20)
+    val ThisNodeOrAnySubNodesHasError = new NodeFlags(1 << 21)
+    val HasAggregatedChildData = new NodeFlags(1 << 22)
+
+    val BlockScoped = Let | Const
+    val ReachabilityCheckFlags = HasImplicitReturn | HasExplicitReturn
+    val EmitHelperFlags =
+      HasClassExtends | HasDecorators | HasParamDecorators | HasAsyncFunctions | HasJsxSpreadAttributes
+    val ReachabilityAndEmitFlags = ReachabilityCheckFlags | EmitHelperFlags
+    val ContextFlags =
+      DisallowInContext | YieldContext | DecoratorContext | AwaitContext | JavaScriptFile
+    val TypeExcludesFlags = YieldContext | AwaitContext
   }
-  sealed abstract class ModifierFlags
+
+  final class ModifierFlags(val bits: Int) extends AnyVal {
+    def |(that: ModifierFlags): ModifierFlags =
+      new ModifierFlags(this.bits | that.bits)
+
+    def &(that: ModifierFlags): ModifierFlags =
+      new ModifierFlags(this.bits & that.bits)
+
+    def test(that: ModifierFlags): Boolean = (bits & that.bits) != 0
+    def hasAll(that: ModifierFlags): Boolean = (bits & that.bits) == that.bits
+  }
+
   object ModifierFlags {
-    case object None extends ModifierFlags
-    case object Export extends ModifierFlags
-    case object Ambient extends ModifierFlags
-    case object Public extends ModifierFlags
-    case object Private extends ModifierFlags
-    case object Protected extends ModifierFlags
-    case object Static extends ModifierFlags
-    case object Readonly extends ModifierFlags
-    case object Abstract extends ModifierFlags
-    case object Async extends ModifierFlags
-    case object Default extends ModifierFlags
-    case object Const extends ModifierFlags
-    case object HasComputedFlags extends ModifierFlags
-    case object AccessibilityModifier extends ModifierFlags
-    case object ParameterPropertyModifier extends ModifierFlags
-    case object NonPublicAccessibilityModifier extends ModifierFlags
-    case object TypeScriptModifier extends ModifierFlags
+    val None = new ModifierFlags(0)
+    val Export = new ModifierFlags(1 << 0)
+    val Ambient = new ModifierFlags(1 << 1)
+    val Public = new ModifierFlags(1 << 2)
+    val Private = new ModifierFlags(1 << 3)
+    val Protected = new ModifierFlags(1 << 4)
+    val Static = new ModifierFlags(1 << 5)
+    val Readonly = new ModifierFlags(1 << 6)
+    val Abstract = new ModifierFlags(1 << 7)
+    val Async = new ModifierFlags(1 << 8)
+    val Default = new ModifierFlags(1 << 9)
+    val Const = new ModifierFlags(1 << 11)
+
+    val HasComputedFlags = new ModifierFlags(1 << 29)
+
+    val AccessibilityModifier = Public | Private | Protected
+    val ParameterPropertyModifier = AccessibilityModifier | Readonly
+    val NonPublicAccessibilityModifier = Private | Protected
+
+    val TypeScriptModifier =
+      Ambient | Public | Private | Protected | Readonly | Abstract | Const
   }
-  sealed abstract class JsxFlags
+
+  final class JsxFlags(val bits: Int) extends AnyVal {
+    def |(that: JsxFlags): JsxFlags =
+      new JsxFlags(this.bits | that.bits)
+
+    def &(that: JsxFlags): JsxFlags =
+      new JsxFlags(this.bits & that.bits)
+
+    def test(that: JsxFlags): Boolean = (bits & that.bits) != 0
+    def hasAll(that: JsxFlags): Boolean = (bits & that.bits) == that.bits
+  }
+
   object JsxFlags {
-    case object None extends JsxFlags
-    case object IntrinsicNamedElement extends JsxFlags
-    case object IntrinsicIndexedElement extends JsxFlags
-    case object IntrinsicElement extends JsxFlags
+    val None = new JsxFlags(0)
+    val IntrinsicNamedElement = new JsxFlags(1 << 0)
+    val IntrinsicIndexedElement = new JsxFlags(1 << 1)
+
+    val IntrinsicElement = IntrinsicNamedElement | IntrinsicIndexedElement
   }
+
   sealed abstract class RelationComparisonResult
   object RelationComparisonResult {
     case object Succeeded extends RelationComparisonResult
     case object Failed extends RelationComparisonResult
     case object FailedAndReported extends RelationComparisonResult
   }
-  trait Node extends TextRange {
-    var kind: SyntaxKind
-    var flags: NodeFlags
-    var modifierFlagsCache: ModifierFlags
-    var transformFlags: TransformFlags
-    var decorators: NodeArray[Decorator]
-    var modifiers: ModifiersArray
-    var id: Int
-    var parent: Node
-    var original: Node
-    var startsOnNewLine: Boolean
-    var jsDocComments: Array[JSDoc]
-    var symbol: Symbol
-    var locals: SymbolTable
-    var nextContainer: Node
-    var localSymbol: Symbol
-    var flowNode: FlowNode
-    var emitNode: EmitNode
+
+  class Node(val kind: SyntaxKind) extends TextRange {
+    var id = Node.nextID()
+    var pos: Int = -1
+    var end: Int = -1
+    var flags: NodeFlags = NodeFlags.None
+    var modifierFlagsCache: ModifierFlags = ModifierFlags.None
+    var transformFlags: TransformFlags = TransformFlags.None
+    var decorators: Option[NodeArray[Decorator]] = None
+    var modifiers: Option[ModifiersArray] = None
+    var parent: Node = null
+    var original: Option[Node] = null
+    var startsOnNewLine: Boolean = false
+    var jsDocComments: Vector[JSDoc] = JSDoc.EmptyArray
+    var symbol: Option[Symbol] = None
+    var locals: Option[SymbolTable] = None
+    var nextContainer: Option[Node] = None
+    var localSymbol: Option[Symbol] = None
+    var flowNode: Option[FlowNode] = None
+    var emitNode: Option[EmitNode] = None
   }
-  trait NodeArray[T <: Node] extends mutable.ArrayBuffer[T] with TextRange {
-    var hasTrailingComma: Boolean
+
+  object Node {
+    private var _lastID: Int = 0
+
+    private def nextID(): Int = {
+      _lastID += 1
+      _lastID
+    }
   }
-  trait Token[TKind <: SyntaxKind] extends Node {
-    var kind: TKind
+
+  class NodeArray[T <: Node] extends mutable.ArrayBuffer[T] with TextRange {
+    var hasTrailingComma: Boolean = false
   }
+
+  class Token[TKind <: SyntaxKind](override val kind: TKind) extends Node(kind)
+
   type DotDotDotToken = Token[SyntaxKind.DotDotDotToken.type]
   type QuestionToken = Token[SyntaxKind.QuestionToken.type]
   type ColonToken = Token[SyntaxKind.ColonToken.type]
@@ -1341,11 +1401,17 @@ object Types {
     var name: (Identifier | LiteralExpression)
     var `type`: JSDocType
   }
+
   trait JSDoc extends Node {
     var kind: SyntaxKind.JSDocComment
     var tags: (NodeArray[JSDocTag] | undefined)
     var comment: (String | undefined)
   }
+
+  object JSDoc {
+    val EmptyArray: Vector[JSDoc] = Vector.empty
+  }
+
   trait JSDocTag extends Node {
     var atToken: AtToken
     var tagName: Identifier
