@@ -749,12 +749,12 @@ object Types {
 
     def asteriskToken: Option[AsteriskToken]
     def questionToken: Option[QuestionToken]
-    val body: BodyType
+    val body: Option[BodyType]
   }
 
   final case class FunctionDeclaration(
       name: Identifier,
-      body: FunctionBody)
+      body: Option[FunctionBody])
       extends Node(SyntaxKind.FunctionDeclaration)
       with FunctionLikeDeclaration
       with DeclarationStatement {
@@ -786,45 +786,68 @@ object Types {
       with ObjectLiteralElement
       with ObjectLiteralElementLike {
     type NameType = PropertyName
+    type BodyType = FunctionBody
   }
 
-  trait ConstructorDeclaration
-      extends FunctionLikeDeclaration
+  final case class ConstructorDeclaration(
+      typeParameters: NodeArray[TypeParameterDeclaration],
+      parameters: NodeArray[ParameterDeclaration],
+      `type`: Option[TypeNode],
+      body: Option[FunctionBody])
+      extends Node(SyntaxKind.Constructor)
+      with FunctionLikeDeclaration
       with ClassElement {
-    var kind: SyntaxKind.Constructor
-    var body: FunctionBody
+    type NameType = DummyPropertyName.type
+    type BodyType = FunctionBody
+
+    val name = DummyPropertyName
   }
-  trait SemicolonClassElement extends ClassElement {
-    var kind: SyntaxKind.SemicolonClassElement
-  }
+
+  final case class SemicolonClassElement()
+      extends Node(SyntaxKind.SemicolonClassElement) with ClassElement
 
   sealed trait AccessorDeclaration extends ObjectLiteralElementLike
 
-  trait GetAccessorDeclaration
-      extends FunctionLikeDeclaration
+  final case class GetAccessorDeclaration(
+      name: PropertyName,
+      `type`: Option[TypeNode],
+      body: Option[FunctionBody])
+      extends Node(SyntaxKind.GetAccessor)
+      with FunctionLikeDeclaration
       with ClassElement
       with ObjectLiteralElement
       with AccessorDeclaration {
-    var kind: SyntaxKind.GetAccessor
-    var name: PropertyName
-    var body: FunctionBody
+    type NameType = PropertyName
+    type BodyType = FunctionBody
   }
-  trait SetAccessorDeclaration
-      extends FunctionLikeDeclaration
+
+  final case class SetAccessorDeclaration(
+      name: PropertyName,
+      parameters: NodeArray[ParameterDeclaration],
+      `type`: Option[TypeNode],
+      body: Option[FunctionBody])
+      extends Node(SyntaxKind.SetAccessor)
+      with FunctionLikeDeclaration
       with ClassElement
       with ObjectLiteralElement
       with AccessorDeclaration {
-    var kind: SyntaxKind.SetAccessor
-    var name: PropertyName
-    var body: FunctionBody
+    type NameType = PropertyName
+    type BodyType = FunctionBody
   }
-  type AccessorDeclaration = (GetAccessorDeclaration | SetAccessorDeclaration)
-  trait IndexSignatureDeclaration
-      extends SignatureDeclaration
+
+  final case class IndexSignatureDeclaration(
+      name: PropertyName,
+      parameters: NodeArray[ParameterDeclaration],
+      `type`: Option[TypeNode],
+      body: Option[FunctionBody])
+      extends Node(SyntaxKind.SetAccessor)
+      with SignatureDeclaration
       with ClassElement
       with TypeElement {
-    var kind: SyntaxKind.IndexSignature
+    type NameType = PropertyName
+    type BodyType = FunctionBody
   }
+
   trait TypeNode extends Node {
     var _typeNodeBrand: Any
   }
