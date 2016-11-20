@@ -15,8 +15,12 @@ object Scala {
       val host = context.getEmitHost()
       val writer = createTextWriter(host.getNewLine())
       emitNode(writer, node)
-      writeFile(host, emitterDiagnostics, targetFileName, writer.getText(),
-          false)
+      writeFile(
+        host,
+        emitterDiagnostics,
+        targetFileName,
+        writer.getText(),
+        false)
 
     }
     def emitNode(writer: EmitTextWriter, node: Node): Unit = {
@@ -370,7 +374,7 @@ object Scala {
       }
       def emitObjectBindingPattern(node: ObjectBindingPattern): Unit = {
         console.log(
-            ("unreachable: emitObjectBindingPattern in " + node.parent.kind))
+          ("unreachable: emitObjectBindingPattern in " + node.parent.kind))
 
       }
       def emitArrayBindingPattern(): Unit = {
@@ -707,12 +711,12 @@ object Scala {
         (decls.declarations).foreach { fresh10 =>
           val decl = zeroOfMyType = fresh10 {
             (emitRhs = (() => {
-                  if (decl.initializer)
-                    emitExpressionWithPrefix(" = ", decl.initializer)
-                  else
-                    write(" = zeroOfMyType")
+                          if (decl.initializer)
+                            emitExpressionWithPrefix(" = ", decl.initializer)
+                          else
+                            write(" = zeroOfMyType")
 
-                }))
+                        }))
             def ident(ident: Identifier): Unit = {
               emitModifiers(node.modifiers)
               write(varity)
@@ -739,16 +743,16 @@ object Scala {
                         case SyntaxKind.Identifier =>
                           val nested = elem.name.asInstanceOf[Identifier]
                           (emitRhs = (() => {
-                                write(" = ")
-                                write((x + "."))
-                                emitIdentifier(nested)
-                                writeLine()
+                                        write(" = ")
+                                        write((x + "."))
+                                        emitIdentifier(nested)
+                                        writeLine()
 
-                              }))
+                                      }))
                           ident(nested)
                         case _ =>
                           console.log(
-                              "Warning: nested object patterns are not supported")
+                            "Warning: nested object patterns are not supported")
                       }
 
                     }
@@ -1020,8 +1024,9 @@ object Scala {
 
         } else {
           write("Array")
-          emitExpressionList(elements,
-              ListFormat.ArrayLiteralExpressionElements)
+          emitExpressionList(
+            elements,
+            ListFormat.ArrayLiteralExpressionElements)
 
         }
 
@@ -1032,8 +1037,7 @@ object Scala {
         emitList(properties, ListFormat.ObjectLiteralExpressionProperties)
 
       }
-      def emitPropertyAccessExpression(
-          node: PropertyAccessExpression): Unit = {
+      def emitPropertyAccessExpression(node: PropertyAccessExpression): Unit = {
         emitExpression(node.expression)
         write(".")
         emit(node.name)
@@ -1073,8 +1077,7 @@ object Scala {
         emitList(node.templateSpans, ListFormat.TemplateExpressionSpans)
 
       }
-      def emitTaggedTemplateExpression(
-          node: TaggedTemplateExpression): Unit = {
+      def emitTaggedTemplateExpression(node: TaggedTemplateExpression): Unit = {
         console.log("emitTaggedTemplateExpression")
         console.log(("Need to handle node kind " + node.kind))
 
@@ -1114,8 +1117,7 @@ object Scala {
         write(" => ")
 
       }
-      def emitParametersForArrow(
-          parameters: NodeArray[ParameterDeclaration]) = {
+      def emitParametersForArrow(parameters: NodeArray[ParameterDeclaration]) = {
         if (((parameters && (parameters.length === 1)) && (parameters(0).`type` === undefined))) {
           emit(parameters(0))
 
@@ -1129,7 +1131,8 @@ object Scala {
         emitList(parameters, ListFormat.Parameters)
 
       }
-      def emitSignatureAndBody(node: FunctionLikeDeclaration,
+      def emitSignatureAndBody(
+          node: FunctionLikeDeclaration,
           emitSignatureHead: ((SignatureDeclaration) => Unit)) = {
         val body = node.body
         if (body) {
@@ -1183,7 +1186,7 @@ object Scala {
             write(")")
           case _ =>
             console.log(
-                ("Need to handle emitDeleteExpression() with " + expr.kind))
+              ("Need to handle emitDeleteExpression() with " + expr.kind))
         }
 
       }
@@ -1271,13 +1274,17 @@ object Scala {
         console.log(("Need to handle node kind " + node.kind))
 
       }
-      def emitList(children: NodeArray[Node], format: ListFormat, start: Int,
-          count: Int) = {
+      def emitList(children: NodeArray[Node],
+                   format: ListFormat,
+                   start: Int,
+                   count: Int) = {
         emitNodeList(emit, children, format, start, count)
 
       }
-      def emitExpressionList(children: NodeArray[Node], format: ListFormat,
-          start: Int, count: Int) = {
+      def emitExpressionList(children: NodeArray[Node],
+                             format: ListFormat,
+                             start: Int,
+                             count: Int) = {
         emitNodeList(emitExpression, children, format, start, count)
 
       }
@@ -1285,9 +1292,12 @@ object Scala {
         emit(node)
 
       }
-      def emitNodeList(emit: ((Node) => Unit), children: NodeArray[Node],
-          format: ListFormat, start: Nothing = 0,
-          count: Nothing = (if (children) (children.length - start) else 0)) = {
+      def emitNodeList(emit: ((Node) => Unit),
+                       children: NodeArray[Node],
+                       format: ListFormat,
+                       start: Nothing = 0,
+                       count: Nothing =
+                         (if (children) (children.length - start) else 0)) = {
         val isUndefined = (children === undefined)
         if ((isUndefined && (format & ListFormat.OptionalIfUndefined))) {
           return
@@ -1356,8 +1366,9 @@ object Scala {
         emitNodeWithPrefix(prefix, node, emitExpression)
 
       }
-      def emitNodeWithPrefix(prefix: String, node: Node,
-          emit: ((Node) => Unit)) = {
+      def emitNodeWithPrefix(prefix: String,
+                             node: Node,
+                             emit: ((Node) => Unit)) = {
         if (node) {
           write(prefix)
           emit(node)
@@ -1366,13 +1377,14 @@ object Scala {
 
       }
       def getLiteralTextOfNode(node: LiteralLikeNode): String = {
-        if (((node.kind === SyntaxKind.StringLiteral) && (
-                node.asInstanceOf[StringLiteral]).textSourceNode)) {
+        if (((node.kind === SyntaxKind.StringLiteral) && (node
+              .asInstanceOf[StringLiteral])
+              .textSourceNode)) {
           val textSourceNode =
             (node.asInstanceOf[StringLiteral]).textSourceNode
           if (isIdentifier(textSourceNode)) {
             return (("\"" + escapeNonAsciiCharacters(
-                escapeString(getTextOfNode(textSourceNode)))) + "\"")
+              escapeString(getTextOfNode(textSourceNode)))) + "\"")
 
           } else {
             return getLiteralTextOfNode(textSourceNode)
@@ -1380,8 +1392,9 @@ object Scala {
           }
 
         }
-        def getQuotedEscapedLiteralText(leftQuote: String, text: String,
-            rightQuote: String) = {
+        def getQuotedEscapedLiteralText(leftQuote: String,
+                                        text: String,
+                                        rightQuote: String) = {
           return ((leftQuote + escapeNonAsciiCharacters(escapeString(text))) + rightQuote)
 
         }
@@ -1471,10 +1484,10 @@ object Scala {
             return emitQualifiedName(node.asInstanceOf[QualifiedName])
           case SyntaxKind.ComputedPropertyName =>
             return emitComputedPropertyName(
-                node.asInstanceOf[ComputedPropertyName])
+              node.asInstanceOf[ComputedPropertyName])
           case SyntaxKind.TypeParameter =>
             return emitTypeParameter(
-                node.asInstanceOf[TypeParameterDeclaration])
+              node.asInstanceOf[TypeParameterDeclaration])
           case SyntaxKind.Parameter =>
             return emitParameter(node.asInstanceOf[ParameterDeclaration])
           case SyntaxKind.Decorator =>
@@ -1483,7 +1496,7 @@ object Scala {
             return emitPropertySignature(node.asInstanceOf[PropertySignature])
           case SyntaxKind.PropertyDeclaration =>
             return emitPropertyDeclaration(
-                node.asInstanceOf[PropertyDeclaration])
+              node.asInstanceOf[PropertyDeclaration])
           case SyntaxKind.MethodSignature =>
             return emitMethodSignature(node.asInstanceOf[MethodSignature])
           case SyntaxKind.MethodDeclaration =>
@@ -1492,16 +1505,16 @@ object Scala {
             return emitConstructor(node.asInstanceOf[ConstructorDeclaration])
           case SyntaxKind.GetAccessor | SyntaxKind.SetAccessor =>
             return emitAccessorDeclaration(
-                node.asInstanceOf[AccessorDeclaration])
+              node.asInstanceOf[AccessorDeclaration])
           case SyntaxKind.CallSignature =>
             return emitCallSignature(
-                node.asInstanceOf[CallSignatureDeclaration])
+              node.asInstanceOf[CallSignatureDeclaration])
           case SyntaxKind.ConstructSignature =>
             return emitConstructSignature(
-                node.asInstanceOf[ConstructSignatureDeclaration])
+              node.asInstanceOf[ConstructSignatureDeclaration])
           case SyntaxKind.IndexSignature =>
             return emitIndexSignature(
-                node.asInstanceOf[IndexSignatureDeclaration])
+              node.asInstanceOf[IndexSignatureDeclaration])
           case SyntaxKind.TypePredicate =>
             return emitTypePredicate(node.asInstanceOf[TypePredicateNode])
           case SyntaxKind.TypeReference =>
@@ -1522,20 +1535,20 @@ object Scala {
             return emitUnionType(node.asInstanceOf[UnionTypeNode])
           case SyntaxKind.IntersectionType =>
             return emitIntersectionType(
-                node.asInstanceOf[IntersectionTypeNode])
+              node.asInstanceOf[IntersectionTypeNode])
           case SyntaxKind.ParenthesizedType =>
             return emitParenthesizedType(
-                node.asInstanceOf[ParenthesizedTypeNode])
+              node.asInstanceOf[ParenthesizedTypeNode])
           case SyntaxKind.ExpressionWithTypeArguments =>
             return emitExpressionWithTypeArguments(
-                node.asInstanceOf[ExpressionWithTypeArguments])
+              node.asInstanceOf[ExpressionWithTypeArguments])
           case SyntaxKind.ThisType =>
             return emitThisType()
           case SyntaxKind.LiteralType =>
             return emitLiteralType(node.asInstanceOf[LiteralTypeNode])
           case SyntaxKind.ObjectBindingPattern =>
             return emitObjectBindingPattern(
-                node.asInstanceOf[ObjectBindingPattern])
+              node.asInstanceOf[ObjectBindingPattern])
           case SyntaxKind.ArrayBindingPattern =>
             return emitArrayBindingPattern()
           case SyntaxKind.BindingElement =>
@@ -1552,7 +1565,7 @@ object Scala {
             return emitEmptyStatement()
           case SyntaxKind.ExpressionStatement =>
             return emitExpressionStatement(
-                node.asInstanceOf[ExpressionStatement])
+              node.asInstanceOf[ExpressionStatement])
           case SyntaxKind.IfStatement =>
             return emitIfStatement(node.asInstanceOf[IfStatement])
           case SyntaxKind.DoStatement =>
@@ -1585,21 +1598,21 @@ object Scala {
             return emitDebuggerStatement()
           case SyntaxKind.VariableDeclaration =>
             return emitVariableDeclaration(
-                node.asInstanceOf[VariableDeclaration])
+              node.asInstanceOf[VariableDeclaration])
           case SyntaxKind.VariableDeclarationList =>
             return emitVariableDeclarationList(
-                node.asInstanceOf[VariableDeclarationList])
+              node.asInstanceOf[VariableDeclarationList])
           case SyntaxKind.FunctionDeclaration =>
             return emitFunctionDeclaration(
-                node.asInstanceOf[FunctionDeclaration])
+              node.asInstanceOf[FunctionDeclaration])
           case SyntaxKind.ClassDeclaration =>
             return emitClassDeclaration(node.asInstanceOf[ClassDeclaration])
           case SyntaxKind.InterfaceDeclaration =>
             return emitInterfaceDeclaration(
-                node.asInstanceOf[InterfaceDeclaration])
+              node.asInstanceOf[InterfaceDeclaration])
           case SyntaxKind.TypeAliasDeclaration =>
             return emitTypeAliasDeclaration(
-                node.asInstanceOf[TypeAliasDeclaration])
+              node.asInstanceOf[TypeAliasDeclaration])
           case SyntaxKind.EnumDeclaration =>
             return emitEnumDeclaration(node.asInstanceOf[EnumDeclaration])
           case SyntaxKind.ModuleDeclaration =>
@@ -1608,7 +1621,7 @@ object Scala {
             return emitModuleBlock(node.asInstanceOf[ModuleBlock])
           case SyntaxKind.ImportEqualsDeclaration =>
             return emitImportEqualsDeclaration(
-                node.asInstanceOf[ImportEqualsDeclaration])
+              node.asInstanceOf[ImportEqualsDeclaration])
           case SyntaxKind.ImportDeclaration =>
             return emitImportDeclaration(node.asInstanceOf[ImportDeclaration])
           case SyntaxKind.ImportClause =>
@@ -1631,35 +1644,35 @@ object Scala {
             return
           case SyntaxKind.ExternalModuleReference =>
             return emitExternalModuleReference(
-                node.asInstanceOf[ExternalModuleReference])
+              node.asInstanceOf[ExternalModuleReference])
           case SyntaxKind.ArrayLiteralExpression =>
             return emitArrayLiteralExpression(
-                node.asInstanceOf[ArrayLiteralExpression])
+              node.asInstanceOf[ArrayLiteralExpression])
           case SyntaxKind.ObjectLiteralExpression =>
             return emitObjectLiteralExpression(
-                node.asInstanceOf[ObjectLiteralExpression])
+              node.asInstanceOf[ObjectLiteralExpression])
           case SyntaxKind.PropertyAccessExpression =>
             return emitPropertyAccessExpression(
-                node.asInstanceOf[PropertyAccessExpression])
+              node.asInstanceOf[PropertyAccessExpression])
           case SyntaxKind.ElementAccessExpression =>
             return emitElementAccessExpression(
-                node.asInstanceOf[ElementAccessExpression])
+              node.asInstanceOf[ElementAccessExpression])
           case SyntaxKind.CallExpression =>
             return emitCallExpression(node.asInstanceOf[CallExpression])
           case SyntaxKind.NewExpression =>
             return emitNewExpression(node.asInstanceOf[NewExpression])
           case SyntaxKind.TaggedTemplateExpression =>
             return emitTaggedTemplateExpression(
-                node.asInstanceOf[TaggedTemplateExpression])
+              node.asInstanceOf[TaggedTemplateExpression])
           case SyntaxKind.TypeAssertionExpression =>
             return emitTypeAssertionExpression(
-                node.asInstanceOf[TypeAssertion])
+              node.asInstanceOf[TypeAssertion])
           case SyntaxKind.ParenthesizedExpression =>
             return emitParenthesizedExpression(
-                node.asInstanceOf[ParenthesizedExpression])
+              node.asInstanceOf[ParenthesizedExpression])
           case SyntaxKind.FunctionExpression =>
             return emitFunctionExpression(
-                node.asInstanceOf[FunctionExpression])
+              node.asInstanceOf[FunctionExpression])
           case SyntaxKind.ArrowFunction =>
             return emitArrowFunction(node.asInstanceOf[ArrowFunction])
           case SyntaxKind.DeleteExpression =>
@@ -1672,23 +1685,23 @@ object Scala {
             return emitAwaitExpression(node.asInstanceOf[AwaitExpression])
           case SyntaxKind.PrefixUnaryExpression =>
             return emitPrefixUnaryExpression(
-                node.asInstanceOf[PrefixUnaryExpression])
+              node.asInstanceOf[PrefixUnaryExpression])
           case SyntaxKind.PostfixUnaryExpression =>
             return emitPostfixUnaryExpression(
-                node.asInstanceOf[PostfixUnaryExpression])
+              node.asInstanceOf[PostfixUnaryExpression])
           case SyntaxKind.BinaryExpression =>
             return emitBinaryExpression(node.asInstanceOf[BinaryExpression])
           case SyntaxKind.ConditionalExpression =>
             return emitConditionalExpression(
-                node.asInstanceOf[ConditionalExpression])
+              node.asInstanceOf[ConditionalExpression])
           case SyntaxKind.TemplateExpression =>
             return emitTemplateExpression(
-                node.asInstanceOf[TemplateExpression])
+              node.asInstanceOf[TemplateExpression])
           case SyntaxKind.YieldExpression =>
             return emitYieldExpression(node.asInstanceOf[YieldExpression])
           case SyntaxKind.SpreadElementExpression =>
             return emitSpreadElementExpression(
-                node.asInstanceOf[SpreadElementExpression])
+              node.asInstanceOf[SpreadElementExpression])
           case SyntaxKind.ClassExpression =>
             return emitClassExpression(node.asInstanceOf[ClassExpression])
           case SyntaxKind.OmittedExpression =>
@@ -1715,10 +1728,10 @@ object Scala {
             return emitCatchClause(node.asInstanceOf[CatchClause])
           case SyntaxKind.PropertyAssignment =>
             return emitPropertyAssignment(
-                node.asInstanceOf[PropertyAssignment])
+              node.asInstanceOf[PropertyAssignment])
           case SyntaxKind.ShorthandPropertyAssignment =>
             return emitShorthandPropertyAssignment(
-                node.asInstanceOf[ShorthandPropertyAssignment])
+              node.asInstanceOf[ShorthandPropertyAssignment])
           case SyntaxKind.EnumMember =>
             return emitEnumMember(node.asInstanceOf[EnumMember])
           case _ =>

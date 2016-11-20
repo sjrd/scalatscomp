@@ -8,17 +8,17 @@ object TSC {
     var value: String
   }
   val defaultFormatDiagnosticsHost: FormatDiagnosticsHost = Map(
-      "getCurrentDirectory" -> (() => sys.getCurrentDirectory()),
-      "getNewLine" -> (() => sys.newLine),
-      "getCanonicalFileName" -> createGetCanonicalFileName(
-          sys.useCaseSensitiveFileNames))
+    "getCurrentDirectory" -> (() => sys.getCurrentDirectory()),
+    "getNewLine" -> (() => sys.newLine),
+    "getCanonicalFileName" -> createGetCanonicalFileName(
+      sys.useCaseSensitiveFileNames))
   var reportDiagnosticWorker = reportDiagnosticSimply
   def reportDiagnostic(diagnostic: Diagnostic, host: FormatDiagnosticsHost) = {
     reportDiagnosticWorker(diagnostic, (host || defaultFormatDiagnosticsHost))
 
   }
   def reportDiagnostics(diagnostics: Array[Diagnostic],
-      host: FormatDiagnosticsHost): Unit = {
+                        host: FormatDiagnosticsHost): Unit = {
     (diagnostics).foreach { fresh1 =>
       val diagnostic = zeroOfMyType = fresh1 {
         reportDiagnostic(diagnostic, host)
@@ -43,15 +43,16 @@ object TSC {
 
   }
   def validateLocaleAndSetLanguage(locale: String,
-      errors: Array[Diagnostic]): Boolean = {
+                                   errors: Array[Diagnostic]): Boolean = {
     val matchResult = java.util.regex.Pattern
       .compile(raw"""^([a-z]+)([_\-]([a-z]+))?$$""")
       .exec(locale.toLowerCase())
     if ((!matchResult)) {
       errors.push(
-          createCompilerDiagnostic(
-              Diagnostics.Locale_must_be_of_the_form_language_or_language_territory_For_example_0_or_1,
-              "en", "ja-jp"))
+        createCompilerDiagnostic(
+          Diagnostics.Locale_must_be_of_the_form_language_or_language_territory_For_example_0_or_1,
+          "en",
+          "ja-jp"))
       return false
 
     }
@@ -64,8 +65,9 @@ object TSC {
     return true
 
   }
-  def trySetLanguageAndTerritory(language: String, territory: String,
-      errors: Array[Diagnostic]): Boolean = {
+  def trySetLanguageAndTerritory(language: String,
+                                 territory: String,
+                                 errors: Array[Diagnostic]): Boolean = {
     val compilerFilePath = normalizePath(sys.getExecutingFilePath())
     val containingDirectoryPath = getDirectoryPath(compilerFilePath)
     var filePath = combinePaths(containingDirectoryPath, language)
@@ -73,8 +75,8 @@ object TSC {
       (filePath = ((filePath + "-") + territory))
 
     }
-    (filePath = sys.resolvePath(combinePaths(filePath,
-            "diagnosticMessages.generated.json")))
+    (filePath = sys.resolvePath(
+      combinePaths(filePath, "diagnosticMessages.generated.json")))
     if ((!sys.fileExists(filePath))) {
       return false
 
@@ -85,8 +87,10 @@ object TSC {
 
     } catch {
       case e: Throwable => {
-        errors.push(createCompilerDiagnostic(Diagnostics.Unable_to_open_file_0,
-                filePath))
+        errors.push(
+          createCompilerDiagnostic(
+            Diagnostics.Unable_to_open_file_0,
+            filePath))
         return false
 
       }
@@ -96,8 +100,10 @@ object TSC {
 
     } catch {
       case e: Throwable => {
-        errors.push(createCompilerDiagnostic(
-                Diagnostics.Corrupted_locale_file_0, filePath))
+        errors.push(
+          createCompilerDiagnostic(
+            Diagnostics.Corrupted_locale_file_0,
+            filePath))
         return false
 
       }
@@ -107,22 +113,21 @@ object TSC {
   }
   def countLines(program: Program): Int = {
     var count = 0
-    forEach(program.getSourceFiles(),
-        (file => {
-          (count += getLineStarts(file).length)
+    forEach(program.getSourceFiles(), (file => {
+                                         (count += getLineStarts(file).length)
 
-        }))
+                                       }))
     return count
 
   }
   def getDiagnosticText(_message: DiagnosticMessage,
-      _args: Array[Any]): String = {
+                        _args: Array[Any]): String = {
     val diagnostic = createCompilerDiagnostic.apply(undefined, arguments)
     return diagnostic.messageText.asInstanceOf[String]
 
   }
   def reportDiagnosticSimply(diagnostic: Diagnostic,
-      host: FormatDiagnosticsHost): Unit = {
+                             host: FormatDiagnosticsHost): Unit = {
     sys.write(ts.formatDiagnostics(Array(diagnostic), host))
 
   }
@@ -134,14 +139,16 @@ object TSC {
   val resetEscapeSequence = "\u001B[0m"
   val ellipsis = "..."
   val categoryFormatMap = createMap[String](
-      Map(DiagnosticCategory.Warning -> yellowForegroundEscapeSequence,
-          DiagnosticCategory.Error -> redForegroundEscapeSequence,
-          DiagnosticCategory.Message -> blueForegroundEscapeSequence))
+    Map(
+      DiagnosticCategory.Warning -> yellowForegroundEscapeSequence,
+      DiagnosticCategory.Error -> redForegroundEscapeSequence,
+      DiagnosticCategory.Message -> blueForegroundEscapeSequence))
   def formatAndReset(text: String, formatStyle: String) = {
     return ((formatStyle + text) + resetEscapeSequence)
 
   }
-  def reportDiagnosticWithColorAndContext(diagnostic: Diagnostic,
+  def reportDiagnosticWithColorAndContext(
+      diagnostic: Diagnostic,
       host: FormatDiagnosticsHost): Unit = {
     var output = ""
     if (diagnostic.file) {
@@ -159,8 +166,10 @@ object TSC {
         getLineAndCharacterOfPosition(file, file.text.length).line
       val relativeFileName =
         (if (host)
-           convertToRelativePath(file.fileName, host.getCurrentDirectory(),
-               (fileName => host.getCanonicalFileName(fileName)))
+           convertToRelativePath(
+             file.fileName,
+             host.getCurrentDirectory(),
+             (fileName => host.getCanonicalFileName(fileName)))
          else file.fileName)
       val hasMoreThanFiveLines = (((lastLine - firstLine)) >= 4)
       var gutterWidth = (((lastLine + 1) + "")).length
@@ -173,8 +182,9 @@ object TSC {
         while ((i <= lastLine)) {
           {
             if (((hasMoreThanFiveLines && ((firstLine + 1) < i)) && (i < (lastLine - 1)))) {
-              (output += ((formatAndReset(padLeft(ellipsis, gutterWidth),
-                  gutterStyleSequence) + gutterSeparator) + sys.newLine))
+              (output += ((formatAndReset(
+                padLeft(ellipsis, gutterWidth),
+                gutterStyleSequence) + gutterSeparator) + sys.newLine))
               (i = (lastLine - 1))
 
             }
@@ -185,35 +195,42 @@ object TSC {
                else file.text.length)
             var lineContent = file.text.slice(lineStart, lineEnd)
             (lineContent = lineContent.replace(
-                java.util.regex.Pattern.compile(raw"""\s+$$""", "g"), ""))
+              java.util.regex.Pattern.compile(raw"""\s+$$""", "g"),
+              ""))
             (lineContent = lineContent.replace("\t", " "))
-            (output += (formatAndReset(padLeft(((i + 1) + ""), gutterWidth),
-                gutterStyleSequence) + gutterSeparator))
+            (output += (formatAndReset(
+              padLeft(((i + 1) + ""), gutterWidth),
+              gutterStyleSequence) + gutterSeparator))
             (output += (lineContent + sys.newLine))
-            (output += (formatAndReset(padLeft("", gutterWidth),
-                gutterStyleSequence) + gutterSeparator))
+            (output += (formatAndReset(
+              padLeft("", gutterWidth),
+              gutterStyleSequence) + gutterSeparator))
             (output += redForegroundEscapeSequence)
             if ((i === firstLine)) {
               val lastCharForLine =
                 (if ((i === lastLine)) lastLineChar else undefined)
               (output += lineContent
                 .slice(0, firstLineChar)
-                .replace(java.util.regex.Pattern.compile(raw"""\S""", "g"),
-                    " "))
+                .replace(
+                  java.util.regex.Pattern.compile(raw"""\S""", "g"),
+                  " "))
               (output += lineContent
                 .slice(firstLineChar, lastCharForLine)
-                .replace(java.util.regex.Pattern.compile(raw""".""", "g"),
-                    "~"))
+                .replace(
+                  java.util.regex.Pattern.compile(raw""".""", "g"),
+                  "~"))
 
             } else if ((i === lastLine)) {
               (output += lineContent
                 .slice(0, lastLineChar)
-                .replace(java.util.regex.Pattern.compile(raw""".""", "g"),
-                    "~"))
+                .replace(
+                  java.util.regex.Pattern.compile(raw""".""", "g"),
+                  "~"))
 
             } else {
               (output += lineContent.replace(
-                  java.util.regex.Pattern.compile(raw""".""", "g"), "~"))
+                java.util.regex.Pattern.compile(raw""".""", "g"),
+                "~"))
 
             }
             (output += resetEscapeSequence)
@@ -229,9 +246,9 @@ object TSC {
     }
     val categoryColor = categoryFormatMap(diagnostic.category)
     val category = DiagnosticCategory(diagnostic.category).toLowerCase()
-    (output += s"""${formatAndReset(category,
-        categoryColor)} TS${diagnostic.code}: ${flattenDiagnosticMessageText(
-        diagnostic.messageText, sys.newLine)}""")
+    (output += s"""${formatAndReset(category, categoryColor)} TS${diagnostic.code}: ${flattenDiagnosticMessageText(
+      diagnostic.messageText,
+      sys.newLine)}""")
     (output += (sys.newLine + sys.newLine))
     sys.write(output)
 
@@ -244,8 +261,9 @@ object TSC {
       (output += s"""${diagnostic.file.fileName}(${(loc.line + 1)},${(loc.character + 1)}): """)
 
     }
-    (output += s"""${flattenDiagnosticMessageText(diagnostic.messageText,
-        sys.newLine)}${sys.newLine}""")
+    (output += s"""${flattenDiagnosticMessageText(
+      diagnostic.messageText,
+      sys.newLine)}${sys.newLine}""")
     sys.write(output)
 
   }
@@ -291,14 +309,16 @@ object TSC {
     if (commandLine.options.locale) {
       if ((!isJSONSupported())) {
         reportDiagnostic(
-            createCompilerDiagnostic(
-                Diagnostics.The_current_host_does_not_support_the_0_option,
-                "--locale"), undefined)
+          createCompilerDiagnostic(
+            Diagnostics.The_current_host_does_not_support_the_0_option,
+            "--locale"),
+          undefined)
         return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
 
       }
-      validateLocaleAndSetLanguage(commandLine.options.locale,
-          commandLine.errors)
+      validateLocaleAndSetLanguage(
+        commandLine.options.locale,
+        commandLine.errors)
 
     }
     if ((commandLine.errors.length > 0)) {
@@ -325,17 +345,18 @@ object TSC {
     if (commandLine.options.project) {
       if ((!isJSONSupported())) {
         reportDiagnostic(
-            createCompilerDiagnostic(
-                Diagnostics.The_current_host_does_not_support_the_0_option,
-                "--project"), undefined)
+          createCompilerDiagnostic(
+            Diagnostics.The_current_host_does_not_support_the_0_option,
+            "--project"),
+          undefined)
         return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
 
       }
       if ((commandLine.fileNames.length !== 0)) {
         reportDiagnostic(
-            createCompilerDiagnostic(
-                Diagnostics.Option_project_cannot_be_mixed_with_source_files_on_a_command_line),
-            undefined)
+          createCompilerDiagnostic(
+            Diagnostics.Option_project_cannot_be_mixed_with_source_files_on_a_command_line),
+          undefined)
         return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
 
       }
@@ -344,9 +365,10 @@ object TSC {
         (configFileName = combinePaths(fileOrDirectory, "tsconfig.json"))
         if ((!sys.fileExists(configFileName))) {
           reportDiagnostic(
-              createCompilerDiagnostic(
-                  Diagnostics.Cannot_find_a_tsconfig_json_file_at_the_specified_directory_Colon_0,
-                  commandLine.options.project), undefined)
+            createCompilerDiagnostic(
+              Diagnostics.Cannot_find_a_tsconfig_json_file_at_the_specified_directory_Colon_0,
+              commandLine.options.project),
+            undefined)
           return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
 
         }
@@ -355,9 +377,10 @@ object TSC {
         (configFileName = fileOrDirectory)
         if ((!sys.fileExists(configFileName))) {
           reportDiagnostic(
-              createCompilerDiagnostic(
-                  Diagnostics.The_specified_path_does_not_exist_Colon_0,
-                  commandLine.options.project), undefined)
+            createCompilerDiagnostic(
+              Diagnostics.The_specified_path_does_not_exist_Colon_0,
+              commandLine.options.project),
+            undefined)
           return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
 
         }
@@ -378,9 +401,10 @@ object TSC {
     if (isWatchSet(commandLine.options)) {
       if ((!sys.watchFile)) {
         reportDiagnostic(
-            createCompilerDiagnostic(
-                Diagnostics.The_current_host_does_not_support_the_0_option,
-                "--watch"), undefined)
+          createCompilerDiagnostic(
+            Diagnostics.The_current_host_does_not_support_the_0_option,
+            "--watch"),
+          undefined)
         return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
 
       }
@@ -391,8 +415,9 @@ object TSC {
       if ((sys.watchDirectory && configFileName)) {
         val directory = ts.getDirectoryPath(configFileName)
         (directoryWatcher = sys.watchDirectory(
-            (if ((directory == "")) "." else directory),
-            watchedDirectoryChanged, true))
+          (if ((directory == "")) "." else directory),
+          watchedDirectoryChanged,
+          true))
 
       }
 
@@ -406,8 +431,9 @@ object TSC {
         } catch {
           case e: Throwable => {
             val error = createCompilerDiagnostic(
-                Diagnostics.Cannot_read_file_0_Colon_1, configFileName,
-                e.message)
+              Diagnostics.Cannot_read_file_0_Colon_1,
+              configFileName,
+              e.message)
             reportWatchDiagnostic(error)
             sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
             return
@@ -417,8 +443,9 @@ object TSC {
 
       }
       if ((!cachedConfigFileText)) {
-        val error = createCompilerDiagnostic(Diagnostics.File_0_not_found,
-            configFileName)
+        val error = createCompilerDiagnostic(
+          Diagnostics.File_0_not_found,
+          configFileName)
         reportDiagnostics(Array(error), undefined)
         sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
         return
@@ -434,9 +461,12 @@ object TSC {
 
       }
       val cwd = sys.getCurrentDirectory()
-      val configParseResult = parseJsonConfigFileContent(configObject, sys,
-          getNormalizedAbsolutePath(getDirectoryPath(configFileName), cwd),
-          commandLine.options, getNormalizedAbsolutePath(configFileName, cwd))
+      val configParseResult = parseJsonConfigFileContent(
+        configObject,
+        sys,
+        getNormalizedAbsolutePath(getDirectoryPath(configFileName), cwd),
+        commandLine.options,
+        getNormalizedAbsolutePath(configFileName, cwd))
       if ((configParseResult.errors.length > 0)) {
         reportDiagnostics(configParseResult.errors, undefined)
         sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
@@ -446,17 +476,19 @@ object TSC {
       if (isWatchSet(configParseResult.options)) {
         if ((!sys.watchFile)) {
           reportDiagnostic(
-              createCompilerDiagnostic(
-                  Diagnostics.The_current_host_does_not_support_the_0_option,
-                  "--watch"), undefined)
+            createCompilerDiagnostic(
+              Diagnostics.The_current_host_does_not_support_the_0_option,
+              "--watch"),
+            undefined)
           sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
 
         }
         if ((((!directoryWatcher) && sys.watchDirectory) && configFileName)) {
           val directory = ts.getDirectoryPath(configFileName)
           (directoryWatcher = sys.watchDirectory(
-              (if ((directory == "")) "." else directory),
-              watchedDirectoryChanged, true))
+            (if ((directory == "")) "." else directory),
+            watchedDirectoryChanged,
+            true))
 
         };
       }
@@ -494,8 +526,8 @@ object TSC {
       }
       setCachedProgram(compileResult.program)
       reportWatchDiagnostic(
-          createCompilerDiagnostic(
-              Diagnostics.Compilation_complete_Watching_for_file_changes))
+        createCompilerDiagnostic(
+          Diagnostics.Compilation_complete_Watching_for_file_changes))
 
     }
     def cachedFileExists(fileName: String): Boolean = {
@@ -504,8 +536,9 @@ object TSC {
               else (cachedExistingFiles(fileName) = hostFileExists(fileName)))
 
     }
-    def getSourceFile(fileName: String, languageVersion: ScriptTarget,
-        onError: ((String) => Unit)) = {
+    def getSourceFile(fileName: String,
+                      languageVersion: ScriptTarget,
+                      onError: ((String) => Unit)) = {
       if (cachedProgram) {
         val sourceFile = cachedProgram.getSourceFile(fileName)
         if ((sourceFile && sourceFile.fileWatcher)) {
@@ -516,9 +549,10 @@ object TSC {
       }
       val sourceFile = hostGetSourceFile(fileName, languageVersion, onError)
       if (((sourceFile && isWatchSet(compilerOptions)) && sys.watchFile)) {
-        (sourceFile.fileWatcher = sys.watchFile(sourceFile.fileName,
-            ((_fileName: String, removed: Boolean) =>
-                  sourceFileChanged(sourceFile, removed))))
+        (sourceFile.fileWatcher = sys.watchFile(
+          sourceFile.fileName,
+          ((_fileName: String,
+            removed: Boolean) => sourceFileChanged(sourceFile, removed))))
 
       }
       return sourceFile
@@ -528,19 +562,19 @@ object TSC {
       if (cachedProgram) {
         val newSourceFiles =
           (if (program) program.getSourceFiles() else undefined)
-        forEach(cachedProgram.getSourceFiles(),
-            (sourceFile => {
-              if ((!((newSourceFiles && contains(newSourceFiles,
-                      sourceFile))))) {
-                if (sourceFile.fileWatcher) {
-                  sourceFile.fileWatcher.close()
-                  (sourceFile.fileWatcher = undefined)
+        forEach(
+          cachedProgram.getSourceFiles(),
+          (sourceFile => {
+             if ((!((newSourceFiles && contains(newSourceFiles, sourceFile))))) {
+               if (sourceFile.fileWatcher) {
+                 sourceFile.fileWatcher.close()
+                 (sourceFile.fileWatcher = undefined)
 
-                }
+               }
 
-              }
+             }
 
-            }))
+           }))
 
       }
       (cachedProgram = program)
@@ -563,8 +597,9 @@ object TSC {
 
     }
     def watchedDirectoryChanged(fileName: String) = {
-      if ((fileName && (!ts.isSupportedSourceFileName(fileName,
-              compilerOptions)))) {
+      if ((fileName && (!ts.isSupportedSourceFileName(
+            fileName,
+            compilerOptions)))) {
         return
 
       }
@@ -590,8 +625,9 @@ object TSC {
         ts.map(parsedCommandLine.fileNames, compilerHost.getCanonicalFileName)
       val canonicalRootFileNames =
         ts.map(rootFileNames, compilerHost.getCanonicalFileName)
-      if ((!arrayIsEqualTo((newFileNames && newFileNames.sort()),
-              (canonicalRootFileNames && canonicalRootFileNames.sort())))) {
+      if ((!arrayIsEqualTo(
+            (newFileNames && newFileNames.sort()),
+            (canonicalRootFileNames && canonicalRootFileNames.sort())))) {
         setCachedProgram(undefined)
         startTimerForRecompilation()
 
@@ -613,15 +649,16 @@ object TSC {
     def recompile() = {
       (timerHandleForRecompilation = undefined)
       reportWatchDiagnostic(
-          createCompilerDiagnostic(
-              Diagnostics.File_change_detected_Starting_incremental_compilation))
+        createCompilerDiagnostic(
+          Diagnostics.File_change_detected_Starting_incremental_compilation))
       performCompilation()
 
     }
 
   }
-  def compile(fileNames: Array[String], compilerOptions: CompilerOptions,
-      compilerHost: CompilerHost) = {
+  def compile(fileNames: Array[String],
+              compilerOptions: CompilerOptions,
+              compilerHost: CompilerHost) = {
     val hasDiagnostics = (compilerOptions.diagnostics || compilerOptions.extendedDiagnostics)
     var statistics: Array[Statistic] = zeroOfMyType
     if (hasDiagnostics) {
@@ -632,11 +669,11 @@ object TSC {
     val program = createProgram(fileNames, compilerOptions, compilerHost)
     val exitStatus = compileProgram()
     if (compilerOptions.listFiles) {
-      forEach(program.getSourceFiles(),
-          (file => {
-            sys.write((file.fileName + sys.newLine))
+      forEach(program.getSourceFiles(), (file => {
+                                           sys.write(
+                                             (file.fileName + sys.newLine))
 
-          }))
+                                         }))
 
     }
     if (hasDiagnostics) {
@@ -648,8 +685,9 @@ object TSC {
       reportCountStatistic("Symbols", program.getSymbolCount())
       reportCountStatistic("Types", program.getTypeCount())
       if ((memoryUsed >= 0)) {
-        reportStatisticalValue("Memory used",
-            (Math.round((memoryUsed / 1000)) + "K"))
+        reportStatisticalValue(
+          "Memory used",
+          (Math.round((memoryUsed / 1000)) + "K"))
 
       }
       val programTime = performance.getDuration("Program")
@@ -658,8 +696,8 @@ object TSC {
       val emitTime = performance.getDuration("Emit")
       if (compilerOptions.extendedDiagnostics) {
         performance.forEachMeasure(
-            ((name, duration) =>
-                  reportTimeStatistic(s"""${name} time""", duration)))
+          ((name, duration) =>
+             reportTimeStatistic(s"""${name} time""", duration)))
 
       } else {
         reportTimeStatistic("I/O read", performance.getDuration("I/O Read"))
@@ -670,8 +708,9 @@ object TSC {
         reportTimeStatistic("Emit time", emitTime)
 
       }
-      reportTimeStatistic("Total time",
-          (((programTime + bindTime) + checkTime) + emitTime))
+      reportTimeStatistic(
+        "Total time",
+        (((programTime + bindTime) + checkTime) + emitTime))
       reportStatistics()
       performance.disable()
 
@@ -692,8 +731,9 @@ object TSC {
       }
       val emitOutput = program.emit()
       (diagnostics = diagnostics.concat(emitOutput.diagnostics))
-      reportDiagnostics(sortAndDeduplicateDiagnostics(diagnostics),
-          compilerHost)
+      reportDiagnostics(
+        sortAndDeduplicateDiagnostics(diagnostics),
+        compilerHost)
       reportEmittedFiles(emitOutput.emittedFiles)
       if ((emitOutput.emitSkipped && (diagnostics.length > 0))) {
         return ExitStatus.DiagnosticsPresent_OutputsSkipped
@@ -727,8 +767,10 @@ object TSC {
         const fresh9 = zeroOfMyType
         val name = fresh9.name
         val value = fresh9.value = fresh8 {
-          sys.write(((padRight((name + ":"), (nameSize + 2)) + padLeft(
-                  value.`toString`(), valueSize)) + sys.newLine))
+          sys.write(
+            ((padRight((name + ":"), (nameSize + 2)) + padLeft(
+              value.`toString`(),
+              valueSize)) + sys.newLine))
 
         }
       }
@@ -749,8 +791,8 @@ object TSC {
 
   }
   def printVersion() = {
-    sys.write((getDiagnosticText(Diagnostics.Version_0,
-            ts.version) + sys.newLine))
+    sys.write(
+      (getDiagnosticText(Diagnostics.Version_0, ts.version) + sys.newLine))
 
   }
   def printHelp() = {
@@ -761,21 +803,22 @@ object TSC {
     var marginLength = Math.max(syntaxLength, examplesLength)
     var syntax = makePadding((marginLength - syntaxLength))
     (syntax += (((("tsc [" + getDiagnosticText(Diagnostics.options)) + "] [") + getDiagnosticText(
-        Diagnostics.file)) + " ...]"))
+      Diagnostics.file)) + " ...]"))
     output.push(getDiagnosticText(Diagnostics.Syntax_Colon_0, syntax))
     output.push((sys.newLine + sys.newLine))
     val padding = makePadding(marginLength)
-    output.push((getDiagnosticText(Diagnostics.Examples_Colon_0,
-            (makePadding((marginLength - examplesLength)) + "tsc hello.ts")) + sys.newLine))
+    output.push(
+      (getDiagnosticText(
+        Diagnostics.Examples_Colon_0,
+        (makePadding((marginLength - examplesLength)) + "tsc hello.ts")) + sys.newLine))
     output.push(((padding + "tsc --outFile file.js file.ts") + sys.newLine))
     output.push(((padding + "tsc @args.txt") + sys.newLine))
     output.push(sys.newLine)
     output.push((getDiagnosticText(Diagnostics.Options_Colon) + sys.newLine))
     val optsList = filter(optionDeclarations.slice(), (v => (!v.experimental)))
     optsList.sort(
-        ((a, b) =>
-              compareValues[String](a.name.toLowerCase(),
-                  b.name.toLowerCase())))
+      ((a, b) =>
+         compareValues[String](a.name.toLowerCase(), b.name.toLowerCase())))
     (marginLength = 0)
     val usageColumn: Array[String] = Array()
     val descriptionColumn: Array[String] = Array()
@@ -827,8 +870,8 @@ object TSC {
     val usageText = ((" @<" + getDiagnosticText(Diagnostics.file)) + ">")
     usageColumn.push(usageText)
     descriptionColumn.push(
-        getDiagnosticText(
-            Diagnostics.Insert_command_line_options_and_files_from_a_file))
+      getDiagnosticText(
+        Diagnostics.Insert_command_line_options_and_files_from_a_file))
     (marginLength = Math.max(usageText.length, marginLength)) {
       var i = 0
       while ((i < usageColumn.length)) {
@@ -837,7 +880,7 @@ object TSC {
           val description = descriptionColumn(i)
           val kindsList = optionsDescriptionMap(description)
           output.push((((usage + makePadding(
-                  ((marginLength - usage.length) + 2))) + description) + sys.newLine))
+            ((marginLength - usage.length) + 2))) + description) + sys.newLine))
           if (kindsList) {
             output.push(makePadding((marginLength + 4)))
             (kindsList).foreach { fresh11 =>
@@ -880,17 +923,19 @@ object TSC {
     val file = normalizePath(combinePaths(currentDirectory, "tsconfig.json"))
     if (sys.fileExists(file)) {
       reportDiagnostic(
-          createCompilerDiagnostic(
-              Diagnostics.A_tsconfig_json_file_is_already_defined_at_Colon_0,
-              file), undefined)
+        createCompilerDiagnostic(
+          Diagnostics.A_tsconfig_json_file_is_already_defined_at_Colon_0,
+          file),
+        undefined)
 
     } else {
-      sys.writeFile(file,
-          JSON.stringify(generateTSConfig(options, fileNames), undefined, 4))
+      sys.writeFile(
+        file,
+        JSON.stringify(generateTSConfig(options, fileNames), undefined, 4))
       reportDiagnostic(
-          createCompilerDiagnostic(
-              Diagnostics.Successfully_created_a_tsconfig_json_file),
-          undefined)
+        createCompilerDiagnostic(
+          Diagnostics.Successfully_created_a_tsconfig_json_file),
+        undefined)
 
     }
     return

@@ -19,27 +19,27 @@ object Binder {
     } else if (isConstEnumDeclaration(node)) {
       return ModuleInstanceState.ConstEnumOnly
 
-    } else if (((((node.kind === SyntaxKind.ImportDeclaration) || (node.kind === SyntaxKind.ImportEqualsDeclaration))) && (!(
-            hasModifier(node, ModifierFlags.Export))))) {
+    } else if (((((node.kind === SyntaxKind.ImportDeclaration) || (node.kind === SyntaxKind.ImportEqualsDeclaration))) && (!(hasModifier(
+                 node,
+                 ModifierFlags.Export))))) {
       return ModuleInstanceState.NonInstantiated
 
     } else if ((node.kind === SyntaxKind.ModuleBlock)) {
       var state = ModuleInstanceState.NonInstantiated
-      forEachChild(node,
-          (n => {
-            getModuleInstanceState(n) match {
-              case ModuleInstanceState.NonInstantiated =>
-                return false
-              case ModuleInstanceState.ConstEnumOnly =>
-                (state = ModuleInstanceState.ConstEnumOnly)
-                return false
-              case ModuleInstanceState.Instantiated =>
-                (state = ModuleInstanceState.Instantiated)
-                return true
-              case _ =>
-            }
+      forEachChild(node, (n => {
+                            getModuleInstanceState(n) match {
+                              case ModuleInstanceState.NonInstantiated =>
+                                return false
+                              case ModuleInstanceState.ConstEnumOnly =>
+                                (state = ModuleInstanceState.ConstEnumOnly)
+                                return false
+                              case ModuleInstanceState.Instantiated =>
+                                (state = ModuleInstanceState.Instantiated)
+                                return true
+                              case _ =>
+                            }
 
-          }))
+                          }))
       return state
 
     } else if ((node.kind === SyntaxKind.ModuleDeclaration)) {
@@ -47,8 +47,9 @@ object Binder {
       return (if (body) getModuleInstanceState(body)
               else ModuleInstanceState.Instantiated)
 
-    } else if (((node.kind === SyntaxKind.Identifier) && (
-            node.asInstanceOf[Identifier]).isInJSDocNamespace)) {
+    } else if (((node.kind === SyntaxKind.Identifier) && (node
+                 .asInstanceOf[Identifier])
+                 .isInJSDocNamespace)) {
       return ModuleInstanceState.NonInstantiated
 
     } else {
@@ -157,8 +158,9 @@ object Binder {
       return new Symbol(flags, name)
 
     }
-    def addDeclarationToSymbol(symbol: Symbol, node: Declaration,
-        symbolFlags: SymbolFlags) = {
+    def addDeclarationToSymbol(symbol: Symbol,
+                               node: Declaration,
+                               symbolFlags: SymbolFlags) = {
       (symbol.flags |= symbolFlags)
       (node.symbol = symbol)
       if ((!symbol.declarations)) {
@@ -188,9 +190,11 @@ object Binder {
       if (node.name) {
         if (isAmbientModule(node)) {
           return (if (isGlobalScopeAugmentation(
-                          node.asInstanceOf[ModuleDeclaration])) "__global"
+                        node.asInstanceOf[ModuleDeclaration])) "__global"
                   else
-                    s"""\"${(node.name.asInstanceOf[LiteralExpression]).text}\"""")
+                    s"""\"${(node.name
+                      .asInstanceOf[LiteralExpression])
+                      .text}\"""")
 
         }
         if ((node.name.kind === SyntaxKind.ComputedPropertyName)) {
@@ -201,10 +205,8 @@ object Binder {
 
           }
           Debug.assert(isWellKnownSymbolSyntactically(nameExpression))
-          return getPropertyNameForKnownSymbolName((nameExpression
-                    .asInstanceOf[PropertyAccessExpression])
-                .name
-                .text)
+          return getPropertyNameForKnownSymbolName(
+            (nameExpression.asInstanceOf[PropertyAccessExpression]).name.text)
 
         }
         return (node.name.asInstanceOf[(Identifier | LiteralExpression)]).text
@@ -231,11 +233,21 @@ object Binder {
               return "export="
             case SpecialPropertyAssignmentKind.ExportsProperty |
                 SpecialPropertyAssignmentKind.ThisProperty =>
-              return (
-                  (node.asInstanceOf[BinaryExpression]).left.asInstanceOf[PropertyAccessExpression]).name.text
+              return ((node
+                .asInstanceOf[BinaryExpression])
+                .left
+                .asInstanceOf[PropertyAccessExpression])
+                .name
+                .text
             case SpecialPropertyAssignmentKind.PrototypeProperty =>
-              return (
-                  ((node.asInstanceOf[BinaryExpression]).left.asInstanceOf[PropertyAccessExpression]).expression.asInstanceOf[PropertyAccessExpression]).name.text
+              return (((node
+                .asInstanceOf[BinaryExpression])
+                .left
+                .asInstanceOf[PropertyAccessExpression])
+                .expression
+                .asInstanceOf[PropertyAccessExpression])
+                .name
+                .text
             case _ =>
           }
           Debug.fail("Unknown binary declaration kind")
@@ -253,9 +265,17 @@ object Binder {
           val parentNode = (node.parent && node.parent.parent)
           var nameFromParentNode: String = zeroOfMyType
           if ((parentNode && (parentNode.kind === SyntaxKind.VariableStatement))) {
-            if (((parentNode.asInstanceOf[VariableStatement]).declarationList.declarations.length > 0)) {
+            if (((parentNode
+                  .asInstanceOf[VariableStatement])
+                  .declarationList
+                  .declarations
+                  .length > 0)) {
               val nameIdentifier =
-                (parentNode.asInstanceOf[VariableStatement]).declarationList.declarations(0).name
+                (parentNode
+                  .asInstanceOf[VariableStatement])
+                  .declarationList
+                  .declarations(0)
+                  .name
               if ((nameIdentifier.kind === SyntaxKind.Identifier)) {
                 (nameFromParentNode =
                   (nameIdentifier.asInstanceOf[Identifier]).text)
@@ -275,9 +295,11 @@ object Binder {
               else getDeclarationName(node))
 
     }
-    def declareSymbol(symbolTable: SymbolTable, parent: Symbol,
-        node: Declaration, includes: SymbolFlags,
-        excludes: SymbolFlags): Symbol = {
+    def declareSymbol(symbolTable: SymbolTable,
+                      parent: Symbol,
+                      node: Declaration,
+                      includes: SymbolFlags,
+                      excludes: SymbolFlags): Symbol = {
       Debug.assert((!hasDynamicName(node)))
       val isDefaultExport = hasModifier(node, ModifierFlags.Default)
       val name =
@@ -288,8 +310,8 @@ object Binder {
         (symbol = createSymbol(SymbolFlags.None, "__missing"))
 
       } else {
-        (symbol = (symbolTable(name) || (
-              (symbolTable(name) = createSymbol(SymbolFlags.None, name)))))
+        (symbol = (symbolTable(name) || ((
+            symbolTable(name) = createSymbol(SymbolFlags.None, name)))))
         if ((name && ((includes & SymbolFlags.Classifiable)))) {
           (classifiableNames(name) = name)
 
@@ -314,9 +336,8 @@ object Binder {
                   Diagnostics.A_module_cannot_have_multiple_default_exports)
 
               } else {
-                if (((symbol.declarations && symbol.declarations.length) && ((isDefaultExport || (((node.kind === SyntaxKind.ExportAssignment) && (!(
-                        node
-                          .asInstanceOf[ExportAssignment])
+                if (((symbol.declarations && symbol.declarations.length) && ((isDefaultExport || (((node.kind === SyntaxKind.ExportAssignment) && (!(node
+                      .asInstanceOf[ExportAssignment])
                       .isExportEquals))))))) {
                   (message =
                     Diagnostics.A_module_cannot_have_multiple_default_exports)
@@ -326,16 +347,21 @@ object Binder {
               }
 
             }
-            forEach(symbol.declarations,
-                (declaration => {
-                  file.bindDiagnostics.push(
-                      createDiagnosticForNode(
-                          (declaration.name || declaration), message,
-                          getDisplayName(declaration)))
+            forEach(
+              symbol.declarations,
+              (declaration => {
+                 file.bindDiagnostics.push(
+                   createDiagnosticForNode(
+                     (declaration.name || declaration),
+                     message,
+                     getDisplayName(declaration)))
 
-                }))
-            file.bindDiagnostics.push(createDiagnosticForNode(
-                    (node.name || node), message, getDisplayName(node)))
+               }))
+            file.bindDiagnostics.push(
+              createDiagnosticForNode(
+                (node.name || node),
+                message,
+                getDisplayName(node)))
             (symbol = createSymbol(SymbolFlags.None, name))
 
           }
@@ -348,41 +374,64 @@ object Binder {
       return symbol
 
     }
-    def declareModuleMember(node: Declaration, symbolFlags: SymbolFlags,
-        symbolExcludes: SymbolFlags): Symbol = {
+    def declareModuleMember(node: Declaration,
+                            symbolFlags: SymbolFlags,
+                            symbolExcludes: SymbolFlags): Symbol = {
       val hasExportModifier = (getCombinedModifierFlags(node) & ModifierFlags.Export)
       if ((symbolFlags & SymbolFlags.Alias)) {
         if (((node.kind === SyntaxKind.ExportSpecifier) || (((node.kind === SyntaxKind.ImportEqualsDeclaration) && hasExportModifier)))) {
-          return declareSymbol(container.symbol.exports, container.symbol,
-              node, symbolFlags, symbolExcludes)
+          return declareSymbol(
+            container.symbol.exports,
+            container.symbol,
+            node,
+            symbolFlags,
+            symbolExcludes)
 
         } else {
-          return declareSymbol(container.locals, undefined, node, symbolFlags,
-              symbolExcludes)
+          return declareSymbol(
+            container.locals,
+            undefined,
+            node,
+            symbolFlags,
+            symbolExcludes)
 
         }
 
       } else {
-        val isJSDocTypedefInJSDocNamespace = ((((node.kind === SyntaxKind.JSDocTypedefTag) && node.name) && (node.name.kind === SyntaxKind.Identifier)) && (
-              node.name.asInstanceOf[Identifier]).isInJSDocNamespace)
+        val isJSDocTypedefInJSDocNamespace = ((((node.kind === SyntaxKind.JSDocTypedefTag) && node.name) && (node.name.kind === SyntaxKind.Identifier)) && (node.name
+            .asInstanceOf[Identifier])
+            .isInJSDocNamespace)
         if (((((!isAmbientModule(node)) && ((hasExportModifier || (container.flags & NodeFlags.ExportContext))))) || isJSDocTypedefInJSDocNamespace)) {
           val exportKind = ((((if ((symbolFlags & SymbolFlags.Value))
-                  SymbolFlags.ExportValue
-                else 0) ) | ((if ((symbolFlags & SymbolFlags.Type))
-                  SymbolFlags.ExportType
-                else 0) )) | ((if ((symbolFlags & SymbolFlags.Namespace))
-                  SymbolFlags.ExportNamespace
-                else 0) ))
-          val local = declareSymbol(container.locals, undefined, node,
-              exportKind, symbolExcludes)
-          (local.exportSymbol = declareSymbol(container.symbol.exports,
-              container.symbol, node, symbolFlags, symbolExcludes))
+                                 SymbolFlags.ExportValue
+                               else 0)
+              ) | ((if ((symbolFlags & SymbolFlags.Type))
+                      SymbolFlags.ExportType
+                    else 0) )) | ((if ((symbolFlags & SymbolFlags.Namespace))
+                                     SymbolFlags.ExportNamespace
+                                   else 0) ))
+          val local = declareSymbol(
+            container.locals,
+            undefined,
+            node,
+            exportKind,
+            symbolExcludes)
+          (local.exportSymbol = declareSymbol(
+            container.symbol.exports,
+            container.symbol,
+            node,
+            symbolFlags,
+            symbolExcludes))
           (node.localSymbol = local)
           return local
 
         } else {
-          return declareSymbol(container.locals, undefined, node, symbolFlags,
-              symbolExcludes)
+          return declareSymbol(
+            container.locals,
+            undefined,
+            node,
+            symbolFlags,
+            symbolExcludes)
 
         }
 
@@ -413,7 +462,7 @@ object Binder {
         val saveActiveLabels = activeLabels
         val saveHasExplicitReturn = hasExplicitReturn
         val isIIFE = ((containerFlags & ContainerFlags.IsFunctionExpression) && (!(!getImmediatelyInvokedFunctionExpression(
-              node))))
+            node))))
         if (isIIFE) {
           (currentReturnTarget = createBranchLabel())
 
@@ -422,7 +471,7 @@ object Binder {
           if ((containerFlags & ((ContainerFlags.IsFunctionExpression | ContainerFlags.IsObjectLiteralOrClassExpressionMethod)))) {
             ((currentFlow.asInstanceOf[FlowStart]).container =
               node.asInstanceOf[
-                  (FunctionExpression | ArrowFunction | MethodDeclaration)])
+                (FunctionExpression | ArrowFunction | MethodDeclaration)])
 
           }
           (currentReturnTarget = undefined)
@@ -435,7 +484,7 @@ object Binder {
         bindChildren(node)
         (node.flags &= (~NodeFlags.ReachabilityAndEmitFlags))
         if ((((!((currentFlow.flags & FlowFlags.Unreachable))) && (containerFlags & ContainerFlags.IsFunctionLike)) && nodeIsPresent(
-                (node.asInstanceOf[FunctionLikeDeclaration]).body))) {
+              (node.asInstanceOf[FunctionLikeDeclaration]).body))) {
           (node.flags |= NodeFlags.HasImplicitReturn)
           if (hasExplicitReturn)
             (node.flags |= NodeFlags.HasExplicitReturn)
@@ -488,7 +537,8 @@ object Binder {
         (subtreeTransformFlags = 0)
         bindChildrenWorker(node)
         (subtreeTransformFlags = (savedSubtreeTransformFlags | computeTransformFlagsForNode(
-              node, subtreeTransformFlags)))
+            node,
+            subtreeTransformFlags)))
 
       }
 
@@ -512,15 +562,15 @@ object Binder {
           bindForStatement(node.asInstanceOf[ForStatement])
         case SyntaxKind.ForInStatement | SyntaxKind.ForOfStatement =>
           bindForInOrForOfStatement(
-              node.asInstanceOf[(ForInStatement | ForOfStatement)])
+            node.asInstanceOf[(ForInStatement | ForOfStatement)])
         case SyntaxKind.IfStatement =>
           bindIfStatement(node.asInstanceOf[IfStatement])
         case SyntaxKind.ReturnStatement | SyntaxKind.ThrowStatement =>
           bindReturnOrThrow(
-              node.asInstanceOf[(ReturnStatement | ThrowStatement)])
+            node.asInstanceOf[(ReturnStatement | ThrowStatement)])
         case SyntaxKind.BreakStatement | SyntaxKind.ContinueStatement =>
           bindBreakOrContinueStatement(
-              node.asInstanceOf[BreakOrContinueStatement])
+            node.asInstanceOf[BreakOrContinueStatement])
         case SyntaxKind.TryStatement =>
           bindTryStatement(node.asInstanceOf[TryStatement])
         case SyntaxKind.SwitchStatement =>
@@ -533,17 +583,17 @@ object Binder {
           bindLabeledStatement(node.asInstanceOf[LabeledStatement])
         case SyntaxKind.PrefixUnaryExpression =>
           bindPrefixUnaryExpressionFlow(
-              node.asInstanceOf[PrefixUnaryExpression])
+            node.asInstanceOf[PrefixUnaryExpression])
         case SyntaxKind.PostfixUnaryExpression =>
           bindPostfixUnaryExpressionFlow(
-              node.asInstanceOf[PostfixUnaryExpression])
+            node.asInstanceOf[PostfixUnaryExpression])
         case SyntaxKind.BinaryExpression =>
           bindBinaryExpressionFlow(node.asInstanceOf[BinaryExpression])
         case SyntaxKind.DeleteExpression =>
           bindDeleteExpressionFlow(node.asInstanceOf[DeleteExpression])
         case SyntaxKind.ConditionalExpression =>
           bindConditionalExpressionFlow(
-              node.asInstanceOf[ConditionalExpression])
+            node.asInstanceOf[ConditionalExpression])
         case SyntaxKind.VariableDeclaration =>
           bindVariableDeclarationFlow(node.asInstanceOf[VariableDeclaration])
         case SyntaxKind.CallExpression =>
@@ -562,13 +612,15 @@ object Binder {
           return hasNarrowableArgument(expr.asInstanceOf[CallExpression])
         case SyntaxKind.ParenthesizedExpression =>
           return isNarrowingExpression(
-              (expr.asInstanceOf[ParenthesizedExpression]).expression)
+            (expr.asInstanceOf[ParenthesizedExpression]).expression)
         case SyntaxKind.BinaryExpression =>
           return isNarrowingBinaryExpression(
-              expr.asInstanceOf[BinaryExpression])
+            expr.asInstanceOf[BinaryExpression])
         case SyntaxKind.PrefixUnaryExpression =>
-          return (((expr.asInstanceOf[PrefixUnaryExpression]).operator === SyntaxKind.ExclamationToken) && isNarrowingExpression(
-              (expr.asInstanceOf[PrefixUnaryExpression]).operand))
+          return (((expr
+            .asInstanceOf[PrefixUnaryExpression])
+            .operator === SyntaxKind.ExclamationToken) && isNarrowingExpression(
+            (expr.asInstanceOf[PrefixUnaryExpression]).operand))
         case _ =>
       }
       return false
@@ -576,7 +628,7 @@ object Binder {
     }
     def isNarrowableReference(expr: Expression): Boolean = {
       return (((expr.kind === SyntaxKind.Identifier) || (expr.kind === SyntaxKind.ThisKeyword)) || ((expr.kind === SyntaxKind.PropertyAccessExpression) && isNarrowableReference(
-          (expr.asInstanceOf[PropertyAccessExpression]).expression)))
+        (expr.asInstanceOf[PropertyAccessExpression]).expression)))
 
     }
     def hasNarrowableArgument(expr: CallExpression) = {
@@ -592,10 +644,10 @@ object Binder {
         }
 
       }
-      if (((expr.expression.kind === SyntaxKind.PropertyAccessExpression) && isNarrowableReference((
-                  expr.expression
-                    .asInstanceOf[PropertyAccessExpression])
-                .expression))) {
+      if (((expr.expression.kind === SyntaxKind.PropertyAccessExpression) && isNarrowableReference(
+            (expr.expression
+              .asInstanceOf[PropertyAccessExpression])
+              .expression))) {
         return true
 
       }
@@ -603,10 +655,10 @@ object Binder {
 
     }
     def isNarrowingTypeofOperands(expr1: Expression, expr2: Expression) = {
-      return (((expr1.kind === SyntaxKind.TypeOfExpression) && isNarrowableOperand((
-              expr1
-                .asInstanceOf[TypeOfExpression])
-            .expression)) && (expr2.kind === SyntaxKind.StringLiteral))
+      return (((expr1.kind === SyntaxKind.TypeOfExpression) && isNarrowableOperand(
+        (expr1
+          .asInstanceOf[TypeOfExpression])
+          .expression)) && (expr2.kind === SyntaxKind.StringLiteral))
 
     }
     def isNarrowingBinaryExpression(expr: BinaryExpression) = {
@@ -617,8 +669,9 @@ object Binder {
             SyntaxKind.EqualsEqualsEqualsToken |
             SyntaxKind.ExclamationEqualsEqualsToken =>
           return (((isNarrowableOperand(expr.left) || isNarrowableOperand(
-              expr.right)) || isNarrowingTypeofOperands(expr.right,
-              expr.left)) || isNarrowingTypeofOperands(expr.left, expr.right))
+            expr.right)) || isNarrowingTypeofOperands(expr.right, expr.left)) || isNarrowingTypeofOperands(
+            expr.left,
+            expr.right))
         case SyntaxKind.InstanceOfKeyword =>
           return isNarrowableOperand(expr.left)
         case SyntaxKind.CommaToken =>
@@ -632,15 +685,15 @@ object Binder {
       expr.kind match {
         case SyntaxKind.ParenthesizedExpression =>
           return isNarrowableOperand(
-              (expr.asInstanceOf[ParenthesizedExpression]).expression)
+            (expr.asInstanceOf[ParenthesizedExpression]).expression)
         case SyntaxKind.BinaryExpression =>
           (expr.asInstanceOf[BinaryExpression]).operatorToken.kind match {
             case SyntaxKind.EqualsToken =>
               return isNarrowableOperand(
-                  (expr.asInstanceOf[BinaryExpression]).left)
+                (expr.asInstanceOf[BinaryExpression]).left)
             case SyntaxKind.CommaToken =>
               return isNarrowableOperand(
-                  (expr.asInstanceOf[BinaryExpression]).right)
+                (expr.asInstanceOf[BinaryExpression]).right)
             case _ =>
           }
         case _ =>
@@ -663,16 +716,18 @@ object Binder {
     }
     def addAntecedent(label: FlowLabel, antecedent: FlowNode): Unit = {
       if (((!((antecedent.flags & FlowFlags.Unreachable))) && (!contains(
-              label.antecedents, antecedent)))) {
-        ((label.antecedents || ((label.antecedents = Array())))).push(
-            antecedent)
+            label.antecedents,
+            antecedent)))) {
+        ((label.antecedents || ((label.antecedents = Array()))))
+          .push(antecedent)
         setFlowNodeReferenced(antecedent)
 
       }
 
     }
-    def createFlowCondition(flags: FlowFlags, antecedent: FlowNode,
-        expression: Expression): FlowNode = {
+    def createFlowCondition(flags: FlowFlags,
+                            antecedent: FlowNode,
+                            expression: Expression): FlowNode = {
       if ((antecedent.flags & FlowFlags.Unreachable)) {
         return antecedent
 
@@ -691,37 +746,48 @@ object Binder {
 
       }
       setFlowNodeReferenced(antecedent)
-      return Map("flags" -> flags, "expression" -> expression,
-          "antecedent" -> antecedent).asInstanceOf[FlowCondition]
+      return Map(
+        "flags" -> flags,
+        "expression" -> expression,
+        "antecedent" -> antecedent).asInstanceOf[FlowCondition]
 
     }
     def createFlowSwitchClause(antecedent: FlowNode,
-        switchStatement: SwitchStatement, clauseStart: Int,
-        clauseEnd: Int): FlowNode = {
+                               switchStatement: SwitchStatement,
+                               clauseStart: Int,
+                               clauseEnd: Int): FlowNode = {
       if ((!isNarrowingExpression(switchStatement.expression))) {
         return antecedent
 
       }
       setFlowNodeReferenced(antecedent)
-      return Map("flags" -> FlowFlags.SwitchClause,
-          "switchStatement" -> switchStatement, "clauseStart" -> clauseStart,
-          "clauseEnd" -> clauseEnd, "antecedent" -> antecedent).asInstanceOf[
-          FlowSwitchClause]
+      return Map(
+        "flags" -> FlowFlags.SwitchClause,
+        "switchStatement" -> switchStatement,
+        "clauseStart" -> clauseStart,
+        "clauseEnd" -> clauseEnd,
+        "antecedent" -> antecedent).asInstanceOf[FlowSwitchClause]
 
     }
-    def createFlowAssignment(antecedent: FlowNode,
-        node: (Expression | VariableDeclaration | BindingElement)): FlowNode = {
+    def createFlowAssignment(
+        antecedent: FlowNode,
+        node: (Expression | VariableDeclaration | BindingElement))
+      : FlowNode = {
       setFlowNodeReferenced(antecedent)
-      return Map("flags" -> FlowFlags.Assignment, "antecedent" -> antecedent,
-          "node" -> node).asInstanceOf[FlowAssignment]
+      return Map(
+        "flags" -> FlowFlags.Assignment,
+        "antecedent" -> antecedent,
+        "node" -> node).asInstanceOf[FlowAssignment]
 
     }
-    def createFlowArrayMutation(antecedent: FlowNode,
+    def createFlowArrayMutation(
+        antecedent: FlowNode,
         node: (CallExpression | BinaryExpression)): FlowNode = {
       setFlowNodeReferenced(antecedent)
-      return Map("flags" -> FlowFlags.ArrayMutation,
-          "antecedent" -> antecedent, "node" -> node).asInstanceOf[
-          FlowArrayMutation]
+      return Map(
+        "flags" -> FlowFlags.ArrayMutation,
+        "antecedent" -> antecedent,
+        "node" -> node).asInstanceOf[FlowArrayMutation]
 
     }
     def finishFlowLabel(flow: FlowLabel): FlowNode = {
@@ -742,12 +808,13 @@ object Binder {
       parent.kind match {
         case SyntaxKind.IfStatement | SyntaxKind.WhileStatement |
             SyntaxKind.DoStatement =>
-          return ((
-              parent
-                .asInstanceOf[(IfStatement | WhileStatement | DoStatement)])
+          return ((parent
+            .asInstanceOf[(IfStatement | WhileStatement | DoStatement)])
             .expression === node)
         case SyntaxKind.ForStatement | SyntaxKind.ConditionalExpression =>
-          return ((parent.asInstanceOf[(ForStatement | ConditionalExpression)]).condition === node)
+          return ((parent
+            .asInstanceOf[(ForStatement | ConditionalExpression)])
+            .condition === node)
         case _ =>
       }
       return false
@@ -759,18 +826,17 @@ object Binder {
           if ((node.kind === SyntaxKind.ParenthesizedExpression)) {
             (node = (node.asInstanceOf[ParenthesizedExpression]).expression)
 
-          } else if (((node.kind === SyntaxKind.PrefixUnaryExpression) && ((
-                  node
-                    .asInstanceOf[PrefixUnaryExpression])
-                .operator === SyntaxKind.ExclamationToken))) {
+          } else if (((node.kind === SyntaxKind.PrefixUnaryExpression) && ((node
+                       .asInstanceOf[PrefixUnaryExpression])
+                       .operator === SyntaxKind.ExclamationToken))) {
             (node = (node.asInstanceOf[PrefixUnaryExpression]).operand)
 
           } else {
             return ((node.kind === SyntaxKind.BinaryExpression) && ((((node
-                  .asInstanceOf[BinaryExpression])
+              .asInstanceOf[BinaryExpression])
               .operatorToken
               .kind === SyntaxKind.AmpersandAmpersandToken) || ((node
-                  .asInstanceOf[BinaryExpression])
+              .asInstanceOf[BinaryExpression])
               .operatorToken
               .kind === SyntaxKind.BarBarToken))))
 
@@ -781,21 +847,21 @@ object Binder {
 
     }
     def isTopLevelLogicalExpression(node: Node): Boolean = {
-      while (((node.parent.kind === SyntaxKind.ParenthesizedExpression) || ((node.parent.kind === SyntaxKind.PrefixUnaryExpression) && ((
-              node.parent
-                .asInstanceOf[PrefixUnaryExpression])
-            .operator === SyntaxKind.ExclamationToken)))) {
+      while (((node.parent.kind === SyntaxKind.ParenthesizedExpression) || ((node.parent.kind === SyntaxKind.PrefixUnaryExpression) && ((node.parent
+               .asInstanceOf[PrefixUnaryExpression])
+               .operator === SyntaxKind.ExclamationToken)))) {
         {
           (node = node.parent)
 
         }
       }
       return ((!isStatementCondition(node)) && (!isLogicalExpression(
-          node.parent)))
+        node.parent)))
 
     }
-    def bindCondition(node: Expression, trueTarget: FlowLabel,
-        falseTarget: FlowLabel) = {
+    def bindCondition(node: Expression,
+                      trueTarget: FlowLabel,
+                      falseTarget: FlowLabel) = {
       val saveTrueTarget = currentTrueTarget
       val saveFalseTarget = currentFalseTarget
       (currentTrueTarget = trueTarget)
@@ -804,16 +870,19 @@ object Binder {
       (currentTrueTarget = saveTrueTarget)
       (currentFalseTarget = saveFalseTarget)
       if (((!node) || (!isLogicalExpression(node)))) {
-        addAntecedent(trueTarget,
-            createFlowCondition(FlowFlags.TrueCondition, currentFlow, node))
-        addAntecedent(falseTarget,
-            createFlowCondition(FlowFlags.FalseCondition, currentFlow, node))
+        addAntecedent(
+          trueTarget,
+          createFlowCondition(FlowFlags.TrueCondition, currentFlow, node))
+        addAntecedent(
+          falseTarget,
+          createFlowCondition(FlowFlags.FalseCondition, currentFlow, node))
 
       }
 
     }
-    def bindIterativeStatement(node: Statement, breakTarget: FlowLabel,
-        continueTarget: FlowLabel): Unit = {
+    def bindIterativeStatement(node: Statement,
+                               breakTarget: FlowLabel,
+                               continueTarget: FlowLabel): Unit = {
       val saveBreakTarget = currentBreakTarget
       val saveContinueTarget = currentContinueTarget
       (currentBreakTarget = breakTarget)
@@ -926,7 +995,8 @@ object Binder {
 
     }
     def bindbreakOrContinueFlow(node: BreakOrContinueStatement,
-        breakTarget: FlowLabel, continueTarget: FlowLabel) = {
+                                breakTarget: FlowLabel,
+                                continueTarget: FlowLabel) = {
       val flowLabel =
         (if ((node.kind === SyntaxKind.BreakStatement)) breakTarget
          else continueTarget)
@@ -943,14 +1013,18 @@ object Binder {
         val activeLabel = findActiveLabel(node.label.text)
         if (activeLabel) {
           (activeLabel.referenced = true)
-          bindbreakOrContinueFlow(node, activeLabel.breakTarget,
-              activeLabel.continueTarget)
+          bindbreakOrContinueFlow(
+            node,
+            activeLabel.breakTarget,
+            activeLabel.continueTarget)
 
         }
 
       } else {
-        bindbreakOrContinueFlow(node, currentBreakTarget,
-            currentContinueTarget)
+        bindbreakOrContinueFlow(
+          node,
+          currentBreakTarget,
+          currentContinueTarget)
 
       }
 
@@ -999,12 +1073,14 @@ object Binder {
       (preSwitchCaseFlow = currentFlow)
       bind(node.caseBlock)
       addAntecedent(postSwitchLabel, currentFlow)
-      val hasDefault = forEach(node.caseBlock.clauses,
-          (c => (c.kind === SyntaxKind.DefaultClause)))
+      val hasDefault = forEach(
+        node.caseBlock.clauses,
+        (c => (c.kind === SyntaxKind.DefaultClause)))
       (node.possiblyExhaustive = ((!hasDefault) && (!postSwitchLabel.antecedents)))
       if ((!hasDefault)) {
-        addAntecedent(postSwitchLabel,
-            createFlowSwitchClause(preSwitchCaseFlow, node, 0, 0))
+        addAntecedent(
+          postSwitchLabel,
+          createFlowSwitchClause(preSwitchCaseFlow, node, 0, 0))
 
       }
       (currentBreakTarget = saveBreakTarget)
@@ -1027,10 +1103,13 @@ object Binder {
               }
             }
             val preCaseLabel = createBranchLabel()
-            addAntecedent(preCaseLabel,
-                createFlowSwitchClause(preSwitchCaseFlow,
-                    node.parent.asInstanceOf[SwitchStatement], clauseStart,
-                    (i + 1)))
+            addAntecedent(
+              preCaseLabel,
+              createFlowSwitchClause(
+                preSwitchCaseFlow,
+                node.parent.asInstanceOf[SwitchStatement],
+                clauseStart,
+                (i + 1)))
             addAntecedent(preCaseLabel, fallthroughFlow)
             (currentFlow = finishFlowLabel(preCaseLabel))
             val clause = clauses(i)
@@ -1055,10 +1134,14 @@ object Binder {
       forEach(node.statements, bind)
 
     }
-    def pushActiveLabel(name: String, breakTarget: FlowLabel,
-        continueTarget: FlowLabel): ActiveLabel = {
-      val activeLabel = Map("name" -> name, "breakTarget" -> breakTarget,
-          "continueTarget" -> continueTarget, "referenced" -> false)
+    def pushActiveLabel(name: String,
+                        breakTarget: FlowLabel,
+                        continueTarget: FlowLabel): ActiveLabel = {
+      val activeLabel = Map(
+        "name" -> name,
+        "breakTarget" -> breakTarget,
+        "continueTarget" -> continueTarget,
+        "referenced" -> false)
       ((activeLabels || ((activeLabels = Array())))).push(activeLabel)
       return activeLabel
 
@@ -1077,8 +1160,8 @@ object Binder {
       bind(node.statement)
       popActiveLabel()
       if (((!activeLabel.referenced) && (!options.allowUnusedLabels))) {
-        file.bindDiagnostics
-          .push(createDiagnosticForNode(node.label, Diagnostics.Unused_label))
+        file.bindDiagnostics.push(
+          createDiagnosticForNode(node.label, Diagnostics.Unused_label))
 
       }
       addAntecedent(postStatementLabel, currentFlow)
@@ -1087,7 +1170,7 @@ object Binder {
     }
     def bindDestructuringTargetFlow(node: Expression) = {
       if (((node.kind === SyntaxKind.BinaryExpression) && ((node
-                .asInstanceOf[BinaryExpression])
+            .asInstanceOf[BinaryExpression])
             .operatorToken
             .kind === SyntaxKind.EqualsToken))) {
         bindAssignmentTargetFlow((node.asInstanceOf[BinaryExpression]).left)
@@ -1108,7 +1191,7 @@ object Binder {
             val e = zeroOfMyType = fresh3 {
               if ((e.kind === SyntaxKind.SpreadElementExpression)) {
                 bindAssignmentTargetFlow(
-                    (e.asInstanceOf[SpreadElementExpression]).expression)
+                  (e.asInstanceOf[SpreadElementExpression]).expression)
 
               } else {
                 bindDestructuringTargetFlow(e)
@@ -1124,11 +1207,11 @@ object Binder {
             val p = zeroOfMyType = fresh4 {
               if ((p.kind === SyntaxKind.PropertyAssignment)) {
                 bindDestructuringTargetFlow(
-                    (p.asInstanceOf[PropertyAssignment]).initializer)
+                  (p.asInstanceOf[PropertyAssignment]).initializer)
 
               } else if ((p.kind === SyntaxKind.ShorthandPropertyAssignment)) {
                 bindAssignmentTargetFlow(
-                    (p.asInstanceOf[ShorthandPropertyAssignment]).name)
+                  (p.asInstanceOf[ShorthandPropertyAssignment]).name)
 
               }
 
@@ -1138,8 +1221,9 @@ object Binder {
       }
 
     }
-    def bindLogicalExpression(node: BinaryExpression, trueTarget: FlowLabel,
-        falseTarget: FlowLabel) = {
+    def bindLogicalExpression(node: BinaryExpression,
+                              trueTarget: FlowLabel,
+                              falseTarget: FlowLabel) = {
       val preRightLabel = createBranchLabel()
       if ((node.operatorToken.kind === SyntaxKind.AmpersandAmpersandToken)) {
         bindCondition(node.left, preRightLabel, falseTarget)
@@ -1196,7 +1280,7 @@ object Binder {
       } else {
         forEachChild(node, bind)
         if (((operator === SyntaxKind.EqualsToken) && (!isAssignmentTarget(
-                node)))) {
+              node)))) {
           bindAssignmentTargetFlow(node.left)
           if ((node.left.kind === SyntaxKind.ElementAccessExpression)) {
             val elementAccess = node.left.asInstanceOf[ElementAccessExpression]
@@ -1280,7 +1364,7 @@ object Binder {
         val propertyAccess =
           node.expression.asInstanceOf[PropertyAccessExpression]
         if ((isNarrowableOperand(propertyAccess.expression) && isPushOrUnshiftIdentifier(
-                propertyAccess.name))) {
+              propertyAccess.name))) {
           (currentFlow = createFlowArrayMutation(currentFlow, node))
 
         }
@@ -1341,14 +1425,20 @@ object Binder {
       (lastContainer = next)
 
     }
-    def declareSymbolAndAddToSymbolTable(node: Declaration,
-        symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol = {
-      return declareSymbolAndAddToSymbolTableWorker(node, symbolFlags,
-          symbolExcludes)
+    def declareSymbolAndAddToSymbolTable(
+        node: Declaration,
+        symbolFlags: SymbolFlags,
+        symbolExcludes: SymbolFlags): Symbol = {
+      return declareSymbolAndAddToSymbolTableWorker(
+        node,
+        symbolFlags,
+        symbolExcludes)
 
     }
-    def declareSymbolAndAddToSymbolTableWorker(node: Declaration,
-        symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol = {
+    def declareSymbolAndAddToSymbolTableWorker(
+        node: Declaration,
+        symbolFlags: SymbolFlags,
+        symbolExcludes: SymbolFlags): Symbol = {
       container.kind match {
         case SyntaxKind.ModuleDeclaration =>
           return declareModuleMember(node, symbolFlags, symbolExcludes)
@@ -1357,13 +1447,21 @@ object Binder {
         case SyntaxKind.ClassExpression | SyntaxKind.ClassDeclaration =>
           return declareClassMember(node, symbolFlags, symbolExcludes)
         case SyntaxKind.EnumDeclaration =>
-          return declareSymbol(container.symbol.exports, container.symbol,
-              node, symbolFlags, symbolExcludes)
+          return declareSymbol(
+            container.symbol.exports,
+            container.symbol,
+            node,
+            symbolFlags,
+            symbolExcludes)
         case SyntaxKind.TypeLiteral | SyntaxKind.ObjectLiteralExpression |
             SyntaxKind.InterfaceDeclaration | SyntaxKind.JSDocRecordType |
             SyntaxKind.JSDocTypeLiteral =>
-          return declareSymbol(container.symbol.members, container.symbol,
-              node, symbolFlags, symbolExcludes)
+          return declareSymbol(
+            container.symbol.members,
+            container.symbol,
+            node,
+            symbolFlags,
+            symbolExcludes)
         case SyntaxKind.FunctionType | SyntaxKind.ConstructorType |
             SyntaxKind.CallSignature | SyntaxKind.ConstructSignature |
             SyntaxKind.IndexSignature | SyntaxKind.MethodDeclaration |
@@ -1372,29 +1470,47 @@ object Binder {
             SyntaxKind.FunctionDeclaration | SyntaxKind.FunctionExpression |
             SyntaxKind.ArrowFunction | SyntaxKind.JSDocFunctionType |
             SyntaxKind.TypeAliasDeclaration =>
-          return declareSymbol(container.locals, undefined, node, symbolFlags,
-              symbolExcludes)
+          return declareSymbol(
+            container.locals,
+            undefined,
+            node,
+            symbolFlags,
+            symbolExcludes)
         case _ =>
       }
 
     }
-    def declareClassMember(node: Declaration, symbolFlags: SymbolFlags,
-        symbolExcludes: SymbolFlags) = {
+    def declareClassMember(node: Declaration,
+                           symbolFlags: SymbolFlags,
+                           symbolExcludes: SymbolFlags) = {
       return (if (hasModifier(node, ModifierFlags.Static))
-                declareSymbol(container.symbol.exports, container.symbol, node,
-                    symbolFlags, symbolExcludes)
+                declareSymbol(
+                  container.symbol.exports,
+                  container.symbol,
+                  node,
+                  symbolFlags,
+                  symbolExcludes)
               else
-                declareSymbol(container.symbol.members, container.symbol, node,
-                    symbolFlags, symbolExcludes))
+                declareSymbol(
+                  container.symbol.members,
+                  container.symbol,
+                  node,
+                  symbolFlags,
+                  symbolExcludes))
 
     }
-    def declareSourceFileMember(node: Declaration, symbolFlags: SymbolFlags,
-        symbolExcludes: SymbolFlags) = {
+    def declareSourceFileMember(node: Declaration,
+                                symbolFlags: SymbolFlags,
+                                symbolExcludes: SymbolFlags) = {
       return (if (isExternalModule(file))
                 declareModuleMember(node, symbolFlags, symbolExcludes)
               else
-                declareSymbol(file.locals, undefined, node, symbolFlags,
-                    symbolExcludes))
+                declareSymbol(
+                  file.locals,
+                  undefined,
+                  node,
+                  symbolFlags,
+                  symbolExcludes))
 
     }
     def hasExportDeclarations(
@@ -1431,13 +1547,16 @@ object Binder {
       setExportContextFlag(node)
       if (isAmbientModule(node)) {
         if (hasModifier(node, ModifierFlags.Export)) {
-          errorOnFirstToken(node,
-              Diagnostics.export_modifier_cannot_be_applied_to_ambient_modules_and_module_augmentations_since_they_are_always_visible)
+          errorOnFirstToken(
+            node,
+            Diagnostics.export_modifier_cannot_be_applied_to_ambient_modules_and_module_augmentations_since_they_are_always_visible)
 
         }
         if (isExternalModuleAugmentation(node)) {
-          declareSymbolAndAddToSymbolTable(node, SymbolFlags.NamespaceModule,
-              SymbolFlags.NamespaceModuleExcludes)
+          declareSymbolAndAddToSymbolTable(
+            node,
+            SymbolFlags.NamespaceModule,
+            SymbolFlags.NamespaceModuleExcludes)
 
         } else {
           var pattern: (Pattern | undefined) = zeroOfMyType
@@ -1447,15 +1566,18 @@ object Binder {
               (pattern = tryParsePattern(text))
 
             } else {
-              errorOnFirstToken(node.name,
-                  Diagnostics.Pattern_0_can_have_at_most_one_Asterisk_character,
-                  text)
+              errorOnFirstToken(
+                node.name,
+                Diagnostics.Pattern_0_can_have_at_most_one_Asterisk_character,
+                text)
 
             }
 
           }
-          val symbol = declareSymbolAndAddToSymbolTable(node,
-              SymbolFlags.ValueModule, SymbolFlags.ValueModuleExcludes)
+          val symbol = declareSymbolAndAddToSymbolTable(
+            node,
+            SymbolFlags.ValueModule,
+            SymbolFlags.ValueModuleExcludes)
           if (pattern) {
             ((file.patternAmbientModules || ((file.patternAmbientModules =
               Array())))).push(Map("pattern" -> pattern, "symbol" -> symbol))
@@ -1467,12 +1589,16 @@ object Binder {
       } else {
         val state = getModuleInstanceState(node)
         if ((state === ModuleInstanceState.NonInstantiated)) {
-          declareSymbolAndAddToSymbolTable(node, SymbolFlags.NamespaceModule,
-              SymbolFlags.NamespaceModuleExcludes)
+          declareSymbolAndAddToSymbolTable(
+            node,
+            SymbolFlags.NamespaceModule,
+            SymbolFlags.NamespaceModuleExcludes)
 
         } else {
-          declareSymbolAndAddToSymbolTable(node, SymbolFlags.ValueModule,
-              SymbolFlags.ValueModuleExcludes)
+          declareSymbolAndAddToSymbolTable(
+            node,
+            SymbolFlags.ValueModule,
+            SymbolFlags.ValueModuleExcludes)
           if ((node.symbol.flags & (((SymbolFlags.Function | SymbolFlags.Class) | SymbolFlags.RegularEnum)))) {
             (node.symbol.constEnumOnlyModule = false)
 
@@ -1530,9 +1656,12 @@ object Binder {
             }
             if (((currentKind === ElementKind.Property) && (existingKind === ElementKind.Property))) {
               val span = getErrorSpanForNode(file, identifier)
-              file.bindDiagnostics.push(createFileDiagnostic(file, span.start,
-                      span.length,
-                      Diagnostics.An_object_literal_cannot_have_multiple_properties_with_the_same_name_in_strict_mode))
+              file.bindDiagnostics.push(
+                createFileDiagnostic(
+                  file,
+                  span.start,
+                  span.length,
+                  Diagnostics.An_object_literal_cannot_have_multiple_properties_with_the_same_name_in_strict_mode))
 
             }
 
@@ -1540,18 +1669,22 @@ object Binder {
         }
 
       }
-      return bindAnonymousDeclaration(node, SymbolFlags.ObjectLiteral,
-          "__object")
+      return bindAnonymousDeclaration(
+        node,
+        SymbolFlags.ObjectLiteral,
+        "__object")
 
     }
-    def bindAnonymousDeclaration(node: Declaration, symbolFlags: SymbolFlags,
-        name: String) = {
+    def bindAnonymousDeclaration(node: Declaration,
+                                 symbolFlags: SymbolFlags,
+                                 name: String) = {
       val symbol = createSymbol(symbolFlags, name)
       addDeclarationToSymbol(symbol, node, symbolFlags)
 
     }
-    def bindBlockScopedDeclaration(node: Declaration, symbolFlags: SymbolFlags,
-        symbolExcludes: SymbolFlags) = {
+    def bindBlockScopedDeclaration(node: Declaration,
+                                   symbolFlags: SymbolFlags,
+                                   symbolExcludes: SymbolFlags) = {
       blockScopeContainer.kind match {
         case SyntaxKind.ModuleDeclaration =>
           declareModuleMember(node, symbolFlags, symbolExcludes)
@@ -1567,23 +1700,31 @@ object Binder {
             addToContainerChain(blockScopeContainer)
 
           }
-          declareSymbol(blockScopeContainer.locals, undefined, node,
-              symbolFlags, symbolExcludes)
+          declareSymbol(
+            blockScopeContainer.locals,
+            undefined,
+            node,
+            symbolFlags,
+            symbolExcludes)
       }
 
     }
     def bindBlockScopedVariableDeclaration(node: Declaration) = {
-      bindBlockScopedDeclaration(node, SymbolFlags.BlockScopedVariable,
-          SymbolFlags.BlockScopedVariableExcludes)
+      bindBlockScopedDeclaration(
+        node,
+        SymbolFlags.BlockScopedVariable,
+        SymbolFlags.BlockScopedVariableExcludes)
 
     }
     def checkStrictModeIdentifier(node: Identifier) = {
       if (((((inStrictMode && (node.originalKeywordKind >= SyntaxKind.FirstFutureReservedWord)) && (node.originalKeywordKind <= SyntaxKind.LastFutureReservedWord)) && (!isIdentifierName(
-              node))) && (!isInAmbientContext(node)))) {
+            node))) && (!isInAmbientContext(node)))) {
         if ((!file.parseDiagnostics.length)) {
-          file.bindDiagnostics.push(createDiagnosticForNode(node,
-                  getStrictModeIdentifierMessage(node),
-                  declarationNameToString(node)))
+          file.bindDiagnostics.push(
+            createDiagnosticForNode(
+              node,
+              getStrictModeIdentifierMessage(node),
+              declarationNameToString(node)))
 
         }
 
@@ -1604,9 +1745,10 @@ object Binder {
     }
     def checkStrictModeBinaryExpression(node: BinaryExpression) = {
       if (((inStrictMode && isLeftHandSideExpression(node.left)) && isAssignmentOperator(
-              node.operatorToken.kind))) {
-        checkStrictModeEvalOrArguments(node,
-            node.left.asInstanceOf[Identifier])
+            node.operatorToken.kind))) {
+        checkStrictModeEvalOrArguments(
+          node,
+          node.left.asInstanceOf[Identifier])
 
       }
 
@@ -1621,17 +1763,21 @@ object Binder {
     def checkStrictModeDeleteExpression(node: DeleteExpression) = {
       if ((inStrictMode && (node.expression.kind === SyntaxKind.Identifier))) {
         val span = getErrorSpanForNode(file, node.expression)
-        file.bindDiagnostics.push(createFileDiagnostic(file, span.start,
-                span.length,
-                Diagnostics.delete_cannot_be_called_on_an_identifier_in_strict_mode))
+        file.bindDiagnostics.push(createFileDiagnostic(
+          file,
+          span.start,
+          span.length,
+          Diagnostics.delete_cannot_be_called_on_an_identifier_in_strict_mode))
 
       }
 
     }
     def isEvalOrArgumentsIdentifier(node: Node): Boolean = {
-      return ((node.kind === SyntaxKind.Identifier) && ((((
-          node.asInstanceOf[Identifier]).text === "eval") || ((
-          node.asInstanceOf[Identifier]).text === "arguments"))))
+      return ((node.kind === SyntaxKind.Identifier) && ((((node
+        .asInstanceOf[Identifier])
+        .text === "eval") || ((node
+        .asInstanceOf[Identifier])
+        .text === "arguments"))))
 
     }
     def checkStrictModeEvalOrArguments(contextNode: Node, name: Node) = {
@@ -1639,10 +1785,13 @@ object Binder {
         val identifier = name.asInstanceOf[Identifier]
         if (isEvalOrArgumentsIdentifier(identifier)) {
           val span = getErrorSpanForNode(file, name)
-          file.bindDiagnostics
-            .push(createFileDiagnostic(file, span.start, span.length,
-                    getStrictModeEvalOrArgumentsMessage(contextNode),
-                    identifier.text))
+          file.bindDiagnostics.push(
+            createFileDiagnostic(
+              file,
+              span.start,
+              span.length,
+              getStrictModeEvalOrArgumentsMessage(contextNode),
+              identifier.text))
 
         }
 
@@ -1683,11 +1832,14 @@ object Binder {
     def checkStrictModeFunctionDeclaration(node: FunctionDeclaration) = {
       if ((languageVersion < ScriptTarget.ES2015)) {
         if ((((blockScopeContainer.kind !== SyntaxKind.SourceFile) && (blockScopeContainer.kind !== SyntaxKind.ModuleDeclaration)) && (!isFunctionLike(
-                blockScopeContainer)))) {
+              blockScopeContainer)))) {
           val errorSpan = getErrorSpanForNode(file, node)
-          file.bindDiagnostics
-            .push(createFileDiagnostic(file, errorSpan.start, errorSpan.length,
-                    getStrictModeBlockScopeFunctionDeclarationMessage(node)))
+          file.bindDiagnostics.push(
+            createFileDiagnostic(
+              file,
+              errorSpan.start,
+              errorSpan.length,
+              getStrictModeBlockScopeFunctionDeclarationMessage(node)))
 
         }
 
@@ -1696,16 +1848,19 @@ object Binder {
     }
     def checkStrictModeNumericLiteral(node: NumericLiteral) = {
       if ((inStrictMode && node.isOctalLiteral)) {
-        file.bindDiagnostics.push(createDiagnosticForNode(node,
-                Diagnostics.Octal_literals_are_not_allowed_in_strict_mode))
+        file.bindDiagnostics.push(
+          createDiagnosticForNode(
+            node,
+            Diagnostics.Octal_literals_are_not_allowed_in_strict_mode))
 
       }
 
     }
     def checkStrictModePostfixUnaryExpression(node: PostfixUnaryExpression) = {
       if (inStrictMode) {
-        checkStrictModeEvalOrArguments(node,
-            node.operand.asInstanceOf[Identifier])
+        checkStrictModeEvalOrArguments(
+          node,
+          node.operand.asInstanceOf[Identifier])
 
       }
 
@@ -1713,8 +1868,9 @@ object Binder {
     def checkStrictModePrefixUnaryExpression(node: PrefixUnaryExpression) = {
       if (inStrictMode) {
         if (((node.operator === SyntaxKind.PlusPlusToken) || (node.operator === SyntaxKind.MinusMinusToken))) {
-          checkStrictModeEvalOrArguments(node,
-              node.operand.asInstanceOf[Identifier])
+          checkStrictModeEvalOrArguments(
+            node,
+            node.operand.asInstanceOf[Identifier])
 
         }
 
@@ -1723,22 +1879,34 @@ object Binder {
     }
     def checkStrictModeWithStatement(node: WithStatement) = {
       if (inStrictMode) {
-        errorOnFirstToken(node,
-            Diagnostics.with_statements_are_not_allowed_in_strict_mode)
+        errorOnFirstToken(
+          node,
+          Diagnostics.with_statements_are_not_allowed_in_strict_mode)
 
       }
 
     }
-    def errorOnFirstToken(node: Node, message: DiagnosticMessage, arg0: Any,
-        arg1: Any, arg2: Any) = {
+    def errorOnFirstToken(node: Node,
+                          message: DiagnosticMessage,
+                          arg0: Any,
+                          arg1: Any,
+                          arg2: Any) = {
       val span = getSpanOfTokenAtPosition(file, node.pos)
-      file.bindDiagnostics.push(createFileDiagnostic(file, span.start,
-              span.length, message, arg0, arg1, arg2))
+      file.bindDiagnostics.push(
+        createFileDiagnostic(
+          file,
+          span.start,
+          span.length,
+          message,
+          arg0,
+          arg1,
+          arg2))
 
     }
     def getDestructuringParameterName(node: Declaration) = {
       return ("__" + indexOf(
-          (node.parent.asInstanceOf[SignatureDeclaration]).parameters, node))
+        (node.parent.asInstanceOf[SignatureDeclaration]).parameters,
+        node))
 
     }
     def bind(node: Node): Unit = {
@@ -1778,7 +1946,7 @@ object Binder {
 
             }
             if (isUseStrictPrologueDirective(
-                    statement.asInstanceOf[ExpressionStatement])) {
+                  statement.asInstanceOf[ExpressionStatement])) {
               (inStrictMode = true)
               return
 
@@ -1806,8 +1974,10 @@ object Binder {
 
               }
             }
-            bindBlockScopedDeclaration(parentNode.asInstanceOf[Declaration],
-                SymbolFlags.TypeAlias, SymbolFlags.TypeAliasExcludes)
+            bindBlockScopedDeclaration(
+              parentNode.asInstanceOf[Declaration],
+              SymbolFlags.TypeAlias,
+              SymbolFlags.TypeAliasExcludes)
             break()
 
           }
@@ -1819,7 +1989,7 @@ object Binder {
           return checkStrictModeIdentifier(node.asInstanceOf[Identifier])
         case SyntaxKind.PropertyAccessExpression =>
           if ((currentFlow && isNarrowableReference(
-                  node.asInstanceOf[Expression]))) {
+                node.asInstanceOf[Expression]))) {
             (node.flowNode = currentFlow)
 
           }
@@ -1829,13 +1999,13 @@ object Binder {
             specialKind match {
               case SpecialPropertyAssignmentKind.ExportsProperty =>
                 bindExportsPropertyAssignment(
-                    node.asInstanceOf[BinaryExpression])
+                  node.asInstanceOf[BinaryExpression])
               case SpecialPropertyAssignmentKind.ModuleExports =>
                 bindModuleExportsAssignment(
-                    node.asInstanceOf[BinaryExpression])
+                  node.asInstanceOf[BinaryExpression])
               case SpecialPropertyAssignmentKind.PrototypeProperty =>
                 bindPrototypePropertyAssignment(
-                    node.asInstanceOf[BinaryExpression])
+                  node.asInstanceOf[BinaryExpression])
               case SpecialPropertyAssignmentKind.ThisProperty =>
                 bindThisPropertyAssignment(node.asInstanceOf[BinaryExpression])
               case SpecialPropertyAssignmentKind.None =>
@@ -1845,21 +2015,21 @@ object Binder {
 
           }
           return checkStrictModeBinaryExpression(
-              node.asInstanceOf[BinaryExpression])
+            node.asInstanceOf[BinaryExpression])
         case SyntaxKind.CatchClause =>
           return checkStrictModeCatchClause(node.asInstanceOf[CatchClause])
         case SyntaxKind.DeleteExpression =>
           return checkStrictModeDeleteExpression(
-              node.asInstanceOf[DeleteExpression])
+            node.asInstanceOf[DeleteExpression])
         case SyntaxKind.NumericLiteral =>
           return checkStrictModeNumericLiteral(
-              node.asInstanceOf[NumericLiteral])
+            node.asInstanceOf[NumericLiteral])
         case SyntaxKind.PostfixUnaryExpression =>
           return checkStrictModePostfixUnaryExpression(
-              node.asInstanceOf[PostfixUnaryExpression])
+            node.asInstanceOf[PostfixUnaryExpression])
         case SyntaxKind.PrefixUnaryExpression =>
           return checkStrictModePrefixUnaryExpression(
-              node.asInstanceOf[PrefixUnaryExpression])
+            node.asInstanceOf[PrefixUnaryExpression])
         case SyntaxKind.WithStatement =>
           return checkStrictModeWithStatement(node.asInstanceOf[WithStatement])
         case SyntaxKind.ThisType =>
@@ -1869,70 +2039,87 @@ object Binder {
           return checkTypePredicate(node.asInstanceOf[TypePredicateNode])
         case SyntaxKind.TypeParameter =>
           return declareSymbolAndAddToSymbolTable(
-              node.asInstanceOf[Declaration], SymbolFlags.TypeParameter,
-              SymbolFlags.TypeParameterExcludes)
+            node.asInstanceOf[Declaration],
+            SymbolFlags.TypeParameter,
+            SymbolFlags.TypeParameterExcludes)
         case SyntaxKind.Parameter =>
           return bindParameter(node.asInstanceOf[ParameterDeclaration])
         case SyntaxKind.VariableDeclaration | SyntaxKind.BindingElement =>
           return bindVariableDeclarationOrBindingElement(
-              node.asInstanceOf[(VariableDeclaration | BindingElement)])
+            node.asInstanceOf[(VariableDeclaration | BindingElement)])
         case SyntaxKind.PropertyDeclaration | SyntaxKind.PropertySignature |
             SyntaxKind.JSDocRecordMember =>
-          return bindPropertyOrMethodOrAccessor(node.asInstanceOf[Declaration],
-              (SymbolFlags.Property | ((if ((node
-                            .asInstanceOf[PropertyDeclaration])
-                        .questionToken) SymbolFlags.Optional
-                  else SymbolFlags.None) )),
-              SymbolFlags.PropertyExcludes)
+          return bindPropertyOrMethodOrAccessor(
+            node.asInstanceOf[Declaration],
+            (SymbolFlags.Property | ((if ((node
+                                            .asInstanceOf[PropertyDeclaration])
+                                            .questionToken)
+                                        SymbolFlags.Optional
+                                      else SymbolFlags.None) )),
+            SymbolFlags.PropertyExcludes)
         case SyntaxKind.JSDocPropertyTag =>
           return bindJSDocProperty(node.asInstanceOf[JSDocPropertyTag])
         case SyntaxKind.PropertyAssignment |
             SyntaxKind.ShorthandPropertyAssignment =>
-          return bindPropertyOrMethodOrAccessor(node.asInstanceOf[Declaration],
-              SymbolFlags.Property, SymbolFlags.PropertyExcludes)
+          return bindPropertyOrMethodOrAccessor(
+            node.asInstanceOf[Declaration],
+            SymbolFlags.Property,
+            SymbolFlags.PropertyExcludes)
         case SyntaxKind.EnumMember =>
-          return bindPropertyOrMethodOrAccessor(node.asInstanceOf[Declaration],
-              SymbolFlags.EnumMember, SymbolFlags.EnumMemberExcludes)
+          return bindPropertyOrMethodOrAccessor(
+            node.asInstanceOf[Declaration],
+            SymbolFlags.EnumMember,
+            SymbolFlags.EnumMemberExcludes)
         case SyntaxKind.JsxSpreadAttribute =>
           (emitFlags |= NodeFlags.HasJsxSpreadAttributes)
           return
         case SyntaxKind.CallSignature | SyntaxKind.ConstructSignature |
             SyntaxKind.IndexSignature =>
           return declareSymbolAndAddToSymbolTable(
-              node.asInstanceOf[Declaration], SymbolFlags.Signature,
-              SymbolFlags.None)
+            node.asInstanceOf[Declaration],
+            SymbolFlags.Signature,
+            SymbolFlags.None)
         case SyntaxKind.MethodDeclaration | SyntaxKind.MethodSignature =>
-          return bindPropertyOrMethodOrAccessor(node.asInstanceOf[Declaration],
-              (SymbolFlags.Method | ((if ((
-                          node.asInstanceOf[MethodDeclaration]).questionToken)
-                    SymbolFlags.Optional
-                  else SymbolFlags.None) )),
-              (if (isObjectLiteralMethod(node)) SymbolFlags.PropertyExcludes
-               else SymbolFlags.MethodExcludes))
+          return bindPropertyOrMethodOrAccessor(
+            node.asInstanceOf[Declaration],
+            (SymbolFlags.Method | ((if ((node
+                                          .asInstanceOf[MethodDeclaration])
+                                          .questionToken)
+                                      SymbolFlags.Optional
+                                    else SymbolFlags.None) )),
+            (if (isObjectLiteralMethod(node)) SymbolFlags.PropertyExcludes
+             else SymbolFlags.MethodExcludes))
         case SyntaxKind.FunctionDeclaration =>
           return bindFunctionDeclaration(
-              node.asInstanceOf[FunctionDeclaration])
+            node.asInstanceOf[FunctionDeclaration])
         case SyntaxKind.Constructor =>
           return declareSymbolAndAddToSymbolTable(
-              node.asInstanceOf[Declaration], SymbolFlags.Constructor,
-              SymbolFlags.None)
+            node.asInstanceOf[Declaration],
+            SymbolFlags.Constructor,
+            SymbolFlags.None)
         case SyntaxKind.GetAccessor =>
-          return bindPropertyOrMethodOrAccessor(node.asInstanceOf[Declaration],
-              SymbolFlags.GetAccessor, SymbolFlags.GetAccessorExcludes)
+          return bindPropertyOrMethodOrAccessor(
+            node.asInstanceOf[Declaration],
+            SymbolFlags.GetAccessor,
+            SymbolFlags.GetAccessorExcludes)
         case SyntaxKind.SetAccessor =>
-          return bindPropertyOrMethodOrAccessor(node.asInstanceOf[Declaration],
-              SymbolFlags.SetAccessor, SymbolFlags.SetAccessorExcludes)
+          return bindPropertyOrMethodOrAccessor(
+            node.asInstanceOf[Declaration],
+            SymbolFlags.SetAccessor,
+            SymbolFlags.SetAccessorExcludes)
         case SyntaxKind.FunctionType | SyntaxKind.ConstructorType |
             SyntaxKind.JSDocFunctionType =>
           return bindFunctionOrConstructorType(
-              node.asInstanceOf[SignatureDeclaration])
+            node.asInstanceOf[SignatureDeclaration])
         case SyntaxKind.TypeLiteral | SyntaxKind.JSDocTypeLiteral |
             SyntaxKind.JSDocRecordType =>
-          return bindAnonymousDeclaration(node.asInstanceOf[TypeLiteralNode],
-              SymbolFlags.TypeLiteral, "__type")
+          return bindAnonymousDeclaration(
+            node.asInstanceOf[TypeLiteralNode],
+            SymbolFlags.TypeLiteral,
+            "__type")
         case SyntaxKind.ObjectLiteralExpression =>
           return bindObjectLiteralExpression(
-              node.asInstanceOf[ObjectLiteralExpression])
+            node.asInstanceOf[ObjectLiteralExpression])
         case SyntaxKind.FunctionExpression | SyntaxKind.ArrowFunction =>
           return bindFunctionExpression(node.asInstanceOf[FunctionExpression])
         case SyntaxKind.CallExpression =>
@@ -1943,22 +2130,28 @@ object Binder {
         case SyntaxKind.ClassExpression | SyntaxKind.ClassDeclaration =>
           (inStrictMode = true)
           return bindClassLikeDeclaration(
-              node.asInstanceOf[ClassLikeDeclaration])
+            node.asInstanceOf[ClassLikeDeclaration])
         case SyntaxKind.InterfaceDeclaration =>
-          return bindBlockScopedDeclaration(node.asInstanceOf[Declaration],
-              SymbolFlags.Interface, SymbolFlags.InterfaceExcludes)
+          return bindBlockScopedDeclaration(
+            node.asInstanceOf[Declaration],
+            SymbolFlags.Interface,
+            SymbolFlags.InterfaceExcludes)
         case SyntaxKind.JSDocTypedefTag =>
           if (((!(node.asInstanceOf[JSDocTypedefTag]).fullName) || ((node
-                    .asInstanceOf[JSDocTypedefTag])
+                .asInstanceOf[JSDocTypedefTag])
                 .fullName
                 .kind === SyntaxKind.Identifier))) {
-            return bindBlockScopedDeclaration(node.asInstanceOf[Declaration],
-                SymbolFlags.TypeAlias, SymbolFlags.TypeAliasExcludes)
+            return bindBlockScopedDeclaration(
+              node.asInstanceOf[Declaration],
+              SymbolFlags.TypeAlias,
+              SymbolFlags.TypeAliasExcludes)
 
           }
         case SyntaxKind.TypeAliasDeclaration =>
-          return bindBlockScopedDeclaration(node.asInstanceOf[Declaration],
-              SymbolFlags.TypeAlias, SymbolFlags.TypeAliasExcludes)
+          return bindBlockScopedDeclaration(
+            node.asInstanceOf[Declaration],
+            SymbolFlags.TypeAlias,
+            SymbolFlags.TypeAliasExcludes)
         case SyntaxKind.EnumDeclaration =>
           return bindEnumDeclaration(node.asInstanceOf[EnumDeclaration])
         case SyntaxKind.ModuleDeclaration =>
@@ -1966,11 +2159,12 @@ object Binder {
         case SyntaxKind.ImportEqualsDeclaration | SyntaxKind.NamespaceImport |
             SyntaxKind.ImportSpecifier | SyntaxKind.ExportSpecifier =>
           return declareSymbolAndAddToSymbolTable(
-              node.asInstanceOf[Declaration], SymbolFlags.Alias,
-              SymbolFlags.AliasExcludes)
+            node.asInstanceOf[Declaration],
+            SymbolFlags.Alias,
+            SymbolFlags.AliasExcludes)
         case SyntaxKind.NamespaceExportDeclaration =>
           return bindNamespaceExportDeclaration(
-              node.asInstanceOf[NamespaceExportDeclaration])
+            node.asInstanceOf[NamespaceExportDeclaration])
         case SyntaxKind.ImportClause =>
           return bindImportClause(node.asInstanceOf[ImportClause])
         case SyntaxKind.ExportDeclaration =>
@@ -1979,7 +2173,7 @@ object Binder {
           return bindExportAssignment(node.asInstanceOf[ExportAssignment])
         case SyntaxKind.SourceFile =>
           updateStrictModeStatementList(
-              (node.asInstanceOf[SourceFile]).statements)
+            (node.asInstanceOf[SourceFile]).statements)
           return bindSourceFileIfExternalModule()
         case SyntaxKind.Block =>
           if ((!isFunctionLike(node.parent))) {
@@ -1988,7 +2182,7 @@ object Binder {
           }
         case SyntaxKind.ModuleBlock =>
           return updateStrictModeStatementList(
-              (node.asInstanceOf[(Block | ModuleBlock)]).statements)
+            (node.asInstanceOf[(Block | ModuleBlock)]).statements)
         case _ =>
       }
 
@@ -2017,75 +2211,102 @@ object Binder {
 
     }
     def bindSourceFileAsExternalModule() = {
-      bindAnonymousDeclaration(file, SymbolFlags.ValueModule,
-          s"""\"${removeFileExtension(file.fileName)}\"""")
+      bindAnonymousDeclaration(
+        file,
+        SymbolFlags.ValueModule,
+        s"""\"${removeFileExtension(file.fileName)}\"""")
 
     }
     def bindExportAssignment(node: (ExportAssignment | BinaryExpression)) = {
       if (((!container.symbol) || (!container.symbol.exports))) {
-        bindAnonymousDeclaration(node, SymbolFlags.Alias,
-            getDeclarationName(node))
+        bindAnonymousDeclaration(
+          node,
+          SymbolFlags.Alias,
+          getDeclarationName(node))
 
       } else {
         val flags =
           (if (((node.kind === SyntaxKind.ExportAssignment) && exportAssignmentIsAlias(
-                   node.asInstanceOf[ExportAssignment]))) SymbolFlags.Alias
+                 node.asInstanceOf[ExportAssignment]))) SymbolFlags.Alias
            else SymbolFlags.Property)
-        declareSymbol(container.symbol.exports, container.symbol, node, flags,
-            (((SymbolFlags.Property | SymbolFlags.AliasExcludes) | SymbolFlags.Class) | SymbolFlags.Function))
+        declareSymbol(
+          container.symbol.exports,
+          container.symbol,
+          node,
+          flags,
+          (((SymbolFlags.Property | SymbolFlags.AliasExcludes) | SymbolFlags.Class) | SymbolFlags.Function))
 
       }
 
     }
     def bindNamespaceExportDeclaration(node: NamespaceExportDeclaration) = {
       if ((node.modifiers && node.modifiers.length)) {
-        file.bindDiagnostics.push(createDiagnosticForNode(node,
-                Diagnostics.Modifiers_cannot_appear_here))
+        file.bindDiagnostics.push(
+          createDiagnosticForNode(
+            node,
+            Diagnostics.Modifiers_cannot_appear_here))
 
       }
       if ((node.parent.kind !== SyntaxKind.SourceFile)) {
-        file.bindDiagnostics.push(createDiagnosticForNode(node,
-                Diagnostics.Global_module_exports_may_only_appear_at_top_level))
+        file.bindDiagnostics.push(
+          createDiagnosticForNode(
+            node,
+            Diagnostics.Global_module_exports_may_only_appear_at_top_level))
         return
 
       } else {
         val parent = node.parent.asInstanceOf[SourceFile]
         if ((!isExternalModule(parent))) {
-          file.bindDiagnostics.push(createDiagnosticForNode(node,
-                  Diagnostics.Global_module_exports_may_only_appear_in_module_files))
+          file.bindDiagnostics.push(createDiagnosticForNode(
+            node,
+            Diagnostics.Global_module_exports_may_only_appear_in_module_files))
           return
 
         }
         if ((!parent.isDeclarationFile)) {
-          file.bindDiagnostics.push(createDiagnosticForNode(node,
-                  Diagnostics.Global_module_exports_may_only_appear_in_declaration_files))
+          file.bindDiagnostics.push(
+            createDiagnosticForNode(
+              node,
+              Diagnostics.Global_module_exports_may_only_appear_in_declaration_files))
           return
 
         }
 
       }
       (file.symbol.globalExports = (file.symbol.globalExports || createMap[
-            Symbol]()))
-      declareSymbol(file.symbol.globalExports, file.symbol, node,
-          SymbolFlags.Alias, SymbolFlags.AliasExcludes)
+          Symbol]()))
+      declareSymbol(
+        file.symbol.globalExports,
+        file.symbol,
+        node,
+        SymbolFlags.Alias,
+        SymbolFlags.AliasExcludes)
 
     }
     def bindExportDeclaration(node: ExportDeclaration) = {
       if (((!container.symbol) || (!container.symbol.exports))) {
-        bindAnonymousDeclaration(node, SymbolFlags.ExportStar,
-            getDeclarationName(node))
+        bindAnonymousDeclaration(
+          node,
+          SymbolFlags.ExportStar,
+          getDeclarationName(node))
 
       } else if ((!node.exportClause)) {
-        declareSymbol(container.symbol.exports, container.symbol, node,
-            SymbolFlags.ExportStar, SymbolFlags.None)
+        declareSymbol(
+          container.symbol.exports,
+          container.symbol,
+          node,
+          SymbolFlags.ExportStar,
+          SymbolFlags.None)
 
       }
 
     }
     def bindImportClause(node: ImportClause) = {
       if (node.name) {
-        declareSymbolAndAddToSymbolTable(node, SymbolFlags.Alias,
-            SymbolFlags.AliasExcludes)
+        declareSymbolAndAddToSymbolTable(
+          node,
+          SymbolFlags.Alias,
+          SymbolFlags.AliasExcludes)
 
       }
 
@@ -2103,32 +2324,43 @@ object Binder {
     }
     def bindExportsPropertyAssignment(node: BinaryExpression) = {
       setCommonJsModuleIndicator(node)
-      declareSymbol(file.symbol.exports, file.symbol,
-          node.left.asInstanceOf[PropertyAccessExpression],
-          (SymbolFlags.Property | SymbolFlags.Export), SymbolFlags.None)
+      declareSymbol(
+        file.symbol.exports,
+        file.symbol,
+        node.left.asInstanceOf[PropertyAccessExpression],
+        (SymbolFlags.Property | SymbolFlags.Export),
+        SymbolFlags.None)
 
     }
     def bindModuleExportsAssignment(node: BinaryExpression) = {
       setCommonJsModuleIndicator(node)
-      declareSymbol(file.symbol.exports, file.symbol, node,
-          ((SymbolFlags.Property | SymbolFlags.Export) | SymbolFlags.ValueModule),
-          SymbolFlags.None)
+      declareSymbol(
+        file.symbol.exports,
+        file.symbol,
+        node,
+        ((SymbolFlags.Property | SymbolFlags.Export) | SymbolFlags.ValueModule),
+        SymbolFlags.None)
 
     }
     def bindThisPropertyAssignment(node: BinaryExpression) = {
       Debug.assert(isInJavaScriptFile(node))
       if (((container.kind === SyntaxKind.FunctionDeclaration) || (container.kind === SyntaxKind.FunctionExpression))) {
         (container.symbol.members = (container.symbol.members || createMap[
-              Symbol]()))
-        declareSymbol(container.symbol.members, container.symbol, node,
-            SymbolFlags.Property,
-            (SymbolFlags.PropertyExcludes & (~SymbolFlags.Property)))
+            Symbol]()))
+        declareSymbol(
+          container.symbol.members,
+          container.symbol,
+          node,
+          SymbolFlags.Property,
+          (SymbolFlags.PropertyExcludes & (~SymbolFlags.Property)))
 
       } else if ((container.kind === SyntaxKind.Constructor)) {
         val saveContainer = container
         (container = container.parent)
-        val symbol = bindPropertyOrMethodOrAccessor(node, SymbolFlags.Property,
-            SymbolFlags.None)
+        val symbol = bindPropertyOrMethodOrAccessor(
+          node,
+          SymbolFlags.Property,
+          SymbolFlags.None)
         if (symbol) {
           ((symbol.asInstanceOf[Symbol]).isReplaceableByMethod = true)
 
@@ -2150,7 +2382,7 @@ object Binder {
       (classPrototype.parent = leftSideOfAssignment)
       val funcSymbol = container.locals(constructorFunction.text)
       if (((!funcSymbol) || (!(((funcSymbol.flags & SymbolFlags.Function) || isDeclarationOfFunctionExpression(
-              funcSymbol)))))) {
+            funcSymbol)))))) {
         return
 
       }
@@ -2158,8 +2390,12 @@ object Binder {
         (funcSymbol.members = createMap[Symbol]())
 
       }
-      declareSymbol(funcSymbol.members, funcSymbol, leftSideOfAssignment,
-          SymbolFlags.Property, SymbolFlags.PropertyExcludes)
+      declareSymbol(
+        funcSymbol.members,
+        funcSymbol,
+        leftSideOfAssignment,
+        SymbolFlags.Property,
+        SymbolFlags.PropertyExcludes)
 
     }
     def bindCallExpression(node: CallExpression) = {
@@ -2182,8 +2418,10 @@ object Binder {
 
       }
       if ((node.kind === SyntaxKind.ClassDeclaration)) {
-        bindBlockScopedDeclaration(node, SymbolFlags.Class,
-            SymbolFlags.ClassExcludes)
+        bindBlockScopedDeclaration(
+          node,
+          SymbolFlags.Class,
+          SymbolFlags.ClassExcludes)
 
       } else {
         val bindingName = (if (node.name) node.name.text else "__class")
@@ -2196,16 +2434,18 @@ object Binder {
       }
       val symbol = node.symbol
       val prototypeSymbol = createSymbol(
-          (SymbolFlags.Property | SymbolFlags.Prototype), "prototype")
+        (SymbolFlags.Property | SymbolFlags.Prototype),
+        "prototype")
       if (symbol.exports(prototypeSymbol.name)) {
         if (node.name) {
           (node.name.parent = node)
 
         }
         file.bindDiagnostics.push(
-            createDiagnosticForNode(
-                symbol.exports(prototypeSymbol.name).declarations(0),
-                Diagnostics.Duplicate_identifier_0, prototypeSymbol.name))
+          createDiagnosticForNode(
+            symbol.exports(prototypeSymbol.name).declarations(0),
+            Diagnostics.Duplicate_identifier_0,
+            prototypeSymbol.name))
 
       }
       (symbol.exports(prototypeSymbol.name) = prototypeSymbol)
@@ -2214,11 +2454,15 @@ object Binder {
     }
     def bindEnumDeclaration(node: EnumDeclaration) = {
       return (if (isConst(node))
-                bindBlockScopedDeclaration(node, SymbolFlags.ConstEnum,
-                    SymbolFlags.ConstEnumExcludes)
+                bindBlockScopedDeclaration(
+                  node,
+                  SymbolFlags.ConstEnum,
+                  SymbolFlags.ConstEnumExcludes)
               else
-                bindBlockScopedDeclaration(node, SymbolFlags.RegularEnum,
-                    SymbolFlags.RegularEnumExcludes))
+                bindBlockScopedDeclaration(
+                  node,
+                  SymbolFlags.RegularEnum,
+                  SymbolFlags.RegularEnumExcludes))
 
     }
     def bindVariableDeclarationOrBindingElement(
@@ -2232,14 +2476,16 @@ object Binder {
           bindBlockScopedVariableDeclaration(node)
 
         } else if (isParameterDeclaration(node)) {
-          declareSymbolAndAddToSymbolTable(node,
-              SymbolFlags.FunctionScopedVariable,
-              SymbolFlags.ParameterExcludes)
+          declareSymbolAndAddToSymbolTable(
+            node,
+            SymbolFlags.FunctionScopedVariable,
+            SymbolFlags.ParameterExcludes)
 
         } else {
-          declareSymbolAndAddToSymbolTable(node,
-              SymbolFlags.FunctionScopedVariable,
-              SymbolFlags.FunctionScopedVariableExcludes)
+          declareSymbolAndAddToSymbolTable(
+            node,
+            SymbolFlags.FunctionScopedVariable,
+            SymbolFlags.FunctionScopedVariableExcludes)
 
         }
 
@@ -2248,7 +2494,7 @@ object Binder {
     }
     def bindParameter(node: ParameterDeclaration) = {
       if ((((!isDeclarationFile(file)) && (!isInAmbientContext(node))) && nodeIsDecorated(
-              node))) {
+            node))) {
         (emitFlags |= ((NodeFlags.HasDecorators | NodeFlags.HasParamDecorators)))
 
       }
@@ -2257,23 +2503,29 @@ object Binder {
 
       }
       if (isBindingPattern(node.name)) {
-        bindAnonymousDeclaration(node, SymbolFlags.FunctionScopedVariable,
-            getDestructuringParameterName(node))
+        bindAnonymousDeclaration(
+          node,
+          SymbolFlags.FunctionScopedVariable,
+          getDestructuringParameterName(node))
 
       } else {
-        declareSymbolAndAddToSymbolTable(node,
-            SymbolFlags.FunctionScopedVariable, SymbolFlags.ParameterExcludes)
+        declareSymbolAndAddToSymbolTable(
+          node,
+          SymbolFlags.FunctionScopedVariable,
+          SymbolFlags.ParameterExcludes)
 
       }
       if (isParameterPropertyDeclaration(node)) {
         val classDeclaration =
           node.parent.parent.asInstanceOf[ClassLikeDeclaration]
-        declareSymbol(classDeclaration.symbol.members, classDeclaration.symbol,
-            node,
-            (SymbolFlags.Property | ((if (node.questionToken)
-                  SymbolFlags.Optional
-                else SymbolFlags.None) )),
-            SymbolFlags.PropertyExcludes)
+        declareSymbol(
+          classDeclaration.symbol.members,
+          classDeclaration.symbol,
+          node,
+          (SymbolFlags.Property | ((if (node.questionToken)
+                                      SymbolFlags.Optional
+                                    else SymbolFlags.None) )),
+          SymbolFlags.PropertyExcludes)
 
       }
 
@@ -2289,12 +2541,16 @@ object Binder {
       checkStrictModeFunctionName(node.asInstanceOf[FunctionDeclaration])
       if (inStrictMode) {
         checkStrictModeFunctionDeclaration(node)
-        bindBlockScopedDeclaration(node, SymbolFlags.Function,
-            SymbolFlags.FunctionExcludes)
+        bindBlockScopedDeclaration(
+          node,
+          SymbolFlags.Function,
+          SymbolFlags.FunctionExcludes)
 
       } else {
-        declareSymbolAndAddToSymbolTable(node.asInstanceOf[Declaration],
-            SymbolFlags.Function, SymbolFlags.FunctionExcludes)
+        declareSymbolAndAddToSymbolTable(
+          node.asInstanceOf[Declaration],
+          SymbolFlags.Function,
+          SymbolFlags.FunctionExcludes)
 
       }
 
@@ -2317,7 +2573,8 @@ object Binder {
 
     }
     def bindPropertyOrMethodOrAccessor(node: Declaration,
-        symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) = {
+                                       symbolFlags: SymbolFlags,
+                                       symbolExcludes: SymbolFlags) = {
       if (((!isDeclarationFile(file)) && (!isInAmbientContext(node)))) {
         if (isAsyncFunctionLike(node)) {
           (emitFlags |= NodeFlags.HasAsyncFunctions)
@@ -2336,13 +2593,17 @@ object Binder {
       return (if (hasDynamicName(node))
                 bindAnonymousDeclaration(node, symbolFlags, "__computed")
               else
-                declareSymbolAndAddToSymbolTable(node, symbolFlags,
-                    symbolExcludes))
+                declareSymbolAndAddToSymbolTable(
+                  node,
+                  symbolFlags,
+                  symbolExcludes))
 
     }
     def bindJSDocProperty(node: JSDocPropertyTag) = {
-      return declareSymbolAndAddToSymbolTable(node, SymbolFlags.Property,
-          SymbolFlags.PropertyExcludes)
+      return declareSymbolAndAddToSymbolTable(
+        node,
+        SymbolFlags.Property,
+        SymbolFlags.PropertyExcludes)
 
     }
     def shouldReportErrorOnModuleDeclaration(
@@ -2358,19 +2619,21 @@ object Binder {
       }
       if ((currentFlow === unreachableFlow)) {
         val reportError = (((((isStatementButNotDeclaration(node) && (node.kind !== SyntaxKind.EmptyStatement))) || (node.kind === SyntaxKind.ClassDeclaration)) || (((node.kind === SyntaxKind.ModuleDeclaration) && shouldReportErrorOnModuleDeclaration(
-              node
-                .asInstanceOf[ModuleDeclaration])))) || (((node.kind === SyntaxKind.EnumDeclaration) && (((!isConstEnumDeclaration(
-              node)) || options.preserveConstEnums)))))
+            node
+              .asInstanceOf[ModuleDeclaration])))) || (((node.kind === SyntaxKind.EnumDeclaration) && (((!isConstEnumDeclaration(
+            node)) || options.preserveConstEnums)))))
         if (reportError) {
           (currentFlow = reportedUnreachableFlow)
           val reportUnreachableCode = (((!options.allowUnreachableCode) && (!isInAmbientContext(
-                node))) && ((((node.kind !== SyntaxKind.VariableStatement) || (getCombinedNodeFlags((
-                    node
-                      .asInstanceOf[VariableStatement])
-                  .declarationList) & NodeFlags.BlockScoped)) || forEach((node
-                      .asInstanceOf[VariableStatement])
-                  .declarationList
-                  .declarations, (d => d.initializer)))))
+              node))) && ((((node.kind !== SyntaxKind.VariableStatement) || (getCombinedNodeFlags(
+              (node
+                .asInstanceOf[VariableStatement])
+                .declarationList) & NodeFlags.BlockScoped)) || forEach(
+              (node
+                .asInstanceOf[VariableStatement])
+                .declarationList
+                .declarations,
+              (d => d.initializer)))))
           if (reportUnreachableCode) {
             errorOnFirstToken(node, Diagnostics.Unreachable_code_detected)
 
@@ -2384,91 +2647,116 @@ object Binder {
     }
 
   }
-  def computeTransformFlagsForNode(node: Node,
+  def computeTransformFlagsForNode(
+      node: Node,
       subtreeFlags: TransformFlags): TransformFlags = {
     val kind = node.kind
     kind match {
       case SyntaxKind.CallExpression =>
-        return computeCallExpression(node.asInstanceOf[CallExpression],
-            subtreeFlags)
+        return computeCallExpression(
+          node.asInstanceOf[CallExpression],
+          subtreeFlags)
       case SyntaxKind.NewExpression =>
-        return computeNewExpression(node.asInstanceOf[NewExpression],
-            subtreeFlags)
+        return computeNewExpression(
+          node.asInstanceOf[NewExpression],
+          subtreeFlags)
       case SyntaxKind.ModuleDeclaration =>
-        return computeModuleDeclaration(node.asInstanceOf[ModuleDeclaration],
-            subtreeFlags)
+        return computeModuleDeclaration(
+          node.asInstanceOf[ModuleDeclaration],
+          subtreeFlags)
       case SyntaxKind.ParenthesizedExpression =>
         return computeParenthesizedExpression(
-            node.asInstanceOf[ParenthesizedExpression], subtreeFlags)
+          node.asInstanceOf[ParenthesizedExpression],
+          subtreeFlags)
       case SyntaxKind.BinaryExpression =>
-        return computeBinaryExpression(node.asInstanceOf[BinaryExpression],
-            subtreeFlags)
+        return computeBinaryExpression(
+          node.asInstanceOf[BinaryExpression],
+          subtreeFlags)
       case SyntaxKind.ExpressionStatement =>
         return computeExpressionStatement(
-            node.asInstanceOf[ExpressionStatement], subtreeFlags)
+          node.asInstanceOf[ExpressionStatement],
+          subtreeFlags)
       case SyntaxKind.Parameter =>
-        return computeParameter(node.asInstanceOf[ParameterDeclaration],
-            subtreeFlags)
+        return computeParameter(
+          node.asInstanceOf[ParameterDeclaration],
+          subtreeFlags)
       case SyntaxKind.ArrowFunction =>
-        return computeArrowFunction(node.asInstanceOf[ArrowFunction],
-            subtreeFlags)
+        return computeArrowFunction(
+          node.asInstanceOf[ArrowFunction],
+          subtreeFlags)
       case SyntaxKind.FunctionExpression =>
-        return computeFunctionExpression(node.asInstanceOf[FunctionExpression],
-            subtreeFlags)
+        return computeFunctionExpression(
+          node.asInstanceOf[FunctionExpression],
+          subtreeFlags)
       case SyntaxKind.FunctionDeclaration =>
         return computeFunctionDeclaration(
-            node.asInstanceOf[FunctionDeclaration], subtreeFlags)
+          node.asInstanceOf[FunctionDeclaration],
+          subtreeFlags)
       case SyntaxKind.VariableDeclaration =>
         return computeVariableDeclaration(
-            node.asInstanceOf[VariableDeclaration], subtreeFlags)
+          node.asInstanceOf[VariableDeclaration],
+          subtreeFlags)
       case SyntaxKind.VariableDeclarationList =>
         return computeVariableDeclarationList(
-            node.asInstanceOf[VariableDeclarationList], subtreeFlags)
+          node.asInstanceOf[VariableDeclarationList],
+          subtreeFlags)
       case SyntaxKind.VariableStatement =>
-        return computeVariableStatement(node.asInstanceOf[VariableStatement],
-            subtreeFlags)
+        return computeVariableStatement(
+          node.asInstanceOf[VariableStatement],
+          subtreeFlags)
       case SyntaxKind.LabeledStatement =>
-        return computeLabeledStatement(node.asInstanceOf[LabeledStatement],
-            subtreeFlags)
+        return computeLabeledStatement(
+          node.asInstanceOf[LabeledStatement],
+          subtreeFlags)
       case SyntaxKind.ClassDeclaration =>
-        return computeClassDeclaration(node.asInstanceOf[ClassDeclaration],
-            subtreeFlags)
+        return computeClassDeclaration(
+          node.asInstanceOf[ClassDeclaration],
+          subtreeFlags)
       case SyntaxKind.ClassExpression =>
-        return computeClassExpression(node.asInstanceOf[ClassExpression],
-            subtreeFlags)
+        return computeClassExpression(
+          node.asInstanceOf[ClassExpression],
+          subtreeFlags)
       case SyntaxKind.HeritageClause =>
-        return computeHeritageClause(node.asInstanceOf[HeritageClause],
-            subtreeFlags)
+        return computeHeritageClause(
+          node.asInstanceOf[HeritageClause],
+          subtreeFlags)
       case SyntaxKind.CatchClause =>
         return computeCatchClause(node.asInstanceOf[CatchClause], subtreeFlags)
       case SyntaxKind.ExpressionWithTypeArguments =>
         return computeExpressionWithTypeArguments(
-            node.asInstanceOf[ExpressionWithTypeArguments], subtreeFlags)
+          node.asInstanceOf[ExpressionWithTypeArguments],
+          subtreeFlags)
       case SyntaxKind.Constructor =>
-        return computeConstructor(node.asInstanceOf[ConstructorDeclaration],
-            subtreeFlags)
+        return computeConstructor(
+          node.asInstanceOf[ConstructorDeclaration],
+          subtreeFlags)
       case SyntaxKind.PropertyDeclaration =>
         return computePropertyDeclaration(
-            node.asInstanceOf[PropertyDeclaration], subtreeFlags)
+          node.asInstanceOf[PropertyDeclaration],
+          subtreeFlags)
       case SyntaxKind.MethodDeclaration =>
-        return computeMethod(node.asInstanceOf[MethodDeclaration],
-            subtreeFlags)
+        return computeMethod(
+          node.asInstanceOf[MethodDeclaration],
+          subtreeFlags)
       case SyntaxKind.GetAccessor | SyntaxKind.SetAccessor =>
-        return computeAccessor(node.asInstanceOf[AccessorDeclaration],
-            subtreeFlags)
+        return computeAccessor(
+          node.asInstanceOf[AccessorDeclaration],
+          subtreeFlags)
       case SyntaxKind.ImportEqualsDeclaration =>
-        return computeImportEquals(node.asInstanceOf[ImportEqualsDeclaration],
-            subtreeFlags)
+        return computeImportEquals(
+          node.asInstanceOf[ImportEqualsDeclaration],
+          subtreeFlags)
       case SyntaxKind.PropertyAccessExpression =>
         return computePropertyAccess(
-            node.asInstanceOf[PropertyAccessExpression], subtreeFlags)
+          node.asInstanceOf[PropertyAccessExpression],
+          subtreeFlags)
       case _ =>
         return computeOther(node, kind, subtreeFlags)
     }
 
   }
   def computeCallExpression(node: CallExpression,
-      subtreeFlags: TransformFlags) = {
+                            subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     val expression = node.expression
     val expressionKind = expression.kind
@@ -2477,7 +2765,8 @@ object Binder {
 
     }
     if (((subtreeFlags & TransformFlags.ContainsSpreadElementExpression) || isSuperOrSuperProperty(
-            expression, expressionKind))) {
+          expression,
+          expressionKind))) {
       (transformFlags |= TransformFlags.AssertES2015)
 
     }
@@ -2491,10 +2780,8 @@ object Binder {
         return true
       case SyntaxKind.PropertyAccessExpression |
           SyntaxKind.ElementAccessExpression =>
-        val expression = (
-            node
-              .asInstanceOf[
-                  (PropertyAccessExpression | ElementAccessExpression)])
+        val expression = (node
+          .asInstanceOf[(PropertyAccessExpression | ElementAccessExpression)])
           .expression
         val expressionKind = expression.kind
         return (expressionKind === SyntaxKind.SuperKeyword)
@@ -2503,8 +2790,7 @@ object Binder {
     return false
 
   }
-  def computeNewExpression(node: NewExpression,
-      subtreeFlags: TransformFlags) = {
+  def computeNewExpression(node: NewExpression, subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     if (node.typeArguments) {
       (transformFlags |= TransformFlags.AssertTypeScript)
@@ -2519,7 +2805,7 @@ object Binder {
 
   }
   def computeBinaryExpression(node: BinaryExpression,
-      subtreeFlags: TransformFlags) = {
+                              subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     val operatorTokenKind = node.operatorToken.kind
     val leftKind = node.left.kind
@@ -2535,14 +2821,14 @@ object Binder {
 
   }
   def computeParameter(node: ParameterDeclaration,
-      subtreeFlags: TransformFlags) = {
+                       subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     val modifierFlags = getModifierFlags(node)
     val name = node.name
     val initializer = node.initializer
     val dotDotDotToken = node.dotDotDotToken
     if ((((node.questionToken || node.`type`) || (subtreeFlags & TransformFlags.ContainsDecorators)) || isThisIdentifier(
-            name))) {
+          name))) {
       (transformFlags |= TransformFlags.AssertTypeScript)
 
     }
@@ -2559,7 +2845,7 @@ object Binder {
 
   }
   def computeParenthesizedExpression(node: ParenthesizedExpression,
-      subtreeFlags: TransformFlags) = {
+                                     subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     val expression = node.expression
     val expressionKind = expression.kind
@@ -2577,7 +2863,7 @@ object Binder {
 
   }
   def computeClassDeclaration(node: ClassDeclaration,
-      subtreeFlags: TransformFlags) = {
+                              subtreeFlags: TransformFlags) = {
     var transformFlags: TransformFlags = zeroOfMyType
     val modifierFlags = getModifierFlags(node)
     if ((modifierFlags & ModifierFlags.Ambient)) {
@@ -2600,7 +2886,7 @@ object Binder {
 
   }
   def computeClassExpression(node: ClassExpression,
-      subtreeFlags: TransformFlags) = {
+                             subtreeFlags: TransformFlags) = {
     var transformFlags = (subtreeFlags | TransformFlags.AssertES2015)
     if (((subtreeFlags & TransformFlags.TypeScriptClassSyntaxMask) || node.typeParameters)) {
       (transformFlags |= TransformFlags.AssertTypeScript)
@@ -2615,7 +2901,7 @@ object Binder {
 
   }
   def computeHeritageClause(node: HeritageClause,
-      subtreeFlags: TransformFlags) = {
+                            subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     node.token match {
       case SyntaxKind.ExtendsKeyword =>
@@ -2632,7 +2918,7 @@ object Binder {
   def computeCatchClause(node: CatchClause, subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     if ((node.variableDeclaration && isBindingPattern(
-            node.variableDeclaration.name))) {
+          node.variableDeclaration.name))) {
       (transformFlags |= TransformFlags.AssertES2015)
 
     }
@@ -2641,7 +2927,7 @@ object Binder {
 
   }
   def computeExpressionWithTypeArguments(node: ExpressionWithTypeArguments,
-      subtreeFlags: TransformFlags) = {
+                                         subtreeFlags: TransformFlags) = {
     var transformFlags = (subtreeFlags | TransformFlags.AssertES2015)
     if (node.typeArguments) {
       (transformFlags |= TransformFlags.AssertTypeScript)
@@ -2652,10 +2938,9 @@ object Binder {
 
   }
   def computeConstructor(node: ConstructorDeclaration,
-      subtreeFlags: TransformFlags) = {
+                         subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
-    if ((hasModifier(node,
-            ModifierFlags.TypeScriptModifier) || (!node.body))) {
+    if ((hasModifier(node, ModifierFlags.TypeScriptModifier) || (!node.body))) {
       (transformFlags |= TransformFlags.AssertTypeScript)
 
     }
@@ -2665,8 +2950,9 @@ object Binder {
   }
   def computeMethod(node: MethodDeclaration, subtreeFlags: TransformFlags) = {
     var transformFlags = (subtreeFlags | TransformFlags.AssertES2015)
-    if (((((node.decorators || hasModifier(node,
-            ModifierFlags.TypeScriptModifier)) || node.typeParameters) || node.`type`) || (!node.body))) {
+    if (((((node.decorators || hasModifier(
+          node,
+          ModifierFlags.TypeScriptModifier)) || node.typeParameters) || node.`type`) || (!node.body))) {
       (transformFlags |= TransformFlags.AssertTypeScript)
 
     }
@@ -2683,10 +2969,11 @@ object Binder {
 
   }
   def computeAccessor(node: AccessorDeclaration,
-      subtreeFlags: TransformFlags) = {
+                      subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
-    if ((((node.decorators || hasModifier(node,
-            ModifierFlags.TypeScriptModifier)) || node.`type`) || (!node.body))) {
+    if ((((node.decorators || hasModifier(
+          node,
+          ModifierFlags.TypeScriptModifier)) || node.`type`) || (!node.body))) {
       (transformFlags |= TransformFlags.AssertTypeScript)
 
     }
@@ -2695,7 +2982,7 @@ object Binder {
 
   }
   def computePropertyDeclaration(node: PropertyDeclaration,
-      subtreeFlags: TransformFlags) = {
+                                 subtreeFlags: TransformFlags) = {
     var transformFlags = (subtreeFlags | TransformFlags.AssertTypeScript)
     if (node.initializer) {
       (transformFlags |= TransformFlags.ContainsPropertyInitializer)
@@ -2706,7 +2993,7 @@ object Binder {
 
   }
   def computeFunctionDeclaration(node: FunctionDeclaration,
-      subtreeFlags: TransformFlags) = {
+                                 subtreeFlags: TransformFlags) = {
     var transformFlags: TransformFlags = zeroOfMyType
     val modifierFlags = getModifierFlags(node)
     val body = node.body
@@ -2742,10 +3029,9 @@ object Binder {
 
   }
   def computeFunctionExpression(node: FunctionExpression,
-      subtreeFlags: TransformFlags) = {
+                                subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
-    if (((hasModifier(node,
-            ModifierFlags.TypeScriptModifier) || node.typeParameters) || node.`type`)) {
+    if (((hasModifier(node, ModifierFlags.TypeScriptModifier) || node.typeParameters) || node.`type`)) {
       (transformFlags |= TransformFlags.AssertTypeScript)
 
     }
@@ -2765,11 +3051,9 @@ object Binder {
     return (transformFlags & (~TransformFlags.FunctionExcludes))
 
   }
-  def computeArrowFunction(node: ArrowFunction,
-      subtreeFlags: TransformFlags) = {
+  def computeArrowFunction(node: ArrowFunction, subtreeFlags: TransformFlags) = {
     var transformFlags = (subtreeFlags | TransformFlags.AssertES2015)
-    if (((hasModifier(node,
-            ModifierFlags.TypeScriptModifier) || node.typeParameters) || node.`type`)) {
+    if (((hasModifier(node, ModifierFlags.TypeScriptModifier) || node.typeParameters) || node.`type`)) {
       (transformFlags |= TransformFlags.AssertTypeScript)
 
     }
@@ -2786,7 +3070,7 @@ object Binder {
 
   }
   def computePropertyAccess(node: PropertyAccessExpression,
-      subtreeFlags: TransformFlags) = {
+                            subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     val expression = node.expression
     val expressionKind = expression.kind
@@ -2799,7 +3083,7 @@ object Binder {
 
   }
   def computeVariableDeclaration(node: VariableDeclaration,
-      subtreeFlags: TransformFlags) = {
+                                 subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     val nameKind = node.name.kind
     if (((nameKind === SyntaxKind.ObjectBindingPattern) || (nameKind === SyntaxKind.ArrayBindingPattern))) {
@@ -2815,7 +3099,7 @@ object Binder {
 
   }
   def computeVariableStatement(node: VariableStatement,
-      subtreeFlags: TransformFlags) = {
+                               subtreeFlags: TransformFlags) = {
     var transformFlags: TransformFlags = zeroOfMyType
     val modifierFlags = getModifierFlags(node)
     val declarationListTransformFlags = node.declarationList.transformFlags
@@ -2839,10 +3123,11 @@ object Binder {
 
   }
   def computeLabeledStatement(node: LabeledStatement,
-      subtreeFlags: TransformFlags) = {
+                              subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     if (((subtreeFlags & TransformFlags.ContainsBlockScopedBinding) && isIterationStatement(
-            node, true))) {
+          node,
+          true))) {
       (transformFlags |= TransformFlags.AssertES2015)
 
     }
@@ -2851,7 +3136,7 @@ object Binder {
 
   }
   def computeImportEquals(node: ImportEqualsDeclaration,
-      subtreeFlags: TransformFlags) = {
+                          subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     if ((!isExternalModuleImportEqualsDeclaration(node))) {
       (transformFlags |= TransformFlags.AssertTypeScript)
@@ -2862,7 +3147,7 @@ object Binder {
 
   }
   def computeExpressionStatement(node: ExpressionStatement,
-      subtreeFlags: TransformFlags) = {
+                                 subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     if ((node.expression.transformFlags & TransformFlags.DestructuringAssignment)) {
       (transformFlags |= TransformFlags.AssertES2015)
@@ -2873,7 +3158,7 @@ object Binder {
 
   }
   def computeModuleDeclaration(node: ModuleDeclaration,
-      subtreeFlags: TransformFlags) = {
+                               subtreeFlags: TransformFlags) = {
     var transformFlags = TransformFlags.AssertTypeScript
     val modifierFlags = getModifierFlags(node)
     if ((((modifierFlags & ModifierFlags.Ambient)) === 0)) {
@@ -2885,7 +3170,7 @@ object Binder {
 
   }
   def computeVariableDeclarationList(node: VariableDeclarationList,
-      subtreeFlags: TransformFlags) = {
+                                     subtreeFlags: TransformFlags) = {
     var transformFlags = (subtreeFlags | TransformFlags.ContainsHoistedDeclarationOrCompletion)
     if ((subtreeFlags & TransformFlags.ContainsBindingPattern)) {
       (transformFlags |= TransformFlags.AssertES2015)
@@ -2899,8 +3184,9 @@ object Binder {
     return (transformFlags & (~TransformFlags.VariableDeclarationListExcludes))
 
   }
-  def computeOther(node: Node, kind: SyntaxKind,
-      subtreeFlags: TransformFlags) = {
+  def computeOther(node: Node,
+                   kind: SyntaxKind,
+                   subtreeFlags: TransformFlags) = {
     var transformFlags = subtreeFlags
     var excludeFlags = TransformFlags.NodeExcludes
     kind match {

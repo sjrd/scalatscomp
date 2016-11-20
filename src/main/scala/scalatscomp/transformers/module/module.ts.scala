@@ -2,10 +2,11 @@ package scalatscomp.transformers.module
 object Module {
   def transformModule(context: TransformationContext) = {
     val transformModuleDelegates = createMap[((SourceFile) => SourceFile)](
-        Map(ModuleKind.None -> transformCommonJSModule,
-            ModuleKind.CommonJS -> transformCommonJSModule,
-            ModuleKind.AMD -> transformAMDModule,
-            ModuleKind.UMD -> transformUMDModule))
+      Map(
+        ModuleKind.None -> transformCommonJSModule,
+        ModuleKind.CommonJS -> transformCommonJSModule,
+        ModuleKind.AMD -> transformAMDModule,
+        ModuleKind.UMD -> transformUMDModule))
     const fresh1 = context
     val startLexicalEnvironment = fresh1.startLexicalEnvironment
     val endLexicalEnvironment = fresh1.endLexicalEnvironment
@@ -26,7 +27,8 @@ object Module {
     context.enableSubstitution(SyntaxKind.ShorthandPropertyAssignment)
     context.enableEmitNotification(SyntaxKind.SourceFile)
     var currentSourceFile: SourceFile = zeroOfMyType
-    var externalImports: Array[(ImportDeclaration | ImportEqualsDeclaration | ExportDeclaration)] =
+    var externalImports: Array[
+      (ImportDeclaration | ImportEqualsDeclaration | ExportDeclaration)] =
       zeroOfMyType
     var exportSpecifiers: Map[Array[ExportSpecifier]] = zeroOfMyType
     var exportEquals: ExportAssignment = zeroOfMyType
@@ -43,13 +45,15 @@ object Module {
       }
       if ((isExternalModule(node) || compilerOptions.isolatedModules)) {
         (currentSourceFile = node)
-        ((Map("externalImports" -> externalImports,
-                    "exportSpecifiers" -> exportSpecifiers,
-                    "exportEquals" -> exportEquals,
-                    "hasExportStarsToExportValues" -> hasExportStarsToExportValues) =
-                  collectExternalModuleInfo(node)))
+        ((
+          Map(
+            "externalImports" -> externalImports,
+            "exportSpecifiers" -> exportSpecifiers,
+            "exportEquals" -> exportEquals,
+            "hasExportStarsToExportValues" -> hasExportStarsToExportValues) =
+            collectExternalModuleInfo(node)))
         val transformModule = (transformModuleDelegates(moduleKind) || transformModuleDelegates(
-              ModuleKind.None))
+            ModuleKind.None))
         val updated = transformModule(node)
         aggregateTransformFlags(updated)
         (currentSourceFile = undefined)
@@ -66,10 +70,14 @@ object Module {
     def transformCommonJSModule(node: SourceFile) = {
       startLexicalEnvironment()
       val statements: Array[Statement] = Array()
-      val statementOffset = addPrologueDirectives(statements, node.statements,
-          (!compilerOptions.noImplicitUseStrict), visitor)
-      addRange(statements,
-          visitNodes(node.statements, visitor, isStatement, statementOffset))
+      val statementOffset = addPrologueDirectives(
+        statements,
+        node.statements,
+        (!compilerOptions.noImplicitUseStrict),
+        visitor)
+      addRange(
+        statements,
+        visitNodes(node.statements, visitor, isStatement, statementOffset))
       addRange(statements, endLexicalEnvironment())
       addExportEqualsIfNeeded(statements, false)
       val updated = updateSourceFile(node, statements)
@@ -92,37 +100,54 @@ object Module {
       return transformAsynchronousModule(node, define, undefined, false)
 
     }
-    def transformAsynchronousModule(node: SourceFile, define: Expression,
-        moduleName: Expression, includeNonAmdDependencies: Boolean) = {
+    def transformAsynchronousModule(node: SourceFile,
+                                    define: Expression,
+                                    moduleName: Expression,
+                                    includeNonAmdDependencies: Boolean) = {
       const fresh2 =
         collectAsynchronousDependencies(node, includeNonAmdDependencies)
       val aliasedModuleNames = fresh2.aliasedModuleNames
       val unaliasedModuleNames = fresh2.unaliasedModuleNames
       val importAliasNames = fresh2.importAliasNames
-      return updateSourceFile(node,
-          Array(createStatement(createCall(define, undefined,
-                      Array(
-                          ((if (moduleName) Array(moduleName) else Array()) ): _*,
-                          createArrayLiteral(Array(createLiteral("require"),
-                                  createLiteral("exports"),
-                                  aliasedModuleNames: _*,
-                                  unaliasedModuleNames: _*)),
-                          createFunctionExpression(undefined, undefined,
-                              undefined, undefined,
-                              Array(createParameter("require"),
-                                  createParameter("exports"),
-                                  importAliasNames: _*),
-                              undefined,
-                              transformAsynchronousModuleBody(node)))))))
+      return updateSourceFile(
+        node,
+        Array(
+          createStatement(
+            createCall(
+              define,
+              undefined,
+              Array(
+                ((if (moduleName) Array(moduleName) else Array()) ): _*,
+                createArrayLiteral(
+                  Array(
+                    createLiteral("require"),
+                    createLiteral("exports"),
+                    aliasedModuleNames: _*,
+                    unaliasedModuleNames: _*)),
+                createFunctionExpression(
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  Array(
+                    createParameter("require"),
+                    createParameter("exports"),
+                    importAliasNames: _*),
+                  undefined,
+                  transformAsynchronousModuleBody(node)))))))
 
     }
     def transformAsynchronousModuleBody(node: SourceFile) = {
       startLexicalEnvironment()
       val statements: Array[Statement] = Array()
-      val statementOffset = addPrologueDirectives(statements, node.statements,
-          (!compilerOptions.noImplicitUseStrict), visitor)
-      addRange(statements,
-          visitNodes(node.statements, visitor, isStatement, statementOffset))
+      val statementOffset = addPrologueDirectives(
+        statements,
+        node.statements,
+        (!compilerOptions.noImplicitUseStrict),
+        visitor)
+      addRange(
+        statements,
+        visitNodes(node.statements, visitor, isStatement, statementOffset))
       addRange(statements, endLexicalEnvironment())
       addExportEqualsIfNeeded(statements, true)
       val body = createBlock(statements, undefined, true)
@@ -134,18 +159,21 @@ object Module {
 
     }
     def addExportEqualsIfNeeded(statements: Array[Statement],
-        emitAsReturn: Boolean) = {
+                                emitAsReturn: Boolean) = {
       if (exportEquals) {
         if (emitAsReturn) {
           val statement = createReturn(exportEquals.expression, exportEquals)
-          setEmitFlags(statement,
-              (EmitFlags.NoTokenSourceMaps | EmitFlags.NoComments))
+          setEmitFlags(
+            statement,
+            (EmitFlags.NoTokenSourceMaps | EmitFlags.NoComments))
           statements.push(statement)
 
         } else {
-          val statement = createStatement(createAssignment(
-                  createPropertyAccess(createIdentifier("module"), "exports"),
-                  exportEquals.expression), exportEquals)
+          val statement = createStatement(
+            createAssignment(
+              createPropertyAccess(createIdentifier("module"), "exports"),
+              exportEquals.expression),
+            exportEquals)
           setEmitFlags(statement, EmitFlags.NoComments)
           statements.push(statement)
 
@@ -160,7 +188,7 @@ object Module {
           return visitImportDeclaration(node.asInstanceOf[ImportDeclaration])
         case SyntaxKind.ImportEqualsDeclaration =>
           return visitImportEqualsDeclaration(
-              node.asInstanceOf[ImportEqualsDeclaration])
+            node.asInstanceOf[ImportEqualsDeclaration])
         case SyntaxKind.ExportDeclaration =>
           return visitExportDeclaration(node.asInstanceOf[ExportDeclaration])
         case SyntaxKind.ExportAssignment =>
@@ -169,12 +197,12 @@ object Module {
           return visitVariableStatement(node.asInstanceOf[VariableStatement])
         case SyntaxKind.FunctionDeclaration =>
           return visitFunctionDeclaration(
-              node.asInstanceOf[FunctionDeclaration])
+            node.asInstanceOf[FunctionDeclaration])
         case SyntaxKind.ClassDeclaration =>
           return visitClassDeclaration(node.asInstanceOf[ClassDeclaration])
         case SyntaxKind.ExpressionStatement =>
           return visitExpressionStatement(
-              node.asInstanceOf[ExpressionStatement])
+            node.asInstanceOf[ExpressionStatement])
         case _ =>
           return node
       }
@@ -196,33 +224,46 @@ object Module {
           val variables: Array[VariableDeclaration] = Array()
           if ((namespaceDeclaration && (!isDefaultImport(node)))) {
             variables.push(
-                createVariableDeclaration(
-                    getSynthesizedClone(namespaceDeclaration.name), undefined,
-                    createRequireCall(node)))
+              createVariableDeclaration(
+                getSynthesizedClone(namespaceDeclaration.name),
+                undefined,
+                createRequireCall(node)))
 
           } else {
             variables.push(
-                createVariableDeclaration(getGeneratedNameForNode(node),
-                    undefined, createRequireCall(node)))
+              createVariableDeclaration(
+                getGeneratedNameForNode(node),
+                undefined,
+                createRequireCall(node)))
             if ((namespaceDeclaration && isDefaultImport(node))) {
               variables.push(
-                  createVariableDeclaration(
-                      getSynthesizedClone(namespaceDeclaration.name),
-                      undefined, getGeneratedNameForNode(node)))
+                createVariableDeclaration(
+                  getSynthesizedClone(namespaceDeclaration.name),
+                  undefined,
+                  getGeneratedNameForNode(node)))
 
             }
 
           }
-          statements.push(createVariableStatement(undefined,
-                  createConstDeclarationList(variables), node))
+          statements.push(
+            createVariableStatement(
+              undefined,
+              createConstDeclarationList(variables),
+              node))
 
         }
 
       } else if ((namespaceDeclaration && isDefaultImport(node))) {
-        statements.push(createVariableStatement(undefined,
-                createVariableDeclarationList(Array(createVariableDeclaration(
-                            getSynthesizedClone(namespaceDeclaration.name),
-                            undefined, getGeneratedNameForNode(node), node)))))
+        statements.push(
+          createVariableStatement(
+            undefined,
+            createVariableDeclarationList(
+              Array(
+                createVariableDeclaration(
+                  getSynthesizedClone(namespaceDeclaration.name),
+                  undefined,
+                  getGeneratedNameForNode(node),
+                  node)))))
 
       }
       addExportImportAssignments(statements, node)
@@ -239,27 +280,35 @@ object Module {
       val statements: Array[Statement] = Array()
       if ((moduleKind !== ModuleKind.AMD)) {
         if (hasModifier(node, ModifierFlags.Export)) {
-          statements.push(createStatement(createExportAssignment(node.name,
-                      createRequireCall(node)), node))
+          statements.push(
+            createStatement(
+              createExportAssignment(node.name, createRequireCall(node)),
+              node))
 
         } else {
-          statements.push(createVariableStatement(undefined,
-                  createVariableDeclarationList(
-                      Array(createVariableDeclaration(
-                              getSynthesizedClone(node.name), undefined,
-                              createRequireCall(node))), undefined,
-                      (if ((languageVersion >= ScriptTarget.ES2015))
-                         NodeFlags.Const
-                       else NodeFlags.None)),
-                  node))
+          statements.push(
+            createVariableStatement(
+              undefined,
+              createVariableDeclarationList(
+                Array(
+                  createVariableDeclaration(
+                    getSynthesizedClone(node.name),
+                    undefined,
+                    createRequireCall(node))),
+                undefined,
+                (if ((languageVersion >= ScriptTarget.ES2015))
+                   NodeFlags.Const
+                 else NodeFlags.None)),
+              node))
 
         }
 
       } else {
         if (hasModifier(node, ModifierFlags.Export)) {
-          statements
-            .push(createStatement(createExportAssignment(node.name, node.name),
-                    node))
+          statements.push(
+            createStatement(
+              createExportAssignment(node.name, node.name),
+              node))
 
         }
 
@@ -278,36 +327,47 @@ object Module {
       if (node.exportClause) {
         val statements: Array[Statement] = Array()
         if ((moduleKind !== ModuleKind.AMD)) {
-          statements.push(createVariableStatement(undefined,
-                  createVariableDeclarationList(
-                      Array(createVariableDeclaration(generatedName, undefined,
-                              createRequireCall(node)))),
-                  node))
+          statements.push(
+            createVariableStatement(
+              undefined,
+              createVariableDeclarationList(
+                Array(
+                  createVariableDeclaration(
+                    generatedName,
+                    undefined,
+                    createRequireCall(node)))),
+              node))
 
         }
         (node.exportClause.elements).foreach { fresh3 =>
           val specifier = zeroOfMyType = fresh3 {
-            val exportedValue = createPropertyAccess(generatedName,
-                (specifier.propertyName || specifier.name))
-            statements.push(createStatement(createExportAssignment(
-                        specifier.name, exportedValue), specifier))
+            val exportedValue = createPropertyAccess(
+              generatedName,
+              (specifier.propertyName || specifier.name))
+            statements.push(
+              createStatement(
+                createExportAssignment(specifier.name, exportedValue),
+                specifier))
 
           }
         }
         return singleOrMany(statements)
 
       } else {
-        return createStatement(createCall(createIdentifier("__export"),
-                undefined,
-                Array((if ((moduleKind !== ModuleKind.AMD))
-                         createRequireCall(node)
-                       else generatedName))), node)
+        return createStatement(
+          createCall(
+            createIdentifier("__export"),
+            undefined,
+            Array(
+              (if ((moduleKind !== ModuleKind.AMD))
+                 createRequireCall(node)
+               else generatedName))),
+          node)
 
       }
 
     }
-    def visitExportAssignment(
-        node: ExportAssignment): VisitResult[Statement] = {
+    def visitExportAssignment(node: ExportAssignment): VisitResult[Statement] = {
       if (node.isExportEquals) {
         return undefined
 
@@ -317,11 +377,14 @@ object Module {
       return statements
 
     }
-    def addExportDefault(statements: Array[Statement], expression: Expression,
-        location: TextRange): Unit = {
+    def addExportDefault(statements: Array[Statement],
+                         expression: Expression,
+                         location: TextRange): Unit = {
       tryAddExportDefaultCompat(statements)
-      statements.push(createStatement(createExportAssignment(
-                  createIdentifier("default"), expression), location))
+      statements.push(
+        createStatement(
+          createExportAssignment(createIdentifier("default"), expression),
+          location))
 
     }
     def tryAddExportDefaultCompat(statements: Array[Statement]) = {
@@ -330,25 +393,33 @@ object Module {
       if ((!original.symbol.exports("____esModule"))) {
         if ((languageVersion === ScriptTarget.ES3)) {
           statements.push(
-              createStatement(createExportAssignment(
-                      createIdentifier("__esModule"), createLiteral(true))))
+            createStatement(
+              createExportAssignment(
+                createIdentifier("__esModule"),
+                createLiteral(true))))
 
         } else {
           statements.push(
-              createStatement(
-                  createCall(createPropertyAccess(createIdentifier("Object"),
-                          "defineProperty"), undefined,
-                      Array(createIdentifier("exports"),
-                          createLiteral("__esModule"),
-                          createObjectLiteral(Array(createPropertyAssignment(
-                                      "value", createLiteral(true))))))))
+            createStatement(
+              createCall(
+                createPropertyAccess(
+                  createIdentifier("Object"),
+                  "defineProperty"),
+                undefined,
+                Array(
+                  createIdentifier("exports"),
+                  createLiteral("__esModule"),
+                  createObjectLiteral(Array(createPropertyAssignment(
+                    "value",
+                    createLiteral(true))))))))
 
         }
 
       }
 
     }
-    def addExportImportAssignments(statements: Array[Statement],
+    def addExportImportAssignments(
+        statements: Array[Statement],
         node: (ImportEqualsDeclaration | ImportDeclaration)) = {
       if (isImportEqualsDeclaration(node)) {
         addExportMemberAssignments(statements, node.name)
@@ -366,7 +437,7 @@ object Module {
 
     }
     def collectExportMembers(names: Array[Identifier],
-        node: Node): Array[Identifier] = {
+                             node: Node): Array[Identifier] = {
       if ((isAliasSymbolDeclaration(node) && isDeclaration(node))) {
         val name = node.name
         if (isIdentifier(name)) {
@@ -379,14 +450,17 @@ object Module {
 
     }
     def addExportMemberAssignments(statements: Array[Statement],
-        name: Identifier): Unit = {
+                                   name: Identifier): Unit = {
       if ((((!exportEquals) && exportSpecifiers) && hasProperty(
-              exportSpecifiers, name.text))) {
+            exportSpecifiers,
+            name.text))) {
         (exportSpecifiers(name.text)).foreach { fresh5 =>
           val specifier = zeroOfMyType = fresh5 {
             statements.push(
-                startOnNewLine(createStatement(createExportAssignment(
-                            specifier.name, name), specifier.name)))
+              startOnNewLine(
+                createStatement(
+                  createExportAssignment(specifier.name, name),
+                  specifier.name)))
 
           }
         }
@@ -395,16 +469,16 @@ object Module {
 
     }
     def addExportMemberAssignment(statements: Array[Statement],
-        node: DeclarationStatement) = {
+                                  node: DeclarationStatement) = {
       if (hasModifier(node, ModifierFlags.Default)) {
         addExportDefault(statements, getDeclarationName(node), node)
 
       } else {
         statements.push(
-            createExportStatement(node.name.asInstanceOf[Identifier],
-                setEmitFlags(getSynthesizedClone(node.name),
-                    EmitFlags.LocalName),
-                node))
+          createExportStatement(
+            node.name.asInstanceOf[Identifier],
+            setEmitFlags(getSynthesizedClone(node.name), EmitFlags.LocalName),
+            node))
 
       }
 
@@ -417,8 +491,9 @@ object Module {
           return node
 
         }
-        return setOriginalNode(createVariableStatement(undefined,
-                node.declarationList), node)
+        return setOriginalNode(
+          createVariableStatement(undefined, node.declarationList),
+          node)
 
       }
       val resultStatements: Array[Statement] = Array()
@@ -426,8 +501,8 @@ object Module {
         val variables = getInitializedVariables(node.declarationList)
         if ((variables.length > 0)) {
           val inlineAssignments = createStatement(
-              inlineExpressions(map(variables, transformInitializedVariable)),
-              node)
+            inlineExpressions(map(variables, transformInitializedVariable)),
+            node)
           resultStatements.push(inlineAssignments)
 
         }
@@ -446,13 +521,15 @@ object Module {
 
     }
     def addExportMemberAssignmentsForBindingName(
-        resultStatements: Array[Statement], name: BindingName): Unit = {
+        resultStatements: Array[Statement],
+        name: BindingName): Unit = {
       if (isBindingPattern(name)) {
         (name.elements).foreach { fresh7 =>
           val element = zeroOfMyType = fresh7 {
             if ((!isOmittedExpression(element))) {
-              addExportMemberAssignmentsForBindingName(resultStatements,
-                  element.name)
+              addExportMemberAssignmentsForBindingName(
+                resultStatements,
+                element.name)
 
             }
 
@@ -461,17 +538,16 @@ object Module {
 
       } else {
         if ((((!exportEquals) && exportSpecifiers) && hasProperty(
-                exportSpecifiers, name.text))) {
+              exportSpecifiers,
+              name.text))) {
           val sourceFileId = getOriginalNodeId(currentSourceFile)
           if ((!bindingNameExportSpecifiersForFileMap(sourceFileId))) {
-            (
-                bindingNameExportSpecifiersForFileMap(sourceFileId) =
-                  createMap[Array[ExportSpecifier]]())
+            (bindingNameExportSpecifiersForFileMap(sourceFileId) =
+              createMap[Array[ExportSpecifier]]())
 
           }
-          (
-              bindingNameExportSpecifiersForFileMap(sourceFileId)(name.text) =
-                exportSpecifiers(name.text))
+          (bindingNameExportSpecifiersForFileMap(sourceFileId)(name.text) =
+            exportSpecifiers(name.text))
           addExportMemberAssignments(resultStatements, name)
 
         }
@@ -482,12 +558,16 @@ object Module {
     def transformInitializedVariable(node: VariableDeclaration): Expression = {
       val name = node.name
       if (isBindingPattern(name)) {
-        return flattenVariableDestructuringToExpression(node,
-            hoistVariableDeclaration, getModuleMemberName, visitor)
+        return flattenVariableDestructuringToExpression(
+          node,
+          hoistVariableDeclaration,
+          getModuleMemberName,
+          visitor)
 
       } else {
-        return createAssignment(getModuleMemberName(name),
-            visitNode(node.initializer, visitor, isExpression))
+        return createAssignment(
+          getModuleMemberName(name),
+          visitNode(node.initializer, visitor, isExpression))
 
       }
 
@@ -498,13 +578,22 @@ object Module {
       val name = (node.name || getGeneratedNameForNode(node))
       if (hasModifier(node, ModifierFlags.Export)) {
         val isAsync = hasModifier(node, ModifierFlags.Async)
-        statements.push(setOriginalNode(createFunctionDeclaration(undefined,
-                    (if (isAsync)
-                       Array(createNode(SyntaxKind.AsyncKeyword).asInstanceOf[
-                               Modifier])
-                     else undefined),
-                    node.asteriskToken, name, undefined, node.parameters,
-                    undefined, node.body, node), node))
+        statements.push(
+          setOriginalNode(
+            createFunctionDeclaration(
+              undefined,
+              (if (isAsync)
+                 Array(
+                   createNode(SyntaxKind.AsyncKeyword).asInstanceOf[Modifier])
+               else undefined),
+              node.asteriskToken,
+              name,
+              undefined,
+              node.parameters,
+              undefined,
+              node.body,
+              node),
+            node))
         addExportMemberAssignment(statements, node)
 
       } else {
@@ -518,14 +607,21 @@ object Module {
       return singleOrMany(statements)
 
     }
-    def visitClassDeclaration(
-        node: ClassDeclaration): VisitResult[Statement] = {
+    def visitClassDeclaration(node: ClassDeclaration): VisitResult[Statement] = {
       val statements: Array[Statement] = Array()
       val name = (node.name || getGeneratedNameForNode(node))
       if (hasModifier(node, ModifierFlags.Export)) {
-        statements.push(setOriginalNode(createClassDeclaration(undefined,
-                    undefined, name, undefined, node.heritageClauses,
-                    node.members, node), node))
+        statements.push(
+          setOriginalNode(
+            createClassDeclaration(
+              undefined,
+              undefined,
+              name,
+              undefined,
+              node.heritageClauses,
+              node.members,
+              node),
+            node))
         addExportMemberAssignment(statements, node)
 
       } else {
@@ -544,8 +640,9 @@ object Module {
       val original = getOriginalNode(node)
       val origKind = original.kind
       if (((origKind === SyntaxKind.EnumDeclaration) || (origKind === SyntaxKind.ModuleDeclaration))) {
-        return visitExpressionStatementForEnumOrNamespaceDeclaration(node,
-            original.asInstanceOf[(EnumDeclaration | ModuleDeclaration)])
+        return visitExpressionStatementForEnumOrNamespaceDeclaration(
+          node,
+          original.asInstanceOf[(EnumDeclaration | ModuleDeclaration)])
 
       } else if ((origKind === SyntaxKind.ClassDeclaration)) {
         val classDecl = original.asInstanceOf[ClassDeclaration]
@@ -562,27 +659,34 @@ object Module {
     }
     def visitExpressionStatementForEnumOrNamespaceDeclaration(
         node: ExpressionStatement,
-        original: (EnumDeclaration | ModuleDeclaration)): VisitResult[Statement] = {
+        original: (EnumDeclaration | ModuleDeclaration))
+      : VisitResult[Statement] = {
       val statements: Array[Statement] = Array(node)
-      if (((hasModifier(original,
-              ModifierFlags.Export) && (original.kind === SyntaxKind.EnumDeclaration)) && isFirstDeclarationOfKind(
-              original, SyntaxKind.EnumDeclaration))) {
+      if (((hasModifier(original, ModifierFlags.Export) && (original.kind === SyntaxKind.EnumDeclaration)) && isFirstDeclarationOfKind(
+            original,
+            SyntaxKind.EnumDeclaration))) {
         addVarForExportedEnumOrNamespaceDeclaration(statements, original)
 
       }
-      addExportMemberAssignments(statements,
-          original.name.asInstanceOf[Identifier])
+      addExportMemberAssignments(
+        statements,
+        original.name.asInstanceOf[Identifier])
       return statements
 
     }
     def addVarForExportedEnumOrNamespaceDeclaration(
         statements: Array[Statement],
         node: (EnumDeclaration | ModuleDeclaration)) = {
-      val transformedStatement = createVariableStatement(undefined,
-          Array(createVariableDeclaration(getDeclarationName(node), undefined,
-                  createPropertyAccess(createIdentifier("exports"),
-                      getDeclarationName(node)))),
-          node)
+      val transformedStatement = createVariableStatement(
+        undefined,
+        Array(
+          createVariableDeclaration(
+            getDeclarationName(node),
+            undefined,
+            createPropertyAccess(
+              createIdentifier("exports"),
+              getDeclarationName(node)))),
+        node)
       setEmitFlags(transformedStatement, EmitFlags.NoComments)
       statements.push(transformedStatement)
 
@@ -593,8 +697,9 @@ object Module {
               else getGeneratedNameForNode(node))
 
     }
-    def onEmitNode(emitContext: EmitContext, node: Node,
-        emitCallback: ((EmitContext, Node) => Unit)): Unit = {
+    def onEmitNode(emitContext: EmitContext,
+                   node: Node,
+                   emitCallback: ((EmitContext, Node) => Unit)): Unit = {
       if ((node.kind === SyntaxKind.SourceFile)) {
         (bindingNameExportSpecifiersMap =
           bindingNameExportSpecifiersForFileMap(getOriginalNodeId(node)))
@@ -625,8 +730,9 @@ object Module {
       val exportedOrImportedName = substituteExpressionIdentifier(name)
       if ((exportedOrImportedName !== name)) {
         if (node.objectAssignmentInitializer) {
-          val initializer = createAssignment(exportedOrImportedName,
-              node.objectAssignmentInitializer)
+          val initializer = createAssignment(
+            exportedOrImportedName,
+            node.objectAssignmentInitializer)
           return createPropertyAssignment(name, initializer, node)
 
         }
@@ -642,12 +748,12 @@ object Module {
           return substituteExpressionIdentifier(node.asInstanceOf[Identifier])
         case SyntaxKind.BinaryExpression =>
           return substituteBinaryExpression(
-              node.asInstanceOf[BinaryExpression])
+            node.asInstanceOf[BinaryExpression])
         case SyntaxKind.PostfixUnaryExpression |
             SyntaxKind.PrefixUnaryExpression =>
           return substituteUnaryExpression(
-              node.asInstanceOf[
-                  (PrefixUnaryExpression | PostfixUnaryExpression)])
+            node
+              .asInstanceOf[(PrefixUnaryExpression | PostfixUnaryExpression)])
         case _ =>
       }
       return node
@@ -655,22 +761,25 @@ object Module {
     }
     def substituteExpressionIdentifier(node: Identifier): Expression = {
       return ((trySubstituteExportedName(node) || trySubstituteImportedName(
-          node)) || node)
+        node)) || node)
 
     }
     def substituteBinaryExpression(node: BinaryExpression): Expression = {
       val left = node.left
-      if ((isIdentifier(left) && isAssignmentOperator(node.operatorToken.kind))) {
+      if ((isIdentifier(left) && isAssignmentOperator(
+            node.operatorToken.kind))) {
         if ((bindingNameExportSpecifiersMap && hasProperty(
-                bindingNameExportSpecifiersMap, left.text))) {
+              bindingNameExportSpecifiersMap,
+              left.text))) {
           setEmitFlags(node, EmitFlags.NoSubstitution)
           var nestedExportAssignment: BinaryExpression = zeroOfMyType
           (bindingNameExportSpecifiersMap(left.text)).foreach { fresh8 =>
             val specifier = zeroOfMyType = fresh8 {
               (nestedExportAssignment =
                 (if (nestedExportAssignment)
-                   createExportAssignment(specifier.name,
-                       nestedExportAssignment)
+                   createExportAssignment(
+                     specifier.name,
+                     nestedExportAssignment)
                  else createExportAssignment(specifier.name, node)))
 
             }
@@ -689,16 +798,19 @@ object Module {
       val operand = node.operand
       if ((isIdentifier(operand) && bindingNameExportSpecifiersForFileMap)) {
         if ((bindingNameExportSpecifiersMap && hasProperty(
-                bindingNameExportSpecifiersMap, operand.text))) {
+              bindingNameExportSpecifiersMap,
+              operand.text))) {
           setEmitFlags(node, EmitFlags.NoSubstitution)
           var transformedUnaryExpression: BinaryExpression = zeroOfMyType
           if ((node.kind === SyntaxKind.PostfixUnaryExpression)) {
-            (transformedUnaryExpression = createBinary(operand,
-                createToken(
-                    (if ((operator === SyntaxKind.PlusPlusToken))
-                       SyntaxKind.PlusEqualsToken
-                     else SyntaxKind.MinusEqualsToken)),
-                createLiteral(1), node))
+            (transformedUnaryExpression = createBinary(
+              operand,
+              createToken(
+                (if ((operator === SyntaxKind.PlusPlusToken))
+                   SyntaxKind.PlusEqualsToken
+                 else SyntaxKind.MinusEqualsToken)),
+              createLiteral(1),
+              node))
             setEmitFlags(transformedUnaryExpression, EmitFlags.NoSubstitution)
 
           }
@@ -707,11 +819,13 @@ object Module {
             val specifier = zeroOfMyType = fresh9 {
               (nestedExportAssignment =
                 (if (nestedExportAssignment)
-                   createExportAssignment(specifier.name,
-                       nestedExportAssignment)
+                   createExportAssignment(
+                     specifier.name,
+                     nestedExportAssignment)
                  else
-                   createExportAssignment(specifier.name,
-                       (transformedUnaryExpression || node))))
+                   createExportAssignment(
+                     specifier.name,
+                     (transformedUnaryExpression || node))))
 
             }
           }
@@ -726,12 +840,15 @@ object Module {
     def trySubstituteExportedName(node: Identifier) = {
       val emitFlags = getEmitFlags(node)
       if ((((emitFlags & EmitFlags.LocalName)) === 0)) {
-        val container = resolver.getReferencedExportContainer(node,
-            (((emitFlags & EmitFlags.ExportName)) !== 0))
+        val container = resolver.getReferencedExportContainer(
+          node,
+          (((emitFlags & EmitFlags.ExportName)) !== 0))
         if (container) {
           if ((container.kind === SyntaxKind.SourceFile)) {
-            return createPropertyAccess(createIdentifier("exports"),
-                getSynthesizedClone(node), node)
+            return createPropertyAccess(
+              createIdentifier("exports"),
+              getSynthesizedClone(node),
+              node)
 
           }
 
@@ -747,14 +864,16 @@ object Module {
         if (declaration) {
           if (isImportClause(declaration)) {
             return createPropertyAccess(
-                getGeneratedNameForNode(declaration.parent),
-                createIdentifier("default"), node)
+              getGeneratedNameForNode(declaration.parent),
+              createIdentifier("default"),
+              node)
 
           } else if (isImportSpecifier(declaration)) {
             val name = (declaration.propertyName || declaration.name)
             return createPropertyAccess(
-                getGeneratedNameForNode(declaration.parent.parent.parent),
-                getSynthesizedClone(name), node)
+              getGeneratedNameForNode(declaration.parent.parent.parent),
+              getSynthesizedClone(name),
+              node)
 
           }
 
@@ -770,8 +889,12 @@ object Module {
     }
     def createRequireCall(
         importNode: (ImportDeclaration | ImportEqualsDeclaration | ExportDeclaration)) = {
-      val moduleName = getExternalModuleNameLiteral(importNode,
-          currentSourceFile, host, resolver, compilerOptions)
+      val moduleName = getExternalModuleNameLiteral(
+        importNode,
+        currentSourceFile,
+        host,
+        resolver,
+        compilerOptions)
       val args: Array[Expression] = Array()
       if (isDefined(moduleName)) {
         args.push(moduleName)
@@ -780,8 +903,9 @@ object Module {
       return createCall(createIdentifier("require"), undefined, args)
 
     }
-    def createExportStatement(name: Identifier, value: Expression,
-        location: TextRange) = {
+    def createExportStatement(name: Identifier,
+                              value: Expression,
+                              location: TextRange) = {
       val statement = createStatement(createExportAssignment(name, value))
       (statement.startsOnNewLine = true)
       if (location) {
@@ -792,8 +916,11 @@ object Module {
 
     }
     def createExportAssignment(name: Identifier, value: Expression) = {
-      return createAssignment(createPropertyAccess(createIdentifier("exports"),
-              getSynthesizedClone(name)), value)
+      return createAssignment(
+        createPropertyAccess(
+          createIdentifier("exports"),
+          getSynthesizedClone(name)),
+        value)
 
     }
     trait AsynchronousDependencies {
@@ -801,7 +928,8 @@ object Module {
       var unaliasedModuleNames: Array[Expression]
       var importAliasNames: Array[ParameterDeclaration]
     }
-    def collectAsynchronousDependencies(node: SourceFile,
+    def collectAsynchronousDependencies(
+        node: SourceFile,
         includeNonAmdDependencies: Boolean): AsynchronousDependencies = {
       val aliasedModuleNames: Array[Expression] = Array()
       val unaliasedModuleNames: Array[Expression] = Array()
@@ -821,8 +949,12 @@ object Module {
       }
       (externalImports).foreach { fresh11 =>
         val importNode = zeroOfMyType = fresh11 {
-          val externalModuleName = getExternalModuleNameLiteral(importNode,
-              currentSourceFile, host, resolver, compilerOptions)
+          val externalModuleName = getExternalModuleNameLiteral(
+            importNode,
+            currentSourceFile,
+            host,
+            resolver,
+            compilerOptions)
           val importAliasName =
             getLocalNameForExternalImport(importNode, currentSourceFile)
           if ((includeNonAmdDependencies && importAliasName)) {
@@ -837,9 +969,10 @@ object Module {
 
         }
       }
-      return Map("aliasedModuleNames" -> aliasedModuleNames,
-          "unaliasedModuleNames" -> unaliasedModuleNames,
-          "importAliasNames" -> importAliasNames)
+      return Map(
+        "aliasedModuleNames" -> aliasedModuleNames,
+        "unaliasedModuleNames" -> unaliasedModuleNames,
+        "importAliasNames" -> importAliasNames)
 
     }
     def updateSourceFile(node: SourceFile, statements: Array[Statement]) = {

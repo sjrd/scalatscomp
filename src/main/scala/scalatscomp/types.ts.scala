@@ -480,21 +480,24 @@ object Types {
     var hasTrailingComma: Boolean = false
   }
 
-  class Token[+TKind <: SyntaxKind](override val kind: TKind) extends Node(kind)
+  class Token[+TKind <: SyntaxKind](override val kind: TKind)
+      extends Node(kind)
 
   final case class DotDotDotToken() extends Token(SyntaxKind.DotDotDotToken)
   final case class QuestionToken() extends Token(SyntaxKind.QuestionToken)
   final case class ColonToken() extends Token(SyntaxKind.ColonToken)
   final case class EqualsToken() extends Token(SyntaxKind.EqualsToken)
   final case class AsteriskToken() extends Token(SyntaxKind.AsteriskToken)
-  final case class EqualsGreaterThanToken() extends Token(SyntaxKind.EqualsGreaterThanToken)
+  final case class EqualsGreaterThanToken()
+      extends Token(SyntaxKind.EqualsGreaterThanToken)
   final case class EndOfFileToken() extends Token(SyntaxKind.EndOfFileToken)
   final case class AtToken() extends Token(SyntaxKind.AtToken)
 
   sealed abstract class Modifier[+TKind <: SyntaxKind](kd: TKind)
       extends Token[TKind](kd)
 
-  final case class AbstractKeyword() extends Modifier(SyntaxKind.AbstractKeyword)
+  final case class AbstractKeyword()
+      extends Modifier(SyntaxKind.AbstractKeyword)
   final case class AsyncKeyword() extends Modifier(SyntaxKind.AsyncKeyword)
   final case class ConstKeyword() extends Modifier(SyntaxKind.ConstKeyword)
   final case class DeclareKeyword() extends Modifier(SyntaxKind.DeclareKeyword)
@@ -502,8 +505,10 @@ object Types {
   final case class ExportKeyword() extends Modifier(SyntaxKind.ExportKeyword)
   final case class PublicKeyword() extends Modifier(SyntaxKind.PublicKeyword)
   final case class PrivateKeyword() extends Modifier(SyntaxKind.PrivateKeyword)
-  final case class ProtectedKeyword() extends Modifier(SyntaxKind.ProtectedKeyword)
-  final case class ReadonlyKeyword() extends Modifier(SyntaxKind.ReadonlyKeyword)
+  final case class ProtectedKeyword()
+      extends Modifier(SyntaxKind.ProtectedKeyword)
+  final case class ReadonlyKeyword()
+      extends Modifier(SyntaxKind.ReadonlyKeyword)
   final case class StaticKeyword() extends Modifier(SyntaxKind.StaticKeyword)
 
   type ModifiersArray = Vector[Modifier[_]]
@@ -517,11 +522,16 @@ object Types {
     case object Node extends GeneratedIdentifierKind
   }
 
-  case class Identifier(text: String) extends Node(SyntaxKind.Identifier)
-      with EntityName with PrimaryExpression with PropertyName
-      with DeclarationName with DeclarationStatementName {
+  case class Identifier(text: String)
+      extends Node(SyntaxKind.Identifier)
+      with EntityName
+      with PrimaryExpression
+      with PropertyName
+      with DeclarationName
+      with DeclarationStatementName {
     var originalKeywordKind: Option[SyntaxKind] = None
-    var autoGenerateKind: GeneratedIdentifierKind = GeneratedIdentifierKind.None
+    var autoGenerateKind: GeneratedIdentifierKind =
+      GeneratedIdentifierKind.None
     var autoGenerateId: Option[Int] = None
     var isInJSDocNamespace: Boolean = false
   }
@@ -531,7 +541,8 @@ object Types {
   }
 
   final case class QualifiedName(left: EntityName, right: Identifier)
-      extends Node(SyntaxKind.QualifiedName) with EntityName
+      extends Node(SyntaxKind.QualifiedName)
+      with EntityName
 
   sealed trait EntityName extends Node
   sealed trait PropertyName extends Node
@@ -550,14 +561,17 @@ object Types {
 
   final case class ComputedPropertyName(expression: Expression)
       extends Node(SyntaxKind.ComputedPropertyName)
-      with PropertyName with DeclarationName
+      with PropertyName
+      with DeclarationName
 
   final case class Decorator(expression: LeftHandSideExpression)
       extends Node(SyntaxKind.Decorator)
 
   final case class TypeParameterDeclaration(name: Identifier,
-      val constraint: Option[TypeNode], expression: Option[Expression])
-      extends Node(SyntaxKind.TypeParameter) with Declaration
+                                            val constraint: Option[TypeNode],
+                                            expression: Option[Expression])
+      extends Node(SyntaxKind.TypeParameter)
+      with Declaration
 
   trait SignatureDeclaration extends Declaration {
     var name: PropertyName
@@ -566,11 +580,13 @@ object Types {
     var `type`: TypeNode
   }
   trait CallSignatureDeclaration
-      extends SignatureDeclaration with TypeElement {
+      extends SignatureDeclaration
+      with TypeElement {
     var kind: SyntaxKind.CallSignature
   }
   trait ConstructSignatureDeclaration
-      extends SignatureDeclaration with TypeElement {
+      extends SignatureDeclaration
+      with TypeElement {
     var kind: SyntaxKind.ConstructSignature
   }
   type BindingName = (Identifier | BindingPattern)
@@ -663,7 +679,8 @@ object Types {
     var body: (Block | Expression)
   }
   trait FunctionDeclaration
-      extends FunctionLikeDeclaration with DeclarationStatement {
+      extends FunctionLikeDeclaration
+      with DeclarationStatement {
     var kind: SyntaxKind.FunctionDeclaration
     var name: Identifier
     var body: FunctionBody
@@ -673,14 +690,16 @@ object Types {
     var name: PropertyName
   }
   trait MethodDeclaration
-      extends FunctionLikeDeclaration with ClassElement
+      extends FunctionLikeDeclaration
+      with ClassElement
       with ObjectLiteralElement {
     var kind: SyntaxKind.MethodDeclaration
     var name: PropertyName
     var body: FunctionBody
   }
   trait ConstructorDeclaration
-      extends FunctionLikeDeclaration with ClassElement {
+      extends FunctionLikeDeclaration
+      with ClassElement {
     var kind: SyntaxKind.Constructor
     var body: FunctionBody
   }
@@ -688,14 +707,16 @@ object Types {
     var kind: SyntaxKind.SemicolonClassElement
   }
   trait GetAccessorDeclaration
-      extends FunctionLikeDeclaration with ClassElement
+      extends FunctionLikeDeclaration
+      with ClassElement
       with ObjectLiteralElement {
     var kind: SyntaxKind.GetAccessor
     var name: PropertyName
     var body: FunctionBody
   }
   trait SetAccessorDeclaration
-      extends FunctionLikeDeclaration with ClassElement
+      extends FunctionLikeDeclaration
+      with ClassElement
       with ObjectLiteralElement {
     var kind: SyntaxKind.SetAccessor
     var name: PropertyName
@@ -703,7 +724,9 @@ object Types {
   }
   type AccessorDeclaration = (GetAccessorDeclaration | SetAccessorDeclaration)
   trait IndexSignatureDeclaration
-      extends SignatureDeclaration with ClassElement with TypeElement {
+      extends SignatureDeclaration
+      with ClassElement
+      with TypeElement {
     var kind: SyntaxKind.IndexSignature
   }
   trait TypeNode extends Node {
@@ -716,7 +739,8 @@ object Types {
     var kind: SyntaxKind.ThisType
   }
   trait FunctionOrConstructorTypeNode
-      extends TypeNode with SignatureDeclaration {
+      extends TypeNode
+      with SignatureDeclaration {
     var kind: (SyntaxKind.FunctionType | SyntaxKind.ConstructorType)
   }
   trait FunctionTypeNode extends FunctionOrConstructorTypeNode {
@@ -899,7 +923,8 @@ object Types {
   type FunctionBody = Block
   type ConciseBody = (FunctionBody | Expression)
   trait FunctionExpression
-      extends PrimaryExpression with FunctionLikeDeclaration {
+      extends PrimaryExpression
+      with FunctionLikeDeclaration {
     var kind: SyntaxKind.FunctionExpression
     var name: Identifier
     var body: FunctionBody
@@ -915,8 +940,12 @@ object Types {
     var hasExtendedUnicodeEscape: Boolean
     var isOctalLiteral: Boolean
   }
-  trait LiteralExpression extends LiteralLikeNode with PrimaryExpression
-      with PropertyName with DeclarationName with DeclarationStatementName {
+  trait LiteralExpression
+      extends LiteralLikeNode
+      with PrimaryExpression
+      with PropertyName
+      with DeclarationName
+      with DeclarationStatementName {
     var _literalExpressionBrand: Any
   }
   trait RegularExpressionLiteral extends LiteralExpression {
@@ -963,7 +992,8 @@ object Types {
     var expression: Expression
   }
   trait ObjectLiteralExpressionBase[T <: ObjectLiteralElement]
-      extends PrimaryExpression with Declaration {
+      extends PrimaryExpression
+      with Declaration {
     var properties: NodeArray[T]
   }
   trait ObjectLiteralExpression
@@ -1091,7 +1121,9 @@ object Types {
     var kind: SyntaxKind.DebuggerStatement
   }
   trait MissingDeclaration
-      extends DeclarationStatement with ClassElement with ObjectLiteralElement
+      extends DeclarationStatement
+      with ClassElement
+      with ObjectLiteralElement
       with TypeElement {
     var kind: SyntaxKind.MissingDeclaration
     var name: Identifier
@@ -1211,7 +1243,8 @@ object Types {
     var members: NodeArray[ClassElement]
   }
   trait ClassDeclaration
-      extends ClassLikeDeclaration with DeclarationStatement {
+      extends ClassLikeDeclaration
+      with DeclarationStatement {
     var kind: SyntaxKind.ClassDeclaration
     var name: Identifier
   }
@@ -1553,7 +1586,7 @@ object Types {
     var classifiableNames: Map[String]
     var resolvedModules: Map[ResolvedModule]
     var resolvedTypeReferenceDirectiveNames: Map[
-        ResolvedTypeReferenceDirective]
+      ResolvedTypeReferenceDirective]
     var imports: Array[LiteralExpression]
     var moduleAugmentations: Array[LiteralExpression]
     var patternAmbientModules: Array[PatternAmbientModule]
@@ -1567,14 +1600,19 @@ object Types {
   }
   trait ParseConfigHost {
     var useCaseSensitiveFileNames: Boolean
-    def readDirectory(rootDir: String, extensions: Array[String],
-        excludes: Array[String], includes: Array[String]): Array[String]
+    def readDirectory(rootDir: String,
+                      extensions: Array[String],
+                      excludes: Array[String],
+                      includes: Array[String]): Array[String]
     def fileExists(path: String): Boolean
     def readFile(path: String): String
   }
   trait WriteFileCallback {
-    def apply(fileName: String, data: String, writeByteOrderMark: Boolean,
-        onError: ((String) => Unit), sourceFiles: Array[SourceFile]): Unit
+    def apply(fileName: String,
+              data: String,
+              writeByteOrderMark: Boolean,
+              onError: ((String) => Unit),
+              sourceFiles: Array[SourceFile]): Unit
   }
   class OperationCanceledException {}
   trait CancellationToken {
@@ -1584,18 +1622,22 @@ object Types {
   trait Program extends ScriptReferenceHost {
     def getRootFileNames(): Array[String]
     def getSourceFiles(): Array[SourceFile]
-    def emit(targetSourceFile: SourceFile, writeFile: WriteFileCallback,
-        cancellationToken: CancellationToken,
-        emitOnlyDtsFiles: Boolean): EmitResult
+    def emit(targetSourceFile: SourceFile,
+             writeFile: WriteFileCallback,
+             cancellationToken: CancellationToken,
+             emitOnlyDtsFiles: Boolean): EmitResult
     def getOptionsDiagnostics(
         cancellationToken: CancellationToken): Array[Diagnostic]
     def getGlobalDiagnostics(
         cancellationToken: CancellationToken): Array[Diagnostic]
-    def getSyntacticDiagnostics(sourceFile: SourceFile,
+    def getSyntacticDiagnostics(
+        sourceFile: SourceFile,
         cancellationToken: CancellationToken): Array[Diagnostic]
-    def getSemanticDiagnostics(sourceFile: SourceFile,
+    def getSemanticDiagnostics(
+        sourceFile: SourceFile,
         cancellationToken: CancellationToken): Array[Diagnostic]
-    def getDeclarationDiagnostics(sourceFile: SourceFile,
+    def getDeclarationDiagnostics(
+        sourceFile: SourceFile,
         cancellationToken: CancellationToken): Array[Diagnostic]
     def getTypeChecker(): TypeChecker
     def getCommonSourceDirectory(): String
@@ -1607,7 +1649,8 @@ object Types {
     def getSymbolCount(): Int
     def getTypeCount(): Int
     def getFileProcessingDiagnostics(): DiagnosticCollection
-    def getResolvedTypeReferenceDirectives(): Map[ResolvedTypeReferenceDirective]
+    def getResolvedTypeReferenceDirectives()
+      : Map[ResolvedTypeReferenceDirective]
     var structureIsReused: Boolean
   }
   trait SourceMapSpan {
@@ -1646,7 +1689,8 @@ object Types {
     def getCompilerOptions(): CompilerOptions
     def getSourceFiles(): Array[SourceFile]
     def getSourceFile(fileName: String): SourceFile
-    def getResolvedTypeReferenceDirectives(): Map[ResolvedTypeReferenceDirective]
+    def getResolvedTypeReferenceDirectives()
+      : Map[ResolvedTypeReferenceDirective]
   }
   trait TypeChecker {
     def getTypeOfSymbolAtLocation(symbol: Symbol, node: Node): Type
@@ -1654,7 +1698,7 @@ object Types {
     def getPropertiesOfType(`type`: Type): Array[Symbol]
     def getPropertyOfType(`type`: Type, propertyName: String): Symbol
     def getSignaturesOfType(`type`: Type,
-        kind: SignatureKind): Array[Signature]
+                            kind: SignatureKind): Array[Signature]
     def getIndexTypeOfType(`type`: Type, kind: IndexKind): Type
     def getBaseTypes(`type`: InterfaceType): Array[ObjectType]
     def getReturnTypeOfSignature(signature: Signature): Type
@@ -1662,23 +1706,26 @@ object Types {
     def getSymbolsInScope(location: Node, meaning: SymbolFlags): Array[Symbol]
     def getSymbolAtLocation(node: Node): Symbol
     def getSymbolsOfParameterPropertyDeclaration(
-        parameter: ParameterDeclaration, parameterName: String): Array[Symbol]
+        parameter: ParameterDeclaration,
+        parameterName: String): Array[Symbol]
     def getShorthandAssignmentValueSymbol(location: Node): Symbol
     def getExportSpecifierLocalTargetSymbol(location: ExportSpecifier): Symbol
     def getPropertySymbolOfDestructuringAssignment(
         location: Identifier): Symbol
     def getTypeAtLocation(node: Node): Type
-    def typeToString(`type`: Type, enclosingDeclaration: Node,
-        flags: TypeFormatFlags): String
-    def symbolToString(symbol: Symbol, enclosingDeclaration: Node,
-        meaning: SymbolFlags): String
+    def typeToString(`type`: Type,
+                     enclosingDeclaration: Node,
+                     flags: TypeFormatFlags): String
+    def symbolToString(symbol: Symbol,
+                       enclosingDeclaration: Node,
+                       meaning: SymbolFlags): String
     def getSymbolDisplayBuilder(): SymbolDisplayBuilder
     def getFullyQualifiedName(symbol: Symbol): String
     def getAugmentedPropertiesOfType(`type`: Type): Array[Symbol]
     def getRootSymbols(symbol: Symbol): Array[Symbol]
     def getContextualType(node: Expression): Type
     def getResolvedSignature(node: CallLikeExpression,
-        candidatesOutArray: Array[Signature]): Signature
+                             candidatesOutArray: Array[Signature]): Signature
     def getSignatureFromDeclaration(
         declaration: SignatureDeclaration): Signature
     def isImplementationOfOverload(node: FunctionLikeDeclaration): Boolean
@@ -1686,9 +1733,10 @@ object Types {
     def isArgumentsSymbol(symbol: Symbol): Boolean
     def isUnknownSymbol(symbol: Symbol): Boolean
     def getConstantValue(
-        node: (EnumMember | PropertyAccessExpression | ElementAccessExpression)): Int
+        node: (EnumMember | PropertyAccessExpression | ElementAccessExpression))
+      : Int
     def isValidPropertyAccess(node: (PropertyAccessExpression | QualifiedName),
-        propertyName: String): Boolean
+                              propertyName: String): Boolean
     def getAliasedSymbol(symbol: Symbol): Symbol
     def getExportsOfModule(moduleSymbol: Symbol): Array[Symbol]
     def getJsxElementAttributesType(elementNode: JsxOpeningLikeElement): Type
@@ -1696,42 +1744,60 @@ object Types {
     def isOptionalParameter(node: ParameterDeclaration): Boolean
     def getAmbientModules(): Array[Symbol]
     def getDiagnostics(sourceFile: SourceFile,
-        cancellationToken: CancellationToken): Array[Diagnostic]
+                       cancellationToken: CancellationToken): Array[Diagnostic]
     def getGlobalDiagnostics(): Array[Diagnostic]
     def getEmitResolver(sourceFile: SourceFile,
-        cancellationToken: CancellationToken): EmitResolver
+                        cancellationToken: CancellationToken): EmitResolver
     def getNodeCount(): Int
     def getIdentifierCount(): Int
     def getSymbolCount(): Int
     def getTypeCount(): Int
   }
   trait SymbolDisplayBuilder {
-    def buildTypeDisplay(`type`: Type, writer: SymbolWriter,
-        enclosingDeclaration: Node, flags: TypeFormatFlags): Unit
-    def buildSymbolDisplay(symbol: Symbol, writer: SymbolWriter,
-        enclosingDeclaration: Node, meaning: SymbolFlags,
-        flags: SymbolFormatFlags): Unit
-    def buildSignatureDisplay(signatures: Signature, writer: SymbolWriter,
-        enclosingDeclaration: Node, flags: TypeFormatFlags,
-        kind: SignatureKind): Unit
-    def buildParameterDisplay(parameter: Symbol, writer: SymbolWriter,
-        enclosingDeclaration: Node, flags: TypeFormatFlags): Unit
-    def buildTypeParameterDisplay(tp: TypeParameter, writer: SymbolWriter,
-        enclosingDeclaration: Node, flags: TypeFormatFlags): Unit
+    def buildTypeDisplay(`type`: Type,
+                         writer: SymbolWriter,
+                         enclosingDeclaration: Node,
+                         flags: TypeFormatFlags): Unit
+    def buildSymbolDisplay(symbol: Symbol,
+                           writer: SymbolWriter,
+                           enclosingDeclaration: Node,
+                           meaning: SymbolFlags,
+                           flags: SymbolFormatFlags): Unit
+    def buildSignatureDisplay(signatures: Signature,
+                              writer: SymbolWriter,
+                              enclosingDeclaration: Node,
+                              flags: TypeFormatFlags,
+                              kind: SignatureKind): Unit
+    def buildParameterDisplay(parameter: Symbol,
+                              writer: SymbolWriter,
+                              enclosingDeclaration: Node,
+                              flags: TypeFormatFlags): Unit
+    def buildTypeParameterDisplay(tp: TypeParameter,
+                                  writer: SymbolWriter,
+                                  enclosingDeclaration: Node,
+                                  flags: TypeFormatFlags): Unit
     def buildTypePredicateDisplay(predicate: TypePredicate,
-        writer: SymbolWriter, enclosingDeclaration: Node,
-        flags: TypeFormatFlags): Unit
+                                  writer: SymbolWriter,
+                                  enclosingDeclaration: Node,
+                                  flags: TypeFormatFlags): Unit
     def buildTypeParameterDisplayFromSymbol(symbol: Symbol,
-        writer: SymbolWriter, enclosingDeclaration: Node,
-        flags: TypeFormatFlags): Unit
+                                            writer: SymbolWriter,
+                                            enclosingDeclaration: Node,
+                                            flags: TypeFormatFlags): Unit
     def buildDisplayForParametersAndDelimiters(thisParameter: Symbol,
-        parameters: Array[Symbol], writer: SymbolWriter,
-        enclosingDeclaration: Node, flags: TypeFormatFlags): Unit
+                                               parameters: Array[Symbol],
+                                               writer: SymbolWriter,
+                                               enclosingDeclaration: Node,
+                                               flags: TypeFormatFlags): Unit
     def buildDisplayForTypeParametersAndDelimiters(
-        typeParameters: Array[TypeParameter], writer: SymbolWriter,
-        enclosingDeclaration: Node, flags: TypeFormatFlags): Unit
-    def buildReturnTypeDisplay(signature: Signature, writer: SymbolWriter,
-        enclosingDeclaration: Node, flags: TypeFormatFlags): Unit
+        typeParameters: Array[TypeParameter],
+        writer: SymbolWriter,
+        enclosingDeclaration: Node,
+        flags: TypeFormatFlags): Unit
+    def buildReturnTypeDisplay(signature: Signature,
+                               writer: SymbolWriter,
+                               enclosingDeclaration: Node,
+                               flags: TypeFormatFlags): Unit
   }
   trait SymbolWriter {
     def writeKeyword(text: String): Unit
@@ -1745,8 +1811,9 @@ object Types {
     def increaseIndent(): Unit
     def decreaseIndent(): Unit
     def clear(): Unit
-    def trackSymbol(symbol: Symbol, enclosingDeclaration: Node,
-        meaning: SymbolFlags): Unit
+    def trackSymbol(symbol: Symbol,
+                    enclosingDeclaration: Node,
+                    meaning: SymbolFlags): Unit
     def reportInaccessibleThisError(): Unit
   }
   sealed abstract class TypeFormatFlags
@@ -1821,15 +1888,15 @@ object Types {
   }
   trait EmitResolver {
     def hasGlobalName(name: String): Boolean
-    def getReferencedExportContainer(node: Identifier,
-        prefixLocals: Boolean): (SourceFile | ModuleDeclaration | EnumDeclaration)
+    def getReferencedExportContainer(node: Identifier, prefixLocals: Boolean)
+      : (SourceFile | ModuleDeclaration | EnumDeclaration)
     def getReferencedImportDeclaration(node: Identifier): Declaration
     def getReferencedDeclarationWithCollidingName(
         node: Identifier): Declaration
     def isDeclarationWithCollidingName(node: Declaration): Boolean
     def isValueAliasDeclaration(node: Node): Boolean
     def isReferencedAliasDeclaration(node: Node,
-        checkChildren: Boolean): Boolean
+                                     checkChildren: Boolean): Boolean
     def isTopLevelValueImportEqualsWithEntityName(
         node: ImportEqualsDeclaration): Boolean
     def getNodeCheckFlags(node: Node): NodeCheckFlags
@@ -1838,37 +1905,50 @@ object Types {
     def isImplementationOfOverload(node: FunctionLikeDeclaration): Boolean
     def writeTypeOfDeclaration(
         declaration: (AccessorDeclaration | VariableLikeDeclaration),
-        enclosingDeclaration: Node, flags: TypeFormatFlags,
+        enclosingDeclaration: Node,
+        flags: TypeFormatFlags,
         writer: SymbolWriter): Unit
     def writeReturnTypeOfSignatureDeclaration(
-        signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node,
-        flags: TypeFormatFlags, writer: SymbolWriter): Unit
-    def writeTypeOfExpression(expr: Expression, enclosingDeclaration: Node,
-        flags: TypeFormatFlags, writer: SymbolWriter): Unit
-    def writeBaseConstructorTypeOfClass(node: ClassLikeDeclaration,
-        enclosingDeclaration: Node, flags: TypeFormatFlags,
+        signatureDeclaration: SignatureDeclaration,
+        enclosingDeclaration: Node,
+        flags: TypeFormatFlags,
         writer: SymbolWriter): Unit
-    def isSymbolAccessible(symbol: Symbol, enclosingDeclaration: Node,
+    def writeTypeOfExpression(expr: Expression,
+                              enclosingDeclaration: Node,
+                              flags: TypeFormatFlags,
+                              writer: SymbolWriter): Unit
+    def writeBaseConstructorTypeOfClass(node: ClassLikeDeclaration,
+                                        enclosingDeclaration: Node,
+                                        flags: TypeFormatFlags,
+                                        writer: SymbolWriter): Unit
+    def isSymbolAccessible(
+        symbol: Symbol,
+        enclosingDeclaration: Node,
         meaning: SymbolFlags,
         shouldComputeAliasToMarkVisible: Boolean): SymbolAccessibilityResult
     def isEntityNameVisible(entityName: EntityNameOrEntityNameExpression,
-        enclosingDeclaration: Node): SymbolVisibilityResult
+                            enclosingDeclaration: Node): SymbolVisibilityResult
     def getConstantValue(
-        node: (EnumMember | PropertyAccessExpression | ElementAccessExpression)): Int
+        node: (EnumMember | PropertyAccessExpression | ElementAccessExpression))
+      : Int
     def getReferencedValueDeclaration(reference: Identifier): Declaration
-    def getTypeReferenceSerializationKind(typeName: EntityName,
+    def getTypeReferenceSerializationKind(
+        typeName: EntityName,
         location: Node): TypeReferenceSerializationKind
     def isOptionalParameter(node: ParameterDeclaration): Boolean
     def moduleExportsSomeValue(moduleReferenceExpression: Expression): Boolean
     def isArgumentsLocalBinding(node: Identifier): Boolean
     def getExternalModuleFileFromDeclaration(
-        declaration: (ImportEqualsDeclaration | ImportDeclaration | ExportDeclaration | ModuleDeclaration)): SourceFile
+        declaration: (ImportEqualsDeclaration | ImportDeclaration | ExportDeclaration | ModuleDeclaration))
+      : SourceFile
     def getTypeReferenceDirectivesForEntityName(
         name: EntityNameOrEntityNameExpression): Array[String]
-    def getTypeReferenceDirectivesForSymbol(symbol: Symbol,
+    def getTypeReferenceDirectivesForSymbol(
+        symbol: Symbol,
         meaning: SymbolFlags): Array[String]
     def isLiteralConstDeclaration(
-        node: (VariableDeclaration | PropertyDeclaration | PropertySignature | ParameterDeclaration)): Boolean
+        node: (VariableDeclaration | PropertyDeclaration | PropertySignature | ParameterDeclaration))
+      : Boolean
     def writeLiteralConstValue(
         node: (VariableDeclaration | PropertyDeclaration | PropertySignature | ParameterDeclaration),
         writer: SymbolWriter): Unit
@@ -2261,8 +2341,9 @@ object Types {
     case object Classic extends ModuleResolutionKind
     case object NodeJs extends ModuleResolutionKind
   }
-  type CompilerOptionsValue = (String | Int | Boolean | Array[
-      (String | Int)] | Array[String] | MapLike[Array[String]])
+  type CompilerOptionsValue =
+    (String | Int | Boolean | Array[(String | Int)] | Array[String] | MapLike[
+      Array[String]])
   trait CompilerOptions {
     var allowJs: Boolean
     var allowNonTsExtensions: Boolean
@@ -2429,7 +2510,7 @@ object Types {
   trait CommandLineOptionBase {
     var name: String
     var `type`: (`"string"` | `"number"` | `"boolean"` | `"object"` | `"list"` | Map[
-        (Int | String)])
+      (Int | String)])
     var isFilePath: Boolean
     var shortName: String
     var description: DiagnosticMessage
@@ -2605,10 +2686,13 @@ object Types {
     var failedLookupLocations: Array[String]
   }
   trait CompilerHost extends ModuleResolutionHost {
-    def getSourceFile(fileName: String, languageVersion: ScriptTarget,
-        onError: ((String) => Unit)): SourceFile
-    def getSourceFileByPath(fileName: String, path: Path,
-        languageVersion: ScriptTarget, onError: ((String) => Unit)): SourceFile
+    def getSourceFile(fileName: String,
+                      languageVersion: ScriptTarget,
+                      onError: ((String) => Unit)): SourceFile
+    def getSourceFileByPath(fileName: String,
+                            path: Path,
+                            languageVersion: ScriptTarget,
+                            onError: ((String) => Unit)): SourceFile
     def getCancellationToken(): CancellationToken
     def getDefaultLibFileName(options: CompilerOptions): String
     def getDefaultLibLocation(): String
@@ -2619,7 +2703,7 @@ object Types {
     def useCaseSensitiveFileNames(): Boolean
     def getNewLine(): String
     def resolveModuleNames(moduleNames: Array[String],
-        containingFile: String): Array[ResolvedModule]
+                           containingFile: String): Array[ResolvedModule]
     def resolveTypeReferenceDirectives(
         typeReferenceDirectiveNames: Array[String],
         containingFile: String): Array[ResolvedTypeReferenceDirective]

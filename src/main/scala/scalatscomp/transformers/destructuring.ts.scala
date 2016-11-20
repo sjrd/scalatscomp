@@ -1,14 +1,20 @@
 package scalatscomp.transformers
 object Destructuring {
-  def flattenDestructuringAssignment(context: TransformationContext,
-      node: BinaryExpression, needsValue: Boolean,
+  def flattenDestructuringAssignment(
+      context: TransformationContext,
+      node: BinaryExpression,
+      needsValue: Boolean,
       recordTempVariable: ((Identifier) => Unit),
       visitor: ((Node) => VisitResult[Node])): Expression = {
     if (isEmptyObjectLiteralOrArrayLiteral(node.left)) {
       val right = node.right
       if (isDestructuringAssignment(right)) {
-        return flattenDestructuringAssignment(context, right, needsValue,
-            recordTempVariable, visitor)
+        return flattenDestructuringAssignment(
+          context,
+          right,
+          needsValue,
+          recordTempVariable,
+          visitor)
 
       } else {
         return node.right
@@ -20,15 +26,24 @@ object Destructuring {
     var value = node.right
     val expressions: Array[Expression] = Array()
     if (needsValue) {
-      (value = ensureIdentifier(value, true, location,
-          emitTempVariableAssignment, visitor))
+      (value = ensureIdentifier(
+        value,
+        true,
+        location,
+        emitTempVariableAssignment,
+        visitor))
 
     } else if (nodeIsSynthesized(node)) {
       (location = value)
 
     }
-    flattenDestructuring(node, value, location, emitAssignment,
-        emitTempVariableAssignment, visitor)
+    flattenDestructuring(
+      node,
+      value,
+      location,
+      emitAssignment,
+      emitTempVariableAssignment,
+      visitor)
     if (needsValue) {
       expressions.push(value)
 
@@ -36,8 +51,9 @@ object Destructuring {
     val expression = inlineExpressions(expressions)
     aggregateTransformFlags(expression)
     return expression
-    def emitAssignment(name: Identifier, value: Expression,
-        location: TextRange) = {
+    def emitAssignment(name: Identifier,
+                       value: Expression,
+                       location: TextRange) = {
       val expression = createAssignment(name, value, location)
       setEmitFlags(expression, EmitFlags.NoNestedSourceMaps)
       aggregateTransformFlags(expression)
@@ -53,13 +69,20 @@ object Destructuring {
 
   }
   def flattenParameterDestructuring(node: ParameterDeclaration,
-      value: Expression, visitor: ((Node) => VisitResult[Node])) = {
+                                    value: Expression,
+                                    visitor: ((Node) => VisitResult[Node])) = {
     val declarations: Array[VariableDeclaration] = Array()
-    flattenDestructuring(node, value, node, emitAssignment,
-        emitTempVariableAssignment, visitor)
+    flattenDestructuring(
+      node,
+      value,
+      node,
+      emitAssignment,
+      emitTempVariableAssignment,
+      visitor)
     return declarations
-    def emitAssignment(name: Identifier, value: Expression,
-        location: TextRange) = {
+    def emitAssignment(name: Identifier,
+                       value: Expression,
+                       location: TextRange) = {
       val declaration =
         createVariableDeclaration(name, undefined, value, location)
       setEmitFlags(declaration, EmitFlags.NoNestedSourceMaps)
@@ -75,16 +98,25 @@ object Destructuring {
     }
 
   }
-  def flattenVariableDestructuring(node: VariableDeclaration,
-      value: Expression, visitor: ((Node) => VisitResult[Node]),
+  def flattenVariableDestructuring(
+      node: VariableDeclaration,
+      value: Expression,
+      visitor: ((Node) => VisitResult[Node]),
       recordTempVariable: ((Identifier) => Unit)) = {
     val declarations: Array[VariableDeclaration] = Array()
     var pendingAssignments: Array[Expression] = zeroOfMyType
-    flattenDestructuring(node, value, node, emitAssignment,
-        emitTempVariableAssignment, visitor)
+    flattenDestructuring(
+      node,
+      value,
+      node,
+      emitAssignment,
+      emitTempVariableAssignment,
+      visitor)
     return declarations
-    def emitAssignment(name: Identifier, value: Expression,
-        location: TextRange, original: Node) = {
+    def emitAssignment(name: Identifier,
+                       value: Expression,
+                       location: TextRange,
+                       original: Node) = {
       if (pendingAssignments) {
         pendingAssignments.push(value)
         (value = inlineExpressions(pendingAssignments))
@@ -120,18 +152,26 @@ object Destructuring {
     }
 
   }
-  def flattenVariableDestructuringToExpression(node: VariableDeclaration,
+  def flattenVariableDestructuringToExpression(
+      node: VariableDeclaration,
       recordTempVariable: ((Identifier) => Unit),
       nameSubstitution: ((Identifier) => Expression),
       visitor: ((Node) => VisitResult[Node])) = {
     val pendingAssignments: Array[Expression] = Array()
-    flattenDestructuring(node, undefined, node, emitAssignment,
-        emitTempVariableAssignment, visitor)
+    flattenDestructuring(
+      node,
+      undefined,
+      node,
+      emitAssignment,
+      emitTempVariableAssignment,
+      visitor)
     val expression = inlineExpressions(pendingAssignments)
     aggregateTransformFlags(expression)
     return expression
-    def emitAssignment(name: Identifier, value: Expression,
-        location: TextRange, original: Node) = {
+    def emitAssignment(name: Identifier,
+                       value: Expression,
+                       location: TextRange,
+                       original: Node) = {
       val left = ((nameSubstitution && nameSubstitution(name)) || name)
       emitPendingAssignment(left, value, location, original)
 
@@ -142,8 +182,10 @@ object Destructuring {
       return name
 
     }
-    def emitPendingAssignment(name: Expression, value: Expression,
-        location: TextRange, original: Node) = {
+    def emitPendingAssignment(name: Expression,
+                              value: Expression,
+                              location: TextRange,
+                              original: Node) = {
       val expression = createAssignment(name, value, location)
       (expression.original = original)
       setEmitFlags(expression, EmitFlags.NoNestedSourceMaps)
@@ -155,7 +197,8 @@ object Destructuring {
   }
   def flattenDestructuring(
       root: (VariableDeclaration | ParameterDeclaration | BindingElement | BinaryExpression),
-      value: Expression, location: TextRange,
+      value: Expression,
+      location: TextRange,
       emitAssignment: ((Identifier, Expression, TextRange, Node) => Unit),
       emitTempVariableAssignment: ((Expression, TextRange) => Identifier),
       visitor: ((Node) => VisitResult[Node])) = {
@@ -172,13 +215,16 @@ object Destructuring {
     }
     def emitDestructuringAssignment(
         bindingTarget: (Expression | ShorthandPropertyAssignment),
-        value: Expression, location: TextRange) = {
+        value: Expression,
+        location: TextRange) = {
       var target: Expression = zeroOfMyType
       if (isShorthandPropertyAssignment(bindingTarget)) {
         val initializer =
           (if (visitor)
-             visitNode(bindingTarget.objectAssignmentInitializer, visitor,
-                 isExpression)
+             visitNode(
+               bindingTarget.objectAssignmentInitializer,
+               visitor,
+               isExpression)
            else bindingTarget.objectAssignmentInitializer)
         if (initializer) {
           (value = createDefaultValueCheck(value, initializer, location))
@@ -199,11 +245,15 @@ object Destructuring {
       }
       if ((target.kind === SyntaxKind.ObjectLiteralExpression)) {
         emitObjectLiteralAssignment(
-            target.asInstanceOf[ObjectLiteralExpression], value, location)
+          target.asInstanceOf[ObjectLiteralExpression],
+          value,
+          location)
 
       } else if ((target.kind === SyntaxKind.ArrayLiteralExpression)) {
-        emitArrayLiteralAssignment(target.asInstanceOf[ArrayLiteralExpression],
-            value, location)
+        emitArrayLiteralAssignment(
+          target.asInstanceOf[ArrayLiteralExpression],
+          value,
+          location)
 
       } else {
         val name = getMutableClone(target.asInstanceOf[Identifier])
@@ -215,7 +265,8 @@ object Destructuring {
 
     }
     def emitObjectLiteralAssignment(target: ObjectLiteralExpression,
-        value: Expression, location: TextRange) = {
+                                    value: Expression,
+                                    location: TextRange) = {
       val properties = target.properties
       if ((properties.length !== 1)) {
         (value =
@@ -226,14 +277,20 @@ object Destructuring {
         val p = zeroOfMyType = fresh1 {
           if (((p.kind === SyntaxKind.PropertyAssignment) || (p.kind === SyntaxKind.ShorthandPropertyAssignment))) {
             val propName =
-              (p.asInstanceOf[PropertyAssignment]).name.asInstanceOf[(Identifier | LiteralExpression)]
+              (p.asInstanceOf[PropertyAssignment])
+                .name
+                .asInstanceOf[(Identifier | LiteralExpression)]
             val target =
               (if ((p.kind === SyntaxKind.ShorthandPropertyAssignment))
                  p.asInstanceOf[ShorthandPropertyAssignment]
                else
-                 ((p.asInstanceOf[PropertyAssignment]).initializer || propName))
-            emitDestructuringAssignment(target,
-                createDestructuringPropertyAccess(value, propName), p)
+                 ((p
+                   .asInstanceOf[PropertyAssignment])
+                   .initializer || propName))
+            emitDestructuringAssignment(
+              target,
+              createDestructuringPropertyAccess(value, propName),
+              p)
 
           }
 
@@ -242,7 +299,8 @@ object Destructuring {
 
     }
     def emitArrayLiteralAssignment(target: ArrayLiteralExpression,
-        value: Expression, location: TextRange) = {
+                                   value: Expression,
+                                   location: TextRange) = {
       val elements = target.elements
       val numElements = elements.length
       if ((numElements !== 1)) {
@@ -257,13 +315,16 @@ object Destructuring {
             val e = elements(i)
             if ((e.kind !== SyntaxKind.OmittedExpression)) {
               if ((e.kind !== SyntaxKind.SpreadElementExpression)) {
-                emitDestructuringAssignment(e,
-                    createElementAccess(value, createLiteral(i)), e)
+                emitDestructuringAssignment(
+                  e,
+                  createElementAccess(value, createLiteral(i)),
+                  e)
 
               } else if ((i === (numElements - 1))) {
                 emitDestructuringAssignment(
-                    (e.asInstanceOf[SpreadElementExpression]).expression,
-                    createArraySlice(value, i), e)
+                  (e.asInstanceOf[SpreadElementExpression]).expression,
+                  createArraySlice(value, i),
+                  e)
 
               }
 
@@ -295,8 +356,11 @@ object Destructuring {
         val elements = name.elements
         val numElements = elements.length
         if ((numElements !== 1)) {
-          (value = ensureIdentifier(value, (numElements !== 0), target,
-              emitTempVariableAssignment))
+          (value = ensureIdentifier(
+            value,
+            (numElements !== 0),
+            target,
+            emitTempVariableAssignment))
 
         }
         {
@@ -310,8 +374,9 @@ object Destructuring {
               } else if ((name.kind === SyntaxKind.ObjectBindingPattern)) {
                 val propName = (element.propertyName || element.name
                     .asInstanceOf[Identifier])
-                emitBindingElement(element,
-                    createDestructuringPropertyAccess(value, propName))
+                emitBindingElement(
+                  element,
+                  createDestructuringPropertyAccess(value, propName))
 
               } else {
                 if ((!element.dotDotDotToken)) {
@@ -335,21 +400,30 @@ object Destructuring {
       }
 
     }
-    def createDefaultValueCheck(value: Expression, defaultValue: Expression,
-        location: TextRange): Expression = {
+    def createDefaultValueCheck(value: Expression,
+                                defaultValue: Expression,
+                                location: TextRange): Expression = {
       (value =
         ensureIdentifier(value, true, location, emitTempVariableAssignment))
-      return createConditional(createStrictEquality(value, createVoidZero()),
-          createToken(SyntaxKind.QuestionToken), defaultValue,
-          createToken(SyntaxKind.ColonToken), value)
+      return createConditional(
+        createStrictEquality(value, createVoidZero()),
+        createToken(SyntaxKind.QuestionToken),
+        defaultValue,
+        createToken(SyntaxKind.ColonToken),
+        value)
 
     }
-    def createDestructuringPropertyAccess(expression: Expression,
+    def createDestructuringPropertyAccess(
+        expression: Expression,
         propertyName: PropertyName): LeftHandSideExpression = {
       if (isComputedPropertyName(propertyName)) {
-        return createElementAccess(expression,
-            ensureIdentifier(propertyName.expression, false, propertyName,
-                emitTempVariableAssignment))
+        return createElementAccess(
+          expression,
+          ensureIdentifier(
+            propertyName.expression,
+            false,
+            propertyName,
+            emitTempVariableAssignment))
 
       } else if (isLiteralExpression(propertyName)) {
         val clone = getSynthesizedClone(propertyName)
@@ -363,8 +437,9 @@ object Destructuring {
           return createPropertyAccess(expression, clone)
 
         } else {
-          return createPropertyAccess(expression,
-              createIdentifier(unescapeIdentifier(propertyName.text)))
+          return createPropertyAccess(
+            expression,
+            createIdentifier(unescapeIdentifier(propertyName.text)))
 
         }
 
@@ -373,10 +448,12 @@ object Destructuring {
     }
 
   }
-  def ensureIdentifier(value: Expression, reuseIdentifierExpressions: Boolean,
-      location: TextRange,
-      emitTempVariableAssignment: ((Expression, TextRange) => Identifier),
-      visitor: ((Node) => VisitResult[Node])) = {
+  def ensureIdentifier(value: Expression,
+                       reuseIdentifierExpressions: Boolean,
+                       location: TextRange,
+                       emitTempVariableAssignment: ((Expression,
+                                                     TextRange) => Identifier),
+                       visitor: ((Node) => VisitResult[Node])) = {
     if ((isIdentifier(value) && reuseIdentifierExpressions)) {
       return value
 

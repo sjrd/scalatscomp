@@ -8,8 +8,10 @@ object Emitter {
   }
   val id = ((s: SourceFile) => s)
   val nullTransformers: Array[Transformer] = Array((_underscore_ => id))
-  def emitFiles(resolver: EmitResolver, host: EmitHost,
-      targetSourceFile: SourceFile, emitOnlyDtsFiles: Boolean): EmitResult = {
+  def emitFiles(resolver: EmitResolver,
+                host: EmitHost,
+                targetSourceFile: SourceFile,
+                emitOnlyDtsFiles: Boolean): EmitResult = {
     val delimiters = createDelimiterMap()
     val brackets = createBracketsMap()
     val extendsHelper =
@@ -92,12 +94,16 @@ object Emitter {
 
       }
     }
-    return Map("emitSkipped" -> emitSkipped,
-        "diagnostics" -> emitterDiagnostics.getDiagnostics(),
-        "emittedFiles" -> emittedFilesList, "sourceMaps" -> sourceMapDataList)
-    def emitFile(jsFilePath: String, sourceMapFilePath: String,
-        declarationFilePath: String, sourceFiles: Array[SourceFile],
-        isBundledEmit: Boolean) = {
+    return Map(
+      "emitSkipped" -> emitSkipped,
+      "diagnostics" -> emitterDiagnostics.getDiagnostics(),
+      "emittedFiles" -> emittedFilesList,
+      "sourceMaps" -> sourceMapDataList)
+    def emitFile(jsFilePath: String,
+                 sourceMapFilePath: String,
+                 declarationFilePath: String,
+                 sourceFiles: Array[SourceFile],
+                 isBundledEmit: Boolean) = {
       if (((!host.isEmitBlocked(jsFilePath)) && (!compilerOptions.noEmit))) {
         if ((!emitOnlyDtsFiles)) {
           printFile(jsFilePath, sourceMapFilePath, sourceFiles, isBundledEmit)
@@ -109,9 +115,14 @@ object Emitter {
 
       }
       if (declarationFilePath) {
-        (emitSkipped = (writeDeclarationFile(declarationFilePath,
-              getOriginalSourceFiles(sourceFiles), isBundledEmit, host,
-              resolver, emitterDiagnostics, emitOnlyDtsFiles) || emitSkipped))
+        (emitSkipped = (writeDeclarationFile(
+            declarationFilePath,
+            getOriginalSourceFiles(sourceFiles),
+            isBundledEmit,
+            host,
+            resolver,
+            emitterDiagnostics,
+            emitOnlyDtsFiles) || emitSkipped))
 
       }
       if (((!emitSkipped) && emittedFilesList)) {
@@ -131,8 +142,10 @@ object Emitter {
       }
 
     }
-    def printFile(jsFilePath: String, sourceMapFilePath: String,
-        sourceFiles: Array[SourceFile], isBundledEmit: Boolean) = {
+    def printFile(jsFilePath: String,
+                  sourceMapFilePath: String,
+                  sourceFiles: Array[SourceFile],
+                  isBundledEmit: Boolean) = {
       sourceMap
         .initialize(jsFilePath, sourceMapFilePath, sourceFiles, isBundledEmit)
       (nodeIdToGeneratedName = Array())
@@ -156,16 +169,24 @@ object Emitter {
 
       }
       if ((compilerOptions.sourceMap && (!compilerOptions.inlineSourceMap))) {
-        writeFile(host, emitterDiagnostics, sourceMapFilePath,
-            sourceMap.getText(), false)
+        writeFile(
+          host,
+          emitterDiagnostics,
+          sourceMapFilePath,
+          sourceMap.getText(),
+          false)
 
       }
       if (sourceMapDataList) {
         sourceMapDataList.push(sourceMap.getSourceMapData())
 
       }
-      writeFile(host, emitterDiagnostics, jsFilePath, writer.getText(),
-          compilerOptions.emitBOM)
+      writeFile(
+        host,
+        emitterDiagnostics,
+        jsFilePath,
+        writer.getText(),
+        compilerOptions.emitBOM)
       sourceMap.reset()
       comments.reset()
       writer.reset()
@@ -289,7 +310,7 @@ object Emitter {
           return emitQualifiedName(node.asInstanceOf[QualifiedName])
         case SyntaxKind.ComputedPropertyName =>
           return emitComputedPropertyName(
-              node.asInstanceOf[ComputedPropertyName])
+            node.asInstanceOf[ComputedPropertyName])
         case SyntaxKind.TypeParameter =>
           return emitTypeParameter(node.asInstanceOf[TypeParameterDeclaration])
         case SyntaxKind.Parameter =>
@@ -300,7 +321,7 @@ object Emitter {
           return emitPropertySignature(node.asInstanceOf[PropertySignature])
         case SyntaxKind.PropertyDeclaration =>
           return emitPropertyDeclaration(
-              node.asInstanceOf[PropertyDeclaration])
+            node.asInstanceOf[PropertyDeclaration])
         case SyntaxKind.MethodSignature =>
           return emitMethodSignature(node.asInstanceOf[MethodSignature])
         case SyntaxKind.MethodDeclaration =>
@@ -309,15 +330,15 @@ object Emitter {
           return emitConstructor(node.asInstanceOf[ConstructorDeclaration])
         case SyntaxKind.GetAccessor | SyntaxKind.SetAccessor =>
           return emitAccessorDeclaration(
-              node.asInstanceOf[AccessorDeclaration])
+            node.asInstanceOf[AccessorDeclaration])
         case SyntaxKind.CallSignature =>
           return emitCallSignature(node.asInstanceOf[CallSignatureDeclaration])
         case SyntaxKind.ConstructSignature =>
           return emitConstructSignature(
-              node.asInstanceOf[ConstructSignatureDeclaration])
+            node.asInstanceOf[ConstructSignatureDeclaration])
         case SyntaxKind.IndexSignature =>
           return emitIndexSignature(
-              node.asInstanceOf[IndexSignatureDeclaration])
+            node.asInstanceOf[IndexSignatureDeclaration])
         case SyntaxKind.TypePredicate =>
           return emitTypePredicate(node.asInstanceOf[TypePredicateNode])
         case SyntaxKind.TypeReference =>
@@ -340,20 +361,20 @@ object Emitter {
           return emitIntersectionType(node.asInstanceOf[IntersectionTypeNode])
         case SyntaxKind.ParenthesizedType =>
           return emitParenthesizedType(
-              node.asInstanceOf[ParenthesizedTypeNode])
+            node.asInstanceOf[ParenthesizedTypeNode])
         case SyntaxKind.ExpressionWithTypeArguments =>
           return emitExpressionWithTypeArguments(
-              node.asInstanceOf[ExpressionWithTypeArguments])
+            node.asInstanceOf[ExpressionWithTypeArguments])
         case SyntaxKind.ThisType =>
           return emitThisType()
         case SyntaxKind.LiteralType =>
           return emitLiteralType(node.asInstanceOf[LiteralTypeNode])
         case SyntaxKind.ObjectBindingPattern =>
           return emitObjectBindingPattern(
-              node.asInstanceOf[ObjectBindingPattern])
+            node.asInstanceOf[ObjectBindingPattern])
         case SyntaxKind.ArrayBindingPattern =>
           return emitArrayBindingPattern(
-              node.asInstanceOf[ArrayBindingPattern])
+            node.asInstanceOf[ArrayBindingPattern])
         case SyntaxKind.BindingElement =>
           return emitBindingElement(node.asInstanceOf[BindingElement])
         case SyntaxKind.TemplateSpan =>
@@ -368,7 +389,7 @@ object Emitter {
           return emitEmptyStatement()
         case SyntaxKind.ExpressionStatement =>
           return emitExpressionStatement(
-              node.asInstanceOf[ExpressionStatement])
+            node.asInstanceOf[ExpressionStatement])
         case SyntaxKind.IfStatement =>
           return emitIfStatement(node.asInstanceOf[IfStatement])
         case SyntaxKind.DoStatement =>
@@ -401,21 +422,21 @@ object Emitter {
           return emitDebuggerStatement(node.asInstanceOf[DebuggerStatement])
         case SyntaxKind.VariableDeclaration =>
           return emitVariableDeclaration(
-              node.asInstanceOf[VariableDeclaration])
+            node.asInstanceOf[VariableDeclaration])
         case SyntaxKind.VariableDeclarationList =>
           return emitVariableDeclarationList(
-              node.asInstanceOf[VariableDeclarationList])
+            node.asInstanceOf[VariableDeclarationList])
         case SyntaxKind.FunctionDeclaration =>
           return emitFunctionDeclaration(
-              node.asInstanceOf[FunctionDeclaration])
+            node.asInstanceOf[FunctionDeclaration])
         case SyntaxKind.ClassDeclaration =>
           return emitClassDeclaration(node.asInstanceOf[ClassDeclaration])
         case SyntaxKind.InterfaceDeclaration =>
           return emitInterfaceDeclaration(
-              node.asInstanceOf[InterfaceDeclaration])
+            node.asInstanceOf[InterfaceDeclaration])
         case SyntaxKind.TypeAliasDeclaration =>
           return emitTypeAliasDeclaration(
-              node.asInstanceOf[TypeAliasDeclaration])
+            node.asInstanceOf[TypeAliasDeclaration])
         case SyntaxKind.EnumDeclaration =>
           return emitEnumDeclaration(node.asInstanceOf[EnumDeclaration])
         case SyntaxKind.ModuleDeclaration =>
@@ -426,7 +447,7 @@ object Emitter {
           return emitCaseBlock(node.asInstanceOf[CaseBlock])
         case SyntaxKind.ImportEqualsDeclaration =>
           return emitImportEqualsDeclaration(
-              node.asInstanceOf[ImportEqualsDeclaration])
+            node.asInstanceOf[ImportEqualsDeclaration])
         case SyntaxKind.ImportDeclaration =>
           return emitImportDeclaration(node.asInstanceOf[ImportDeclaration])
         case SyntaxKind.ImportClause =>
@@ -449,7 +470,7 @@ object Emitter {
           return
         case SyntaxKind.ExternalModuleReference =>
           return emitExternalModuleReference(
-              node.asInstanceOf[ExternalModuleReference])
+            node.asInstanceOf[ExternalModuleReference])
         case SyntaxKind.JsxText =>
           return emitJsxText(node.asInstanceOf[JsxText])
         case SyntaxKind.JsxOpeningElement =>
@@ -474,7 +495,7 @@ object Emitter {
           return emitPropertyAssignment(node.asInstanceOf[PropertyAssignment])
         case SyntaxKind.ShorthandPropertyAssignment =>
           return emitShorthandPropertyAssignment(
-              node.asInstanceOf[ShorthandPropertyAssignment])
+            node.asInstanceOf[ShorthandPropertyAssignment])
         case SyntaxKind.EnumMember =>
           return emitEnumMember(node.asInstanceOf[EnumMember])
         case _ =>
@@ -502,28 +523,28 @@ object Emitter {
           return
         case SyntaxKind.ArrayLiteralExpression =>
           return emitArrayLiteralExpression(
-              node.asInstanceOf[ArrayLiteralExpression])
+            node.asInstanceOf[ArrayLiteralExpression])
         case SyntaxKind.ObjectLiteralExpression =>
           return emitObjectLiteralExpression(
-              node.asInstanceOf[ObjectLiteralExpression])
+            node.asInstanceOf[ObjectLiteralExpression])
         case SyntaxKind.PropertyAccessExpression =>
           return emitPropertyAccessExpression(
-              node.asInstanceOf[PropertyAccessExpression])
+            node.asInstanceOf[PropertyAccessExpression])
         case SyntaxKind.ElementAccessExpression =>
           return emitElementAccessExpression(
-              node.asInstanceOf[ElementAccessExpression])
+            node.asInstanceOf[ElementAccessExpression])
         case SyntaxKind.CallExpression =>
           return emitCallExpression(node.asInstanceOf[CallExpression])
         case SyntaxKind.NewExpression =>
           return emitNewExpression(node.asInstanceOf[NewExpression])
         case SyntaxKind.TaggedTemplateExpression =>
           return emitTaggedTemplateExpression(
-              node.asInstanceOf[TaggedTemplateExpression])
+            node.asInstanceOf[TaggedTemplateExpression])
         case SyntaxKind.TypeAssertionExpression =>
           return emitTypeAssertionExpression(node.asInstanceOf[TypeAssertion])
         case SyntaxKind.ParenthesizedExpression =>
           return emitParenthesizedExpression(
-              node.asInstanceOf[ParenthesizedExpression])
+            node.asInstanceOf[ParenthesizedExpression])
         case SyntaxKind.FunctionExpression =>
           return emitFunctionExpression(node.asInstanceOf[FunctionExpression])
         case SyntaxKind.ArrowFunction =>
@@ -538,22 +559,22 @@ object Emitter {
           return emitAwaitExpression(node.asInstanceOf[AwaitExpression])
         case SyntaxKind.PrefixUnaryExpression =>
           return emitPrefixUnaryExpression(
-              node.asInstanceOf[PrefixUnaryExpression])
+            node.asInstanceOf[PrefixUnaryExpression])
         case SyntaxKind.PostfixUnaryExpression =>
           return emitPostfixUnaryExpression(
-              node.asInstanceOf[PostfixUnaryExpression])
+            node.asInstanceOf[PostfixUnaryExpression])
         case SyntaxKind.BinaryExpression =>
           return emitBinaryExpression(node.asInstanceOf[BinaryExpression])
         case SyntaxKind.ConditionalExpression =>
           return emitConditionalExpression(
-              node.asInstanceOf[ConditionalExpression])
+            node.asInstanceOf[ConditionalExpression])
         case SyntaxKind.TemplateExpression =>
           return emitTemplateExpression(node.asInstanceOf[TemplateExpression])
         case SyntaxKind.YieldExpression =>
           return emitYieldExpression(node.asInstanceOf[YieldExpression])
         case SyntaxKind.SpreadElementExpression =>
           return emitSpreadElementExpression(
-              node.asInstanceOf[SpreadElementExpression])
+            node.asInstanceOf[SpreadElementExpression])
         case SyntaxKind.ClassExpression =>
           return emitClassExpression(node.asInstanceOf[ClassExpression])
         case SyntaxKind.OmittedExpression =>
@@ -566,10 +587,10 @@ object Emitter {
           return emitJsxElement(node.asInstanceOf[JsxElement])
         case SyntaxKind.JsxSelfClosingElement =>
           return emitJsxSelfClosingElement(
-              node.asInstanceOf[JsxSelfClosingElement])
+            node.asInstanceOf[JsxSelfClosingElement])
         case SyntaxKind.PartiallyEmittedExpression =>
           return emitPartiallyEmittedExpression(
-              node.asInstanceOf[PartiallyEmittedExpression])
+            node.asInstanceOf[PartiallyEmittedExpression])
         case _ =>
       }
 
@@ -585,7 +606,7 @@ object Emitter {
     def emitLiteral(node: LiteralLikeNode) = {
       val text = getLiteralTextOfNode(node)
       if ((((compilerOptions.sourceMap || compilerOptions.inlineSourceMap)) && (((node.kind === SyntaxKind.StringLiteral) || isTemplateLiteralKind(
-              node.kind))))) {
+            node.kind))))) {
         writer.writeLiteral(text)
 
       } else {
@@ -839,8 +860,10 @@ object Emitter {
       } else {
         val preferNewLine =
           (if (node.multiLine) ListFormat.PreferNewLine else ListFormat.None)
-        emitExpressionList(node, elements,
-            (ListFormat.ArrayLiteralExpressionElements | preferNewLine))
+        emitExpressionList(
+          node,
+          elements,
+          (ListFormat.ArrayLiteralExpressionElements | preferNewLine))
 
       }
 
@@ -862,8 +885,10 @@ object Emitter {
           (if ((languageVersion >= ScriptTarget.ES5))
              ListFormat.AllowTrailingComma
            else ListFormat.None)
-        emitList(node, properties,
-            ((ListFormat.ObjectLiteralExpressionProperties | allowTrailingComma) | preferNewLine))
+        emitList(
+          node,
+          properties,
+          ((ListFormat.ObjectLiteralExpressionProperties | allowTrailingComma) | preferNewLine))
         if (indentedFlag) {
           decreaseIndent()
 
@@ -878,8 +903,10 @@ object Emitter {
       if ((!((getEmitFlags(node) & EmitFlags.NoIndentation)))) {
         val dotRangeStart = node.expression.end
         val dotRangeEnd = (skipTrivia(currentText, node.expression.end) + 1)
-        val dotToken = Map("kind" -> SyntaxKind.DotToken,
-            "pos" -> dotRangeStart, "end" -> dotRangeEnd).asInstanceOf[Node]
+        val dotToken = Map(
+          "kind" -> SyntaxKind.DotToken,
+          "pos" -> dotRangeStart,
+          "end" -> dotRangeEnd).asInstanceOf[Node]
         (indentBeforeDot = needsIndentation(node, node.expression, dotToken))
         (indentAfterDot = needsIndentation(node, dotToken, node.name))
 
@@ -887,7 +914,7 @@ object Emitter {
       emitExpression(node.expression)
       increaseIndentIf(indentBeforeDot)
       val shouldEmitDotDot = ((!indentBeforeDot) && needsDotDotForPropertyAccess(
-            node.expression))
+          node.expression))
       write((if (shouldEmitDotDot) ".." else "."))
       increaseIndentIf(indentAfterDot)
       emit(node.name)
@@ -901,10 +928,9 @@ object Emitter {
         return (text.indexOf(tokenToString(SyntaxKind.DotToken)) < 0)
 
       } else if ((isPropertyAccessExpression(expression) || isElementAccessExpression(
-              expression))) {
+                   expression))) {
         val constantValue = getConstantValue(expression)
-        return ((isFinite(constantValue) && (Math
-          .floor(constantValue) === constantValue)) && compilerOptions.removeComments)
+        return ((isFinite(constantValue) && (Math.floor(constantValue) === constantValue)) && compilerOptions.removeComments)
 
       }
 
@@ -919,16 +945,20 @@ object Emitter {
     def emitCallExpression(node: CallExpression) = {
       emitExpression(node.expression)
       emitTypeArguments(node, node.typeArguments)
-      emitExpressionList(node, node.arguments,
-          ListFormat.CallExpressionArguments)
+      emitExpressionList(
+        node,
+        node.arguments,
+        ListFormat.CallExpressionArguments)
 
     }
     def emitNewExpression(node: NewExpression) = {
       write("new ")
       emitExpression(node.expression)
       emitTypeArguments(node, node.typeArguments)
-      emitExpressionList(node, node.arguments,
-          ListFormat.NewExpressionArguments)
+      emitExpressionList(
+        node,
+        node.arguments,
+        ListFormat.NewExpressionArguments)
 
     }
     def emitTaggedTemplateExpression(node: TaggedTemplateExpression) = {
@@ -1001,16 +1031,14 @@ object Emitter {
     }
     def shouldEmitWhitespaceBeforeOperand(node: PrefixUnaryExpression) = {
       val operand = node.operand
-      return ((operand.kind === SyntaxKind.PrefixUnaryExpression) && (((((node.operator === SyntaxKind.PlusToken) && ((((
-          operand
-            .asInstanceOf[PrefixUnaryExpression])
+      return ((operand.kind === SyntaxKind.PrefixUnaryExpression) && (((((node.operator === SyntaxKind.PlusToken) && ((((operand
+        .asInstanceOf[PrefixUnaryExpression])
         .operator === SyntaxKind.PlusToken) || ((operand
-            .asInstanceOf[PrefixUnaryExpression])
-        .operator === SyntaxKind.PlusPlusToken))))) || (((node.operator === SyntaxKind.MinusToken) && ((((
-          operand
-            .asInstanceOf[PrefixUnaryExpression])
+        .asInstanceOf[PrefixUnaryExpression])
+        .operator === SyntaxKind.PlusPlusToken))))) || (((node.operator === SyntaxKind.MinusToken) && ((((operand
+        .asInstanceOf[PrefixUnaryExpression])
         .operator === SyntaxKind.MinusToken) || ((operand
-            .asInstanceOf[PrefixUnaryExpression])
+        .asInstanceOf[PrefixUnaryExpression])
         .operator === SyntaxKind.MinusMinusToken))))))))
 
     }
@@ -1026,8 +1054,9 @@ object Emitter {
       val indentAfterOperator =
         needsIndentation(node, node.operatorToken, node.right)
       emitExpression(node.left)
-      increaseIndentIf(indentBeforeOperator,
-          (if (isCommaOperator) " " else undefined))
+      increaseIndentIf(
+        indentBeforeOperator,
+        (if (isCommaOperator) " " else undefined))
       writeTokenText(node.operatorToken.kind)
       increaseIndentIf(indentAfterOperator, " ")
       emitExpression(node.right)
@@ -1302,9 +1331,9 @@ object Emitter {
     }
     def emitVariableDeclarationList(node: VariableDeclarationList) = {
       write(
-          (if (isLet(node)) "let "
-           else (if (isConst(node)) "const "
-                 else "var ")))
+        (if (isLet(node)) "let "
+         else (if (isConst(node)) "const "
+               else "var ")))
       emitList(node, node.declarations, ListFormat.VariableDeclarationList)
 
     }
@@ -1321,7 +1350,8 @@ object Emitter {
       emitSignatureAndBody(node, emitSignatureHead)
 
     }
-    def emitSignatureAndBody(node: FunctionLikeDeclaration,
+    def emitSignatureAndBody(
+        node: FunctionLikeDeclaration,
         emitSignatureHead: ((SignatureDeclaration) => Unit)) = {
       val body = node.body
       if (body) {
@@ -1378,22 +1408,29 @@ object Emitter {
         return false
 
       }
-      if (((!nodeIsSynthesized(body)) && (!rangeIsOnSingleLine(body,
-              currentSourceFile)))) {
+      if (((!nodeIsSynthesized(body)) && (!rangeIsOnSingleLine(
+            body,
+            currentSourceFile)))) {
         return false
 
       }
-      if ((shouldWriteLeadingLineTerminator(body, body.statements,
-              ListFormat.PreserveLines) || shouldWriteClosingLineTerminator(
-              body, body.statements, ListFormat.PreserveLines))) {
+      if ((shouldWriteLeadingLineTerminator(
+            body,
+            body.statements,
+            ListFormat.PreserveLines) || shouldWriteClosingLineTerminator(
+            body,
+            body.statements,
+            ListFormat.PreserveLines))) {
         return false
 
       }
       var previousStatement: Statement = zeroOfMyType
       (body.statements).foreach { fresh7 =>
         val statement = zeroOfMyType = fresh7 {
-          if (shouldWriteSeparatingLineTerminator(previousStatement, statement,
-                  ListFormat.PreserveLines)) {
+          if (shouldWriteSeparatingLineTerminator(
+                previousStatement,
+                statement,
+                ListFormat.PreserveLines)) {
             return false
 
           }
@@ -1407,10 +1444,12 @@ object Emitter {
     def emitBlockFunctionBody(body: Block) = {
       write(" {")
       increaseIndent()
-      emitBodyWithDetachedComments(body, body.statements,
-          (if (shouldEmitBlockFunctionBodyOnSingleLine(body))
-             emitBlockFunctionBodyOnSingleLine
-           else emitBlockFunctionBodyWorker))
+      emitBodyWithDetachedComments(
+        body,
+        body.statements,
+        (if (shouldEmitBlockFunctionBodyOnSingleLine(body))
+           emitBlockFunctionBodyOnSingleLine
+         else emitBlockFunctionBodyWorker))
       decreaseIndent()
       writeToken(SyntaxKind.CloseBraceToken, body.statements.end, body)
 
@@ -1419,19 +1458,25 @@ object Emitter {
       emitBlockFunctionBodyWorker(body, true)
 
     }
-    def emitBlockFunctionBodyWorker(body: Block,
+    def emitBlockFunctionBodyWorker(
+        body: Block,
         emitBlockFunctionBodyOnSingleLine: Boolean) = {
       val statementOffset = emitPrologueDirectives(body.statements, true)
       val helpersEmitted = emitHelpers(body)
       if ((((statementOffset === 0) && (!helpersEmitted)) && emitBlockFunctionBodyOnSingleLine)) {
         decreaseIndent()
-        emitList(body, body.statements,
-            ListFormat.SingleLineFunctionBodyStatements)
+        emitList(
+          body,
+          body.statements,
+          ListFormat.SingleLineFunctionBodyStatements)
         increaseIndent()
 
       } else {
-        emitList(body, body.statements,
-            ListFormat.MultiLineFunctionBodyStatements, statementOffset)
+        emitList(
+          body,
+          body.statements,
+          ListFormat.MultiLineFunctionBodyStatements,
+          statementOffset)
 
       }
 
@@ -1504,8 +1549,8 @@ object Emitter {
     def emitModuleDeclaration(node: ModuleDeclaration) = {
       emitModifiers(node, node.modifiers)
       write(
-          (if ((node.flags & NodeFlags.Namespace)) "namespace "
-           else "module "))
+        (if ((node.flags & NodeFlags.Namespace)) "namespace "
+         else "module "))
       emit(node.name)
       var body = node.body
       while ((body.kind === SyntaxKind.ModuleDeclaration)) {
@@ -1722,17 +1767,21 @@ object Emitter {
 
     }
     def emitCaseOrDefaultClauseStatements(parentNode: Node,
-        statements: NodeArray[Statement]) = {
+                                          statements: NodeArray[Statement]) = {
       val emitAsSingleStatement = ((statements.length === 1) && (((nodeIsSynthesized(
-            parentNode) || nodeIsSynthesized(statements(0))) || rangeStartPositionsAreOnSameLine(
-            parentNode, statements(0), currentSourceFile))))
+          parentNode) || nodeIsSynthesized(statements(0))) || rangeStartPositionsAreOnSameLine(
+          parentNode,
+          statements(0),
+          currentSourceFile))))
       if (emitAsSingleStatement) {
         write(" ")
         emit(statements(0))
 
       } else {
-        emitList(parentNode, statements,
-            ListFormat.CaseOrDefaultClauseStatements)
+        emitList(
+          parentNode,
+          statements,
+          ListFormat.CaseOrDefaultClauseStatements)
 
       }
 
@@ -1750,9 +1799,10 @@ object Emitter {
       write(" ")
       writeToken(SyntaxKind.OpenParenToken, openParenPos)
       emit(node.variableDeclaration)
-      writeToken(SyntaxKind.CloseParenToken,
-          (if (node.variableDeclaration) node.variableDeclaration.end
-           else openParenPos))
+      writeToken(
+        SyntaxKind.CloseParenToken,
+        (if (node.variableDeclaration) node.variableDeclaration.end
+         else openParenPos))
       write(" ")
       emit(node.block)
 
@@ -1804,7 +1854,7 @@ object Emitter {
 
     }
     def emitPrologueDirectives(statements: Array[Node],
-        startWithNewLine: Boolean): Int = {
+                               startWithNewLine: Boolean): Int = {
       {
         var i = 0
         while ((i < statements.length)) {
@@ -1954,8 +2004,9 @@ object Emitter {
       emitNodeWithPrefix(prefix, node, emitExpression)
 
     }
-    def emitNodeWithPrefix(prefix: String, node: Node,
-        emit: ((Node) => Unit)) = {
+    def emitNodeWithPrefix(prefix: String,
+                           node: Node,
+                           emit: ((Node) => Unit)) = {
       if (node) {
         write(prefix)
         emit(node)
@@ -1990,24 +2041,25 @@ object Emitter {
 
     }
     def emitTypeArguments(parentNode: Node,
-        typeArguments: NodeArray[TypeNode]) = {
+                          typeArguments: NodeArray[TypeNode]) = {
       emitList(parentNode, typeArguments, ListFormat.TypeArguments)
 
     }
-    def emitTypeParameters(parentNode: Node,
+    def emitTypeParameters(
+        parentNode: Node,
         typeParameters: NodeArray[TypeParameterDeclaration]) = {
       emitList(parentNode, typeParameters, ListFormat.TypeParameters)
 
     }
     def emitParameters(parentNode: Node,
-        parameters: NodeArray[ParameterDeclaration]) = {
+                       parameters: NodeArray[ParameterDeclaration]) = {
       emitList(parentNode, parameters, ListFormat.Parameters)
 
     }
     def emitParametersForArrow(parentNode: Node,
-        parameters: NodeArray[ParameterDeclaration]) = {
+                               parameters: NodeArray[ParameterDeclaration]) = {
       if ((((parameters && (parameters.length === 1)) && (parameters(0).`type` === undefined)) && (parameters(
-              0).pos === parentNode.pos))) {
+            0).pos === parentNode.pos))) {
         emit(parameters(0))
 
       } else {
@@ -2016,24 +2068,35 @@ object Emitter {
       }
 
     }
-    def emitParametersForIndexSignature(parentNode: Node,
+    def emitParametersForIndexSignature(
+        parentNode: Node,
         parameters: NodeArray[ParameterDeclaration]) = {
       emitList(parentNode, parameters, ListFormat.IndexSignatureParameters)
 
     }
-    def emitList(parentNode: Node, children: NodeArray[Node],
-        format: ListFormat, start: Int, count: Int) = {
+    def emitList(parentNode: Node,
+                 children: NodeArray[Node],
+                 format: ListFormat,
+                 start: Int,
+                 count: Int) = {
       emitNodeList(emit, parentNode, children, format, start, count)
 
     }
-    def emitExpressionList(parentNode: Node, children: NodeArray[Node],
-        format: ListFormat, start: Int, count: Int) = {
+    def emitExpressionList(parentNode: Node,
+                           children: NodeArray[Node],
+                           format: ListFormat,
+                           start: Int,
+                           count: Int) = {
       emitNodeList(emitExpression, parentNode, children, format, start, count)
 
     }
-    def emitNodeList(emit: ((Node) => Unit), parentNode: Node,
-        children: NodeArray[Node], format: ListFormat, start: Nothing = 0,
-        count: Nothing = (if (children) (children.length - start) else 0)) = {
+    def emitNodeList(emit: ((Node) => Unit),
+                     parentNode: Node,
+                     children: NodeArray[Node],
+                     format: ListFormat,
+                     start: Nothing = 0,
+                     count: Nothing =
+                       (if (children) (children.length - start) else 0)) = {
       val isUndefined = (children === undefined)
       if ((isUndefined && (format & ListFormat.OptionalIfUndefined))) {
         return
@@ -2081,8 +2144,10 @@ object Emitter {
               val child = children((start + i))
               if (previousSibling) {
                 write(delimiter)
-                if (shouldWriteSeparatingLineTerminator(previousSibling, child,
-                        format)) {
+                if (shouldWriteSeparatingLineTerminator(
+                      previousSibling,
+                      child,
+                      format)) {
                   if ((((format & ((ListFormat.LinesMask | ListFormat.Indented)))) === ListFormat.SingleLine)) {
                     increaseIndent()
                     (shouldDecreaseIndentAfterEmit = true)
@@ -2166,7 +2231,7 @@ object Emitter {
 
     }
     def increaseIndentIf(value: Boolean,
-        valueToWriteWhenNotIndenting: String) = {
+                         valueToWriteWhenNotIndenting: String) = {
       if (value) {
         increaseIndent()
         writeLine()
@@ -2189,7 +2254,8 @@ object Emitter {
 
     }
     def shouldWriteLeadingLineTerminator(parentNode: Node,
-        children: NodeArray[Node], format: ListFormat) = {
+                                         children: NodeArray[Node],
+                                         format: ListFormat) = {
       if ((format & ListFormat.MultiLine)) {
         return true
 
@@ -2204,12 +2270,14 @@ object Emitter {
           return (!rangeIsOnSingleLine(parentNode, currentSourceFile))
 
         } else if ((positionIsSynthesized(parentNode.pos) || nodeIsSynthesized(
-                firstChild))) {
+                     firstChild))) {
           return synthesizedNodeStartsOnNewLine(firstChild, format)
 
         } else {
-          return (!rangeStartPositionsAreOnSameLine(parentNode, firstChild,
-              currentSourceFile))
+          return (!rangeStartPositionsAreOnSameLine(
+            parentNode,
+            firstChild,
+            currentSourceFile))
 
         }
 
@@ -2219,8 +2287,9 @@ object Emitter {
       }
 
     }
-    def shouldWriteSeparatingLineTerminator(previousNode: Node, nextNode: Node,
-        format: ListFormat) = {
+    def shouldWriteSeparatingLineTerminator(previousNode: Node,
+                                            nextNode: Node,
+                                            format: ListFormat) = {
       if ((format & ListFormat.MultiLine)) {
         return true
 
@@ -2229,13 +2298,16 @@ object Emitter {
           return false
 
         } else if ((nodeIsSynthesized(previousNode) || nodeIsSynthesized(
-                nextNode))) {
-          return (synthesizedNodeStartsOnNewLine(previousNode,
-              format) || synthesizedNodeStartsOnNewLine(nextNode, format))
+                     nextNode))) {
+          return (synthesizedNodeStartsOnNewLine(previousNode, format) || synthesizedNodeStartsOnNewLine(
+            nextNode,
+            format))
 
         } else {
-          return (!rangeEndIsOnSameLineAsRangeStart(previousNode, nextNode,
-              currentSourceFile))
+          return (!rangeEndIsOnSameLineAsRangeStart(
+            previousNode,
+            nextNode,
+            currentSourceFile))
 
         }
 
@@ -2246,7 +2318,8 @@ object Emitter {
 
     }
     def shouldWriteClosingLineTerminator(parentNode: Node,
-        children: NodeArray[Node], format: ListFormat) = {
+                                         children: NodeArray[Node],
+                                         format: ListFormat) = {
       if ((format & ListFormat.MultiLine)) {
         return (((format & ListFormat.NoTrailingNewLine)) === 0)
 
@@ -2260,12 +2333,14 @@ object Emitter {
           return (!rangeIsOnSingleLine(parentNode, currentSourceFile))
 
         } else if ((positionIsSynthesized(parentNode.pos) || nodeIsSynthesized(
-                lastChild))) {
+                     lastChild))) {
           return synthesizedNodeStartsOnNewLine(lastChild, format)
 
         } else {
-          return (!rangeEndPositionsAreOnSameLine(parentNode, lastChild,
-              currentSourceFile))
+          return (!rangeEndPositionsAreOnSameLine(
+            parentNode,
+            lastChild,
+            currentSourceFile))
 
         }
 
@@ -2297,13 +2372,15 @@ object Emitter {
 
       }
       return ((((!nodeIsSynthesized(parent)) && (!nodeIsSynthesized(node1))) && (!nodeIsSynthesized(
-          node2))) && (!rangeEndIsOnSameLineAsRangeStart(node1, node2,
-          currentSourceFile)))
+        node2))) && (!rangeEndIsOnSameLineAsRangeStart(
+        node1,
+        node2,
+        currentSourceFile)))
 
     }
     def skipSynthesizedParentheses(node: Node) = {
       while (((node.kind === SyntaxKind.ParenthesizedExpression) && nodeIsSynthesized(
-              node))) {
+               node))) {
         {
           (node = (node.asInstanceOf[ParenthesizedExpression]).expression)
 
@@ -2319,26 +2396,31 @@ object Emitter {
       } else if ((isIdentifier(node) && ((nodeIsSynthesized(node) || (!node.parent))))) {
         return unescapeIdentifier(node.text)
 
-      } else if (((node.kind === SyntaxKind.StringLiteral) && (
-              node.asInstanceOf[StringLiteral]).textSourceNode)) {
-        return getTextOfNode((node.asInstanceOf[StringLiteral]).textSourceNode,
-            includeTrivia)
+      } else if (((node.kind === SyntaxKind.StringLiteral) && (node
+                   .asInstanceOf[StringLiteral])
+                   .textSourceNode)) {
+        return getTextOfNode(
+          (node.asInstanceOf[StringLiteral]).textSourceNode,
+          includeTrivia)
 
       } else if ((isLiteralExpression(node) && ((nodeIsSynthesized(node) || (!node.parent))))) {
         return node.text
 
       }
-      return getSourceTextOfNodeFromSourceFile(currentSourceFile, node,
-          includeTrivia)
+      return getSourceTextOfNodeFromSourceFile(
+        currentSourceFile,
+        node,
+        includeTrivia)
 
     }
     def getLiteralTextOfNode(node: LiteralLikeNode): String = {
-      if (((node.kind === SyntaxKind.StringLiteral) && (
-              node.asInstanceOf[StringLiteral]).textSourceNode)) {
+      if (((node.kind === SyntaxKind.StringLiteral) && (node
+            .asInstanceOf[StringLiteral])
+            .textSourceNode)) {
         val textSourceNode = (node.asInstanceOf[StringLiteral]).textSourceNode
         if (isIdentifier(textSourceNode)) {
           return (("\"" + escapeNonAsciiCharacters(
-              escapeString(getTextOfNode(textSourceNode)))) + "\"")
+            escapeString(getTextOfNode(textSourceNode)))) + "\"")
 
         } else {
           return getLiteralTextOfNode(textSourceNode)
@@ -2355,13 +2437,15 @@ object Emitter {
     }
     def isEmptyBlock(block: BlockLike) = {
       return ((block.statements.length === 0) && rangeEndIsOnSameLineAsRangeStart(
-          block, block, currentSourceFile))
+        block,
+        block,
+        currentSourceFile))
 
     }
     def isUniqueName(name: String): Boolean = {
       return (((!resolver.hasGlobalName(name)) && (!hasProperty(
-          currentFileIdentifiers,
-          name))) && (!hasProperty(generatedNameSet, name)))
+        currentFileIdentifiers,
+        name))) && (!hasProperty(generatedNameSet, name)))
 
     }
     def isUniqueLocalName(name: String, container: Node): Boolean = {
@@ -2417,8 +2501,7 @@ object Emitter {
 
     }
     def makeUniqueName(baseName: String): String = {
-      if ((baseName
-            .charCodeAt((baseName.length - 1)) !== CharacterCodes._underscore_)) {
+      if ((baseName.charCodeAt((baseName.length - 1)) !== CharacterCodes._underscore_)) {
         (baseName += "_")
 
       }
@@ -2449,8 +2532,8 @@ object Emitter {
       val baseName =
         (if ((expr.kind === SyntaxKind.StringLiteral))
            escapeIdentifier(
-               makeIdentifierFromModuleName(
-                   (expr.asInstanceOf[LiteralExpression]).text))
+             makeIdentifierFromModuleName(
+               (expr.asInstanceOf[LiteralExpression]).text))
          else "module")
       return makeUniqueName(baseName)
 
@@ -2469,10 +2552,10 @@ object Emitter {
           return makeUniqueName(getTextOfNode(node))
         case SyntaxKind.ModuleDeclaration | SyntaxKind.EnumDeclaration =>
           return generateNameForModuleOrEnum(
-              node.asInstanceOf[(ModuleDeclaration | EnumDeclaration)])
+            node.asInstanceOf[(ModuleDeclaration | EnumDeclaration)])
         case SyntaxKind.ImportDeclaration | SyntaxKind.ExportDeclaration =>
           return generateNameForImportOrExportDeclaration(
-              node.asInstanceOf[(ImportDeclaration | ExportDeclaration)])
+            node.asInstanceOf[(ImportDeclaration | ExportDeclaration)])
         case SyntaxKind.FunctionDeclaration | SyntaxKind.ClassDeclaration |
             SyntaxKind.ExportAssignment =>
           return generateNameForExportDefault()
@@ -2518,17 +2601,15 @@ object Emitter {
       if ((name.autoGenerateKind === GeneratedIdentifierKind.Node)) {
         val node = getNodeForGeneratedName(name)
         val nodeId = getNodeId(node)
-        return (nodeIdToGeneratedName(nodeId) || (
-            (
-                nodeIdToGeneratedName(nodeId) =
-                  unescapeIdentifier(generateNameForNode(node)))))
+        return (nodeIdToGeneratedName(nodeId) || ((
+          nodeIdToGeneratedName(nodeId) =
+            unescapeIdentifier(generateNameForNode(node)))))
 
       } else {
         val autoGenerateId = name.autoGenerateId
-        return (autoGeneratedIdToGeneratedName(autoGenerateId) || (
-            (
-                autoGeneratedIdToGeneratedName(autoGenerateId) =
-                  unescapeIdentifier(generateName(name)))))
+        return (autoGeneratedIdToGeneratedName(autoGenerateId) || ((
+          autoGeneratedIdToGeneratedName(autoGenerateId) =
+            unescapeIdentifier(generateName(name)))))
 
       }
 

@@ -35,7 +35,7 @@ object ES5 {
     def substitutePropertyAssignment(
         node: PropertyAssignment): PropertyAssignment = {
       val literalName = (isIdentifier(node.name) && trySubstituteReservedName(
-            node.name))
+          node.name))
       if (literalName) {
         return updatePropertyAssignment(node, literalName, node.initializer)
 
@@ -45,8 +45,8 @@ object ES5 {
     }
     def trySubstituteReservedName(name: Identifier) = {
       val token = (name.originalKeywordKind || ((if (nodeIsSynthesized(name))
-              stringToToken(name.text)
-            else undefined) ))
+                                                   stringToToken(name.text)
+                                                 else undefined) ))
       if (((token >= SyntaxKind.FirstReservedWord) && (token <= SyntaxKind.LastReservedWord))) {
         return createLiteral(name, name)
 

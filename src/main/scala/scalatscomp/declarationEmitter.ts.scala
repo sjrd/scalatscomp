@@ -6,20 +6,21 @@ object DeclarationEmitter {
     var indent: Int
     var asynchronousOutput: String
     var subModuleElementDeclarationEmitInfo: Array[
-        ModuleElementDeclarationEmitInfo]
+      ModuleElementDeclarationEmitInfo]
     var isVisible: Boolean
   }
   trait DeclarationEmit {
     var reportedDeclarationError: Boolean
     var moduleElementDeclarationEmitInfo: Array[
-        ModuleElementDeclarationEmitInfo]
+      ModuleElementDeclarationEmitInfo]
     var synchronousDeclarationOutput: String
     var referencesOutput: String
   }
   type GetSymbolAccessibilityDiagnostic =
     ((SymbolAccessibilityResult) => SymbolAccessibilityDiagnostic)
   trait EmitTextWriterWithSymbolWriter
-      extends EmitTextWriter with SymbolWriter {
+      extends EmitTextWriter
+      with SymbolWriter {
     var getSymbolAccessibilityDiagnostic: GetSymbolAccessibilityDiagnostic
   }
   trait SymbolAccessibilityDiagnostic {
@@ -27,27 +28,41 @@ object DeclarationEmitter {
     var diagnosticMessage: DiagnosticMessage
     var typeName: DeclarationName
   }
-  def getDeclarationDiagnostics(host: EmitHost, resolver: EmitResolver,
+  def getDeclarationDiagnostics(
+      host: EmitHost,
+      resolver: EmitResolver,
       targetSourceFile: SourceFile): Array[Diagnostic] = {
     val declarationDiagnostics = createDiagnosticCollection()
-    forEachExpectedEmitFile(host, getDeclarationDiagnosticsFromFile,
-        targetSourceFile)
+    forEachExpectedEmitFile(
+      host,
+      getDeclarationDiagnosticsFromFile,
+      targetSourceFile)
     return declarationDiagnostics.getDiagnostics(
-        (if (targetSourceFile) targetSourceFile.fileName else undefined))
+      (if (targetSourceFile) targetSourceFile.fileName else undefined))
     def getDeclarationDiagnosticsFromFile(obj: EmitFileNames,
-        sources: Array[SourceFile], isBundledEmit: Boolean) = {
+                                          sources: Array[SourceFile],
+                                          isBundledEmit: Boolean) = {
       const fresh1 = obj
       val declarationFilePath = fresh1.declarationFilePath
-      emitDeclarations(host, resolver, declarationDiagnostics,
-          declarationFilePath, sources, isBundledEmit, false)
+      emitDeclarations(
+        host,
+        resolver,
+        declarationDiagnostics,
+        declarationFilePath,
+        sources,
+        isBundledEmit,
+        false)
 
     }
 
   }
-  def emitDeclarations(host: EmitHost, resolver: EmitResolver,
-      emitterDiagnostics: DiagnosticCollection, declarationFilePath: String,
-      sourceFiles: Array[SourceFile], isBundledEmit: Boolean,
-      emitOnlyDtsFiles: Boolean): DeclarationEmit = {
+  def emitDeclarations(host: EmitHost,
+                       resolver: EmitResolver,
+                       emitterDiagnostics: DiagnosticCollection,
+                       declarationFilePath: String,
+                       sourceFiles: Array[SourceFile],
+                       isBundledEmit: Boolean,
+                       emitOnlyDtsFiles: Boolean): DeclarationEmit = {
     val newLine = host.getNewLine()
     val compilerOptions = host.getCompilerOptions()
     var write: ((String) => Unit) = zeroOfMyType
@@ -69,108 +84,124 @@ object DeclarationEmitter {
       (if (compilerOptions.removeComments) noop else writeJsDocComments)
     val emit = (if (compilerOptions.stripInternal) stripInternal else emitNode)
     var noDeclare: Boolean = zeroOfMyType
-    var moduleElementDeclarationEmitInfo: Array[ModuleElementDeclarationEmitInfo] =
+    var moduleElementDeclarationEmitInfo: Array[
+      ModuleElementDeclarationEmitInfo] =
       Array()
-    var asynchronousSubModuleDeclarationEmitInfo: Array[ModuleElementDeclarationEmitInfo] =
+    var asynchronousSubModuleDeclarationEmitInfo: Array[
+      ModuleElementDeclarationEmitInfo] =
       zeroOfMyType
     var referencesOutput = ""
     var usedTypeDirectiveReferences: Map[String] = zeroOfMyType
     val emittedReferencedFiles: Array[SourceFile] = Array()
     var addedGlobalFileReference = false
-    var allSourcesModuleElementDeclarationEmitInfo: Array[ModuleElementDeclarationEmitInfo] =
+    var allSourcesModuleElementDeclarationEmitInfo: Array[
+      ModuleElementDeclarationEmitInfo] =
       Array()
-    forEach(sourceFiles,
-        (sourceFile => {
-          if (isSourceFileJavaScript(sourceFile)) {
-            return
+    forEach(sourceFiles, (sourceFile => {
+                            if (isSourceFileJavaScript(sourceFile)) {
+                              return
 
-          }
-          if ((!compilerOptions.noResolve)) {
-            forEach(sourceFile.referencedFiles,
-                (fileReference => {
-                  val referencedFile =
-                    tryResolveScriptReference(host, sourceFile, fileReference)
-                  if ((referencedFile && (!contains(emittedReferencedFiles,
-                          referencedFile)))) {
-                    if (writeReferencePath(referencedFile,
-                            ((!isBundledEmit) && (!addedGlobalFileReference)),
-                            emitOnlyDtsFiles)) {
-                      (addedGlobalFileReference = true)
+                            }
+                            if ((!compilerOptions.noResolve)) {
+                              forEach(
+                                sourceFile.referencedFiles,
+                                (fileReference => {
+                                   val referencedFile =
+                                     tryResolveScriptReference(
+                                       host,
+                                       sourceFile,
+                                       fileReference)
+                                   if ((referencedFile && (!contains(
+                                         emittedReferencedFiles,
+                                         referencedFile)))) {
+                                     if (writeReferencePath(
+                                           referencedFile,
+                                           ((!isBundledEmit) && (!addedGlobalFileReference)),
+                                           emitOnlyDtsFiles)) {
+                                       (addedGlobalFileReference = true)
 
-                    }
-                    emittedReferencedFiles.push(referencedFile)
+                                     }
+                                     emittedReferencedFiles.push(
+                                       referencedFile)
 
-                  }
+                                   }
 
-                }))
+                                 }))
 
-          }
-          (resultHasExternalModuleIndicator = false)
-          if (((!isBundledEmit) || (!isExternalModule(sourceFile)))) {
-            (noDeclare = false)
-            emitSourceFile(sourceFile)
+                            }
+                            (resultHasExternalModuleIndicator = false)
+                            if (((!isBundledEmit) || (!isExternalModule(
+                                  sourceFile)))) {
+                              (noDeclare = false)
+                              emitSourceFile(sourceFile)
 
-          } else if (isExternalModule(sourceFile)) {
-            (noDeclare = true)
-            write(s"""declare module \"${getResolvedExternalModuleName(host,
-                sourceFile)}\" {""")
-            writeLine()
-            increaseIndent()
-            emitSourceFile(sourceFile)
-            decreaseIndent()
-            write("}")
-            writeLine()
+                            } else if (isExternalModule(sourceFile)) {
+                              (noDeclare = true)
+                              write(
+                                s"""declare module \"${getResolvedExternalModuleName(
+                                  host,
+                                  sourceFile)}\" {""")
+                              writeLine()
+                              increaseIndent()
+                              emitSourceFile(sourceFile)
+                              decreaseIndent()
+                              write("}")
+                              writeLine()
 
-          }
-          if (moduleElementDeclarationEmitInfo.length) {
-            val oldWriter = writer
-            forEach(moduleElementDeclarationEmitInfo,
-                (aliasEmitInfo => {
-                  if ((aliasEmitInfo.isVisible && (!aliasEmitInfo.asynchronousOutput))) {
-                    Debug.assert(
-                        (aliasEmitInfo.node.kind === SyntaxKind.ImportDeclaration))
-                    createAndSetNewTextWriterWithSymbolWriter()
-                    Debug.assert(
-                        ((aliasEmitInfo.indent === 0) || (((aliasEmitInfo.indent === 1) && isBundledEmit)))) {
-                      var i = 0
-                      while ((i < aliasEmitInfo.indent)) {
-                        {
-                          increaseIndent()
+                            }
+                            if (moduleElementDeclarationEmitInfo.length) {
+                              val oldWriter = writer
+                              forEach(
+                                moduleElementDeclarationEmitInfo,
+                                (aliasEmitInfo => {
+                                   if ((aliasEmitInfo.isVisible && (!aliasEmitInfo.asynchronousOutput))) {
+                                     Debug.assert(
+                                       (aliasEmitInfo.node.kind === SyntaxKind.ImportDeclaration))
+                                     createAndSetNewTextWriterWithSymbolWriter()
+                                     Debug.assert(
+                                       ((aliasEmitInfo.indent === 0) || (((aliasEmitInfo.indent === 1) && isBundledEmit)))) {
+                                       var i = 0
+                                       while ((i < aliasEmitInfo.indent)) {
+                                         {
+                                           increaseIndent()
 
-                        }
-                        (i += 1)
-                      }
-                    }
-                    writeImportDeclaration(
-                        aliasEmitInfo.node.asInstanceOf[ImportDeclaration])
-                    (aliasEmitInfo.asynchronousOutput = writer.getText()) {
-                      var i = 0
-                      while ((i < aliasEmitInfo.indent)) {
-                        {
-                          decreaseIndent()
+                                         }
+                                         (i += 1)
+                                       }
+                                     }
+                                     writeImportDeclaration(
+                                       aliasEmitInfo.node
+                                         .asInstanceOf[ImportDeclaration])
+                                     (aliasEmitInfo.asynchronousOutput =
+                                       writer.getText()) {
+                                       var i = 0
+                                       while ((i < aliasEmitInfo.indent)) {
+                                         {
+                                           decreaseIndent()
 
-                        }
-                        (i += 1)
-                      }
-                    }
+                                         }
+                                         (i += 1)
+                                       }
+                                     }
 
-                  }
+                                   }
 
-                }))
-            setWriter(oldWriter)
-            (allSourcesModuleElementDeclarationEmitInfo =
-              allSourcesModuleElementDeclarationEmitInfo.concat(
-                  moduleElementDeclarationEmitInfo))
-            (moduleElementDeclarationEmitInfo = Array())
+                                 }))
+                              setWriter(oldWriter)
+                              (allSourcesModuleElementDeclarationEmitInfo =
+                                allSourcesModuleElementDeclarationEmitInfo
+                                  .concat(moduleElementDeclarationEmitInfo))
+                              (moduleElementDeclarationEmitInfo = Array())
 
-          }
-          if (((((!isBundledEmit) && isExternalModule(sourceFile)) && sourceFile.moduleAugmentations.length) && (!resultHasExternalModuleIndicator))) {
-            write("export {};")
-            writeLine()
+                            }
+                            if (((((!isBundledEmit) && isExternalModule(
+                                  sourceFile)) && sourceFile.moduleAugmentations.length) && (!resultHasExternalModuleIndicator))) {
+                              write("export {};")
+                              writeLine()
 
-          }
+                            }
 
-        }))
+                          }))
     if (usedTypeDirectiveReferences) {
       (usedTypeDirectiveReferences).keys.foreach { fresh2 =>
         val directive = zeroOfMyType = fresh2 {
@@ -180,10 +211,11 @@ object DeclarationEmitter {
       }
 
     }
-    return Map("reportedDeclarationError" -> reportedDeclarationError,
-        "moduleElementDeclarationEmitInfo" -> allSourcesModuleElementDeclarationEmitInfo,
-        "synchronousDeclarationOutput" -> writer.getText(),
-        "referencesOutput" -> referencesOutput)
+    return Map(
+      "reportedDeclarationError" -> reportedDeclarationError,
+      "moduleElementDeclarationEmitInfo" -> allSourcesModuleElementDeclarationEmitInfo,
+      "synchronousDeclarationOutput" -> writer.getText(),
+      "referencesOutput" -> referencesOutput)
     def hasInternalAnnotation(range: CommentRange) = {
       val comment = currentText.substring(range.pos, range.end)
       return (comment.indexOf("@internal") >= 0)
@@ -228,68 +260,69 @@ object DeclarationEmitter {
     }
     def writeAsynchronousModuleElements(nodes: Array[Node]) = {
       val oldWriter = writer
-      forEach(nodes,
-          (declaration => {
-            var nodeToCheck: Node = zeroOfMyType
-            if ((declaration.kind === SyntaxKind.VariableDeclaration)) {
-              (nodeToCheck = declaration.parent.parent)
+      forEach(
+        nodes,
+        (declaration => {
+           var nodeToCheck: Node = zeroOfMyType
+           if ((declaration.kind === SyntaxKind.VariableDeclaration)) {
+             (nodeToCheck = declaration.parent.parent)
 
-            } else if ((((declaration.kind === SyntaxKind.NamedImports) || (declaration.kind === SyntaxKind.ImportSpecifier)) || (declaration.kind === SyntaxKind.ImportClause))) {
-              Debug.fail(
-                  "We should be getting ImportDeclaration instead to write")
+           } else if ((((declaration.kind === SyntaxKind.NamedImports) || (declaration.kind === SyntaxKind.ImportSpecifier)) || (declaration.kind === SyntaxKind.ImportClause))) {
+             Debug.fail(
+               "We should be getting ImportDeclaration instead to write")
 
-            } else {
-              (nodeToCheck = declaration)
+           } else {
+             (nodeToCheck = declaration)
 
-            }
-            var moduleElementEmitInfo = forEach(
-                moduleElementDeclarationEmitInfo,
-                (declEmitInfo =>
-                      (if ((declEmitInfo.node === nodeToCheck)) declEmitInfo
-                       else undefined)))
-            if (((!moduleElementEmitInfo) && asynchronousSubModuleDeclarationEmitInfo)) {
-              (moduleElementEmitInfo = forEach(
-                  asynchronousSubModuleDeclarationEmitInfo,
-                  (declEmitInfo =>
-                        (if ((declEmitInfo.node === nodeToCheck)) declEmitInfo
-                         else undefined))))
+           }
+           var moduleElementEmitInfo = forEach(
+             moduleElementDeclarationEmitInfo,
+             (declEmitInfo =>
+                (if ((declEmitInfo.node === nodeToCheck)) declEmitInfo
+                 else undefined)))
+           if (((!moduleElementEmitInfo) && asynchronousSubModuleDeclarationEmitInfo)) {
+             (moduleElementEmitInfo = forEach(
+               asynchronousSubModuleDeclarationEmitInfo,
+               (declEmitInfo =>
+                  (if ((declEmitInfo.node === nodeToCheck)) declEmitInfo
+                   else undefined))))
 
-            }
-            if (moduleElementEmitInfo) {
-              if ((moduleElementEmitInfo.node.kind === SyntaxKind.ImportDeclaration)) {
-                (moduleElementEmitInfo.isVisible = true)
+           }
+           if (moduleElementEmitInfo) {
+             if ((moduleElementEmitInfo.node.kind === SyntaxKind.ImportDeclaration)) {
+               (moduleElementEmitInfo.isVisible = true)
 
-              } else {
-                createAndSetNewTextWriterWithSymbolWriter() {
-                  var declarationIndent = moduleElementEmitInfo.indent
-                  while (declarationIndent) {
-                    {
-                      increaseIndent()
+             } else {
+               createAndSetNewTextWriterWithSymbolWriter() {
+                 var declarationIndent = moduleElementEmitInfo.indent
+                 while (declarationIndent) {
+                   {
+                     increaseIndent()
 
-                    }
-                    (declarationIndent -= 1)
-                  }
-                }
-                if ((nodeToCheck.kind === SyntaxKind.ModuleDeclaration)) {
-                  Debug.assert(
-                      (asynchronousSubModuleDeclarationEmitInfo === undefined))
-                  (asynchronousSubModuleDeclarationEmitInfo = Array())
+                   }
+                   (declarationIndent -= 1)
+                 }
+               }
+               if ((nodeToCheck.kind === SyntaxKind.ModuleDeclaration)) {
+                 Debug.assert(
+                   (asynchronousSubModuleDeclarationEmitInfo === undefined))
+                 (asynchronousSubModuleDeclarationEmitInfo = Array())
 
-                }
-                writeModuleElement(nodeToCheck)
-                if ((nodeToCheck.kind === SyntaxKind.ModuleDeclaration)) {
-                  (moduleElementEmitInfo.subModuleElementDeclarationEmitInfo =
-                    asynchronousSubModuleDeclarationEmitInfo)
-                  (asynchronousSubModuleDeclarationEmitInfo = undefined)
+               }
+               writeModuleElement(nodeToCheck)
+               if ((nodeToCheck.kind === SyntaxKind.ModuleDeclaration)) {
+                 (moduleElementEmitInfo.subModuleElementDeclarationEmitInfo =
+                   asynchronousSubModuleDeclarationEmitInfo)
+                 (asynchronousSubModuleDeclarationEmitInfo = undefined)
 
-                }
-                (moduleElementEmitInfo.asynchronousOutput = writer.getText())
+               }
+               (moduleElementEmitInfo.asynchronousOutput = writer.getText())
 
-              }
+             }
 
-            }
+           }
 
-          }))
+         }))
       setWriter(oldWriter)
 
     }
@@ -319,7 +352,7 @@ object DeclarationEmitter {
       if ((symbolAccessibilityResult.accessibility === SymbolAccessibility.Accessible)) {
         if ((symbolAccessibilityResult && symbolAccessibilityResult.aliasesToMakeVisible)) {
           writeAsynchronousModuleElements(
-              symbolAccessibilityResult.aliasesToMakeVisible)
+            symbolAccessibilityResult.aliasesToMakeVisible)
 
         }
 
@@ -330,21 +363,20 @@ object DeclarationEmitter {
         if (errorInfo) {
           if (errorInfo.typeName) {
             emitterDiagnostics.add(
-                createDiagnosticForNode(
-                    (symbolAccessibilityResult.errorNode || errorInfo.errorNode),
-                    errorInfo.diagnosticMessage,
-                    getTextOfNodeFromSourceText(currentText,
-                        errorInfo.typeName),
-                    symbolAccessibilityResult.errorSymbolName,
-                    symbolAccessibilityResult.errorModuleName))
+              createDiagnosticForNode(
+                (symbolAccessibilityResult.errorNode || errorInfo.errorNode),
+                errorInfo.diagnosticMessage,
+                getTextOfNodeFromSourceText(currentText, errorInfo.typeName),
+                symbolAccessibilityResult.errorSymbolName,
+                symbolAccessibilityResult.errorModuleName))
 
           } else {
             emitterDiagnostics.add(
-                createDiagnosticForNode(
-                    (symbolAccessibilityResult.errorNode || errorInfo.errorNode),
-                    errorInfo.diagnosticMessage,
-                    symbolAccessibilityResult.errorSymbolName,
-                    symbolAccessibilityResult.errorModuleName))
+              createDiagnosticForNode(
+                (symbolAccessibilityResult.errorNode || errorInfo.errorNode),
+                errorInfo.diagnosticMessage,
+                symbolAccessibilityResult.errorSymbolName,
+                symbolAccessibilityResult.errorModuleName))
 
           }
 
@@ -353,20 +385,24 @@ object DeclarationEmitter {
       }
 
     }
-    def trackSymbol(symbol: Symbol, enclosingDeclaration: Node,
-        meaning: SymbolFlags) = {
-      handleSymbolAccessibilityError(resolver.isSymbolAccessible(symbol,
-              enclosingDeclaration, meaning, true))
+    def trackSymbol(symbol: Symbol,
+                    enclosingDeclaration: Node,
+                    meaning: SymbolFlags) = {
+      handleSymbolAccessibilityError(
+        resolver
+          .isSymbolAccessible(symbol, enclosingDeclaration, meaning, true))
       recordTypeReferenceDirectivesIfNecessary(
-          resolver.getTypeReferenceDirectivesForSymbol(symbol, meaning))
+        resolver.getTypeReferenceDirectivesForSymbol(symbol, meaning))
 
     }
     def reportInaccessibleThisError() = {
       if (errorNameNode) {
         (reportedDeclarationError = true)
-        emitterDiagnostics.add(createDiagnosticForNode(errorNameNode,
-                Diagnostics.The_inferred_type_of_0_references_an_inaccessible_this_type_A_type_annotation_is_necessary,
-                declarationNameToString(errorNameNode)))
+        emitterDiagnostics.add(
+          createDiagnosticForNode(
+            errorNameNode,
+            Diagnostics.The_inferred_type_of_0_references_an_inaccessible_this_type_A_type_annotation_is_necessary,
+            declarationNameToString(errorNameNode)))
 
       }
 
@@ -383,15 +419,18 @@ object DeclarationEmitter {
 
       } else {
         (errorNameNode = declaration.name)
-        resolver.writeTypeOfDeclaration(declaration, enclosingDeclaration,
-            (TypeFormatFlags.UseTypeOfFunction | TypeFormatFlags.UseTypeAliasValue),
-            writer)
+        resolver.writeTypeOfDeclaration(
+          declaration,
+          enclosingDeclaration,
+          (TypeFormatFlags.UseTypeOfFunction | TypeFormatFlags.UseTypeAliasValue),
+          writer)
         (errorNameNode = undefined)
 
       }
 
     }
-    def writeReturnTypeAtSignature(signature: SignatureDeclaration,
+    def writeReturnTypeAtSignature(
+        signature: SignatureDeclaration,
         getSymbolAccessibilityDiagnostic: GetSymbolAccessibilityDiagnostic) = {
       (writer.getSymbolAccessibilityDiagnostic =
         getSymbolAccessibilityDiagnostic)
@@ -401,10 +440,11 @@ object DeclarationEmitter {
 
       } else {
         (errorNameNode = signature.name)
-        resolver.writeReturnTypeOfSignatureDeclaration(signature,
-            enclosingDeclaration,
-            (TypeFormatFlags.UseTypeOfFunction | TypeFormatFlags.UseTypeAliasValue),
-            writer)
+        resolver.writeReturnTypeOfSignatureDeclaration(
+          signature,
+          enclosingDeclaration,
+          (TypeFormatFlags.UseTypeOfFunction | TypeFormatFlags.UseTypeAliasValue),
+          writer)
         (errorNameNode = undefined)
 
       }
@@ -419,8 +459,10 @@ object DeclarationEmitter {
       }
 
     }
-    def emitSeparatedList(nodes: Array[Node], separator: String,
-        eachNodeEmitFn: ((Node) => Unit), canEmitFn: ((Node) => Boolean)) = {
+    def emitSeparatedList(nodes: Array[Node],
+                          separator: String,
+                          eachNodeEmitFn: ((Node) => Unit),
+                          canEmitFn: ((Node) => Boolean)) = {
       var currentWriterPos = writer.getTextPos()
       (nodes).foreach { fresh5 =>
         val node = zeroOfMyType = fresh5 {
@@ -438,18 +480,29 @@ object DeclarationEmitter {
       }
 
     }
-    def emitCommaList(nodes: Array[Node], eachNodeEmitFn: ((Node) => Unit),
-        canEmitFn: ((Node) => Boolean)) = {
+    def emitCommaList(nodes: Array[Node],
+                      eachNodeEmitFn: ((Node) => Unit),
+                      canEmitFn: ((Node) => Boolean)) = {
       emitSeparatedList(nodes, ", ", eachNodeEmitFn, canEmitFn)
 
     }
     def writeJsDocComments(declaration: Node) = {
       if (declaration) {
         val jsDocComments = getJsDocCommentsFromText(declaration, currentText)
-        emitNewLineBeforeLeadingComments(currentLineMap, writer, declaration,
-            jsDocComments)
-        emitComments(currentText, currentLineMap, writer, jsDocComments, false,
-            true, newLine, writeCommentRange)
+        emitNewLineBeforeLeadingComments(
+          currentLineMap,
+          writer,
+          declaration,
+          jsDocComments)
+        emitComments(
+          currentText,
+          currentLineMap,
+          writer,
+          jsDocComments,
+          false,
+          true,
+          newLine,
+          writeCommentRange)
 
       }
 
@@ -473,7 +526,7 @@ object DeclarationEmitter {
           return writeTextOfNode(currentText, `type`)
         case SyntaxKind.ExpressionWithTypeArguments =>
           return emitExpressionWithTypeArguments(
-              `type`.asInstanceOf[ExpressionWithTypeArguments])
+            `type`.asInstanceOf[ExpressionWithTypeArguments])
         case SyntaxKind.TypeReference =>
           return emitTypeReference(`type`.asInstanceOf[TypeReferenceNode])
         case SyntaxKind.TypeQuery =>
@@ -486,12 +539,12 @@ object DeclarationEmitter {
           return emitUnionType(`type`.asInstanceOf[UnionTypeNode])
         case SyntaxKind.IntersectionType =>
           return emitIntersectionType(
-              `type`.asInstanceOf[IntersectionTypeNode])
+            `type`.asInstanceOf[IntersectionTypeNode])
         case SyntaxKind.ParenthesizedType =>
           return emitParenType(`type`.asInstanceOf[ParenthesizedTypeNode])
         case SyntaxKind.FunctionType | SyntaxKind.ConstructorType =>
           return emitSignatureDeclarationWithJsDocComments(
-              `type`.asInstanceOf[FunctionOrConstructorTypeNode])
+            `type`.asInstanceOf[FunctionOrConstructorTypeNode])
         case SyntaxKind.TypeLiteral =>
           return emitTypeLiteral(`type`.asInstanceOf[TypeLiteralNode])
         case SyntaxKind.Identifier =>
@@ -508,13 +561,15 @@ object DeclarationEmitter {
 
         } else {
           val left =
-            (if ((entityName.kind === SyntaxKind.QualifiedName))(
-                 entityName.asInstanceOf[QualifiedName]).left
+            (if ((entityName.kind === SyntaxKind.QualifiedName))(entityName
+               .asInstanceOf[QualifiedName])
+               .left
              else
                (entityName.asInstanceOf[PropertyAccessExpression]).expression)
           val right =
-            (if ((entityName.kind === SyntaxKind.QualifiedName))(
-                 entityName.asInstanceOf[QualifiedName]).right
+            (if ((entityName.kind === SyntaxKind.QualifiedName))(entityName
+               .asInstanceOf[QualifiedName])
+               .right
              else (entityName.asInstanceOf[PropertyAccessExpression]).name)
           writeEntityName(left)
           write(".")
@@ -524,21 +579,21 @@ object DeclarationEmitter {
 
       }
       def emitEntityName(entityName: EntityNameOrEntityNameExpression) = {
-        val visibilityResult = resolver.isEntityNameVisible(entityName,
-            (if ((entityName.parent.kind === SyntaxKind.ImportEqualsDeclaration))
-               entityName.parent
-             else enclosingDeclaration))
+        val visibilityResult = resolver.isEntityNameVisible(
+          entityName,
+          (if ((entityName.parent.kind === SyntaxKind.ImportEqualsDeclaration))
+             entityName.parent
+           else enclosingDeclaration))
         handleSymbolAccessibilityError(visibilityResult)
         recordTypeReferenceDirectivesIfNecessary(
-            resolver.getTypeReferenceDirectivesForEntityName(entityName))
+          resolver.getTypeReferenceDirectivesForEntityName(entityName))
         writeEntityName(entityName)
 
       }
-      def emitExpressionWithTypeArguments(
-          node: ExpressionWithTypeArguments) = {
+      def emitExpressionWithTypeArguments(node: ExpressionWithTypeArguments) = {
         if (isEntityNameExpression(node.expression)) {
           Debug.assert(
-              ((node.expression.kind === SyntaxKind.Identifier) || (node.expression.kind === SyntaxKind.PropertyAccessExpression)))
+            ((node.expression.kind === SyntaxKind.Identifier) || (node.expression.kind === SyntaxKind.PropertyAccessExpression)))
           emitEntityName(node.expression)
           if (node.typeArguments) {
             write("<")
@@ -616,8 +671,14 @@ object DeclarationEmitter {
       (currentIdentifiers = node.identifiers)
       (isCurrentFileExternalModule = isExternalModule(node))
       (enclosingDeclaration = node)
-      emitDetachedComments(currentText, currentLineMap, writer,
-          writeCommentRange, node, newLine, true)
+      emitDetachedComments(
+        currentText,
+        currentLineMap,
+        writer,
+        writeCommentRange,
+        node,
+        newLine,
+        true)
       emitLines(node.statements)
 
     }
@@ -657,9 +718,11 @@ object DeclarationEmitter {
         write(": ")
         (writer.getSymbolAccessibilityDiagnostic =
           getDefaultExportAccessibilityDiagnostic)
-        resolver.writeTypeOfExpression(node.expression, enclosingDeclaration,
-            (TypeFormatFlags.UseTypeOfFunction | TypeFormatFlags.UseTypeAliasValue),
-            writer)
+        resolver.writeTypeOfExpression(
+          node.expression,
+          enclosingDeclaration,
+          (TypeFormatFlags.UseTypeOfFunction | TypeFormatFlags.UseTypeAliasValue),
+          writer)
         write(";")
         writeLine()
         write((if (node.isExportEquals) "export = " else "export default "))
@@ -670,14 +733,15 @@ object DeclarationEmitter {
       writeLine()
       if ((node.expression.kind === SyntaxKind.Identifier)) {
         val nodes = resolver.collectLinkedAliases(
-            node.expression.asInstanceOf[Identifier])
+          node.expression.asInstanceOf[Identifier])
         writeAsynchronousModuleElements(nodes)
 
       }
-      def getDefaultExportAccessibilityDiagnostic(): SymbolAccessibilityDiagnostic = {
+      def getDefaultExportAccessibilityDiagnostic()
+        : SymbolAccessibilityDiagnostic = {
         return Map(
-            "diagnosticMessage" -> Diagnostics.Default_export_of_the_module_has_or_is_using_private_name_0,
-            "errorNode" -> node)
+          "diagnosticMessage" -> Diagnostics.Default_export_of_the_module_has_or_is_using_private_name_0,
+          "errorNode" -> node)
 
       }
 
@@ -693,24 +757,30 @@ object DeclarationEmitter {
       } else if (((node.kind === SyntaxKind.ImportEqualsDeclaration) || (((node.parent.kind === SyntaxKind.SourceFile) && isCurrentFileExternalModule)))) {
         var isVisible: Boolean = zeroOfMyType
         if ((asynchronousSubModuleDeclarationEmitInfo && (node.parent.kind !== SyntaxKind.SourceFile))) {
-          asynchronousSubModuleDeclarationEmitInfo
-            .push(Map("node" -> node, "outputPos" -> writer.getTextPos(),
-                    "indent" -> writer.getIndent(), "isVisible" -> isVisible))
+          asynchronousSubModuleDeclarationEmitInfo.push(
+            Map(
+              "node" -> node,
+              "outputPos" -> writer.getTextPos(),
+              "indent" -> writer.getIndent(),
+              "isVisible" -> isVisible))
 
         } else {
           if ((node.kind === SyntaxKind.ImportDeclaration)) {
             val importDeclaration = node.asInstanceOf[ImportDeclaration]
             if (importDeclaration.importClause) {
               (isVisible = (((importDeclaration.importClause.name && resolver.isDeclarationVisible(
-                    importDeclaration.importClause))) || isVisibleNamedBinding(
-                    importDeclaration.importClause.namedBindings)))
+                  importDeclaration.importClause))) || isVisibleNamedBinding(
+                  importDeclaration.importClause.namedBindings)))
 
             }
 
           }
-          moduleElementDeclarationEmitInfo
-            .push(Map("node" -> node, "outputPos" -> writer.getTextPos(),
-                    "indent" -> writer.getIndent(), "isVisible" -> isVisible))
+          moduleElementDeclarationEmitInfo.push(
+            Map(
+              "node" -> node,
+              "outputPos" -> writer.getTextPos(),
+              "indent" -> writer.getIndent(),
+              "isVisible" -> isVisible))
 
         }
 
@@ -721,24 +791,24 @@ object DeclarationEmitter {
       node.kind match {
         case SyntaxKind.FunctionDeclaration =>
           return writeFunctionDeclaration(
-              node.asInstanceOf[FunctionLikeDeclaration])
+            node.asInstanceOf[FunctionLikeDeclaration])
         case SyntaxKind.VariableStatement =>
           return writeVariableStatement(node.asInstanceOf[VariableStatement])
         case SyntaxKind.InterfaceDeclaration =>
           return writeInterfaceDeclaration(
-              node.asInstanceOf[InterfaceDeclaration])
+            node.asInstanceOf[InterfaceDeclaration])
         case SyntaxKind.ClassDeclaration =>
           return writeClassDeclaration(node.asInstanceOf[ClassDeclaration])
         case SyntaxKind.TypeAliasDeclaration =>
           return writeTypeAliasDeclaration(
-              node.asInstanceOf[TypeAliasDeclaration])
+            node.asInstanceOf[TypeAliasDeclaration])
         case SyntaxKind.EnumDeclaration =>
           return writeEnumDeclaration(node.asInstanceOf[EnumDeclaration])
         case SyntaxKind.ModuleDeclaration =>
           return writeModuleDeclaration(node.asInstanceOf[ModuleDeclaration])
         case SyntaxKind.ImportEqualsDeclaration =>
           return writeImportEqualsDeclaration(
-              node.asInstanceOf[ImportEqualsDeclaration])
+            node.asInstanceOf[ImportEqualsDeclaration])
         case SyntaxKind.ImportDeclaration =>
           return writeImportDeclaration(node.asInstanceOf[ImportDeclaration])
         case _ =>
@@ -797,8 +867,8 @@ object DeclarationEmitter {
       write(" = ")
       if (isInternalModuleImportEqualsDeclaration(node)) {
         emitTypeWithNewGetSymbolAccessibilityDiagnostic(
-            node.moduleReference.asInstanceOf[EntityName],
-            getImportEntityNameVisibilityError)
+          node.moduleReference.asInstanceOf[EntityName],
+          getImportEntityNameVisibilityError)
         write(";")
 
       } else {
@@ -808,10 +878,12 @@ object DeclarationEmitter {
 
       }
       writer.writeLine()
-      def getImportEntityNameVisibilityError(): SymbolAccessibilityDiagnostic = {
+      def getImportEntityNameVisibilityError()
+        : SymbolAccessibilityDiagnostic = {
         return Map(
-            "diagnosticMessage" -> Diagnostics.Import_declaration_0_is_using_private_name_1,
-            "errorNode" -> node, "typeName" -> node.name)
+          "diagnosticMessage" -> Diagnostics.Import_declaration_0_is_using_private_name_1,
+          "errorNode" -> node,
+          "typeName" -> node.name)
 
       }
 
@@ -821,11 +893,12 @@ object DeclarationEmitter {
       if (namedBindings) {
         if ((namedBindings.kind === SyntaxKind.NamespaceImport)) {
           return resolver.isDeclarationVisible(
-              namedBindings.asInstanceOf[NamespaceImport])
+            namedBindings.asInstanceOf[NamespaceImport])
 
         } else {
-          return forEach((namedBindings.asInstanceOf[NamedImports]).elements,
-              (namedImport => resolver.isDeclarationVisible(namedImport)))
+          return forEach(
+            (namedBindings.asInstanceOf[NamedImports]).elements,
+            (namedImport => resolver.isDeclarationVisible(namedImport)))
 
         }
 
@@ -842,27 +915,32 @@ object DeclarationEmitter {
       if (node.importClause) {
         val currentWriterPos = writer.getTextPos()
         if ((node.importClause.name && resolver.isDeclarationVisible(
-                node.importClause))) {
+              node.importClause))) {
           writeTextOfNode(currentText, node.importClause.name)
 
         }
         if ((node.importClause.namedBindings && isVisibleNamedBinding(
-                node.importClause.namedBindings))) {
+              node.importClause.namedBindings))) {
           if ((currentWriterPos !== writer.getTextPos())) {
             write(", ")
 
           }
           if ((node.importClause.namedBindings.kind === SyntaxKind.NamespaceImport)) {
             write("* as ")
-            writeTextOfNode(currentText,
-                (node.importClause.namedBindings.asInstanceOf[NamespaceImport]).name)
+            writeTextOfNode(
+              currentText,
+              (node.importClause.namedBindings
+                .asInstanceOf[NamespaceImport])
+                .name)
 
           } else {
             write("{ ")
-            emitCommaList((node.importClause.namedBindings
-                      .asInstanceOf[NamedImports])
-                  .elements, emitImportOrExportSpecifier,
-                resolver.isDeclarationVisible)
+            emitCommaList(
+              (node.importClause.namedBindings
+                .asInstanceOf[NamedImports])
+                .elements,
+              emitImportOrExportSpecifier,
+              resolver.isDeclarationVisible)
             write(" }")
 
           }
@@ -882,8 +960,8 @@ object DeclarationEmitter {
       var moduleSpecifier: Node = zeroOfMyType
       if ((parent.kind === SyntaxKind.ImportEqualsDeclaration)) {
         val node = parent.asInstanceOf[ImportEqualsDeclaration]
-        (moduleSpecifier =
-          getExternalModuleImportEqualsDeclarationExpression(node))
+        (moduleSpecifier = getExternalModuleImportEqualsDeclarationExpression(
+          node))
 
       } else if ((parent.kind === SyntaxKind.ModuleDeclaration)) {
         (moduleSpecifier = (parent.asInstanceOf[ModuleDeclaration]).name)
@@ -1003,15 +1081,18 @@ object DeclarationEmitter {
       writeTextOfNode(currentText, node.name)
       emitTypeParameters(node.typeParameters)
       write(" = ")
-      emitTypeWithNewGetSymbolAccessibilityDiagnostic(node.`type`,
-          getTypeAliasDeclarationVisibilityError)
+      emitTypeWithNewGetSymbolAccessibilityDiagnostic(
+        node.`type`,
+        getTypeAliasDeclarationVisibilityError)
       write(";")
       writeLine()
       (enclosingDeclaration = prevEnclosingDeclaration)
-      def getTypeAliasDeclarationVisibilityError(): SymbolAccessibilityDiagnostic = {
+      def getTypeAliasDeclarationVisibilityError()
+        : SymbolAccessibilityDiagnostic = {
         return Map(
-            "diagnosticMessage" -> Diagnostics.Exported_type_alias_0_has_or_is_using_private_name_1,
-            "errorNode" -> node.`type`, "typeName" -> node.name)
+          "diagnosticMessage" -> Diagnostics.Exported_type_alias_0_has_or_is_using_private_name_1,
+          "errorNode" -> node.`type`,
+          "typeName" -> node.name)
 
       }
 
@@ -1049,7 +1130,8 @@ object DeclarationEmitter {
     }
     def isPrivateMethodTypeParameter(node: TypeParameterDeclaration) = {
       return ((node.parent.kind === SyntaxKind.MethodDeclaration) && hasModifier(
-          node.parent, ModifierFlags.Private))
+        node.parent,
+        ModifierFlags.Private))
 
     }
     def emitTypeParameters(typeParameters: Array[TypeParameterDeclaration]) = {
@@ -1062,17 +1144,19 @@ object DeclarationEmitter {
           write(" extends ")
           if ((((node.parent.kind === SyntaxKind.FunctionType) || (node.parent.kind === SyntaxKind.ConstructorType)) || ((node.parent.parent && (node.parent.parent.kind === SyntaxKind.TypeLiteral))))) {
             Debug.assert(
-                ((((((node.parent.kind === SyntaxKind.MethodDeclaration) || (node.parent.kind === SyntaxKind.MethodSignature)) || (node.parent.kind === SyntaxKind.FunctionType)) || (node.parent.kind === SyntaxKind.ConstructorType)) || (node.parent.kind === SyntaxKind.CallSignature)) || (node.parent.kind === SyntaxKind.ConstructSignature)))
+              ((((((node.parent.kind === SyntaxKind.MethodDeclaration) || (node.parent.kind === SyntaxKind.MethodSignature)) || (node.parent.kind === SyntaxKind.FunctionType)) || (node.parent.kind === SyntaxKind.ConstructorType)) || (node.parent.kind === SyntaxKind.CallSignature)) || (node.parent.kind === SyntaxKind.ConstructSignature)))
             emitType(node.constraint)
 
           } else {
-            emitTypeWithNewGetSymbolAccessibilityDiagnostic(node.constraint,
-                getTypeParameterConstraintVisibilityError)
+            emitTypeWithNewGetSymbolAccessibilityDiagnostic(
+              node.constraint,
+              getTypeParameterConstraintVisibilityError)
 
           }
 
         }
-        def getTypeParameterConstraintVisibilityError(): SymbolAccessibilityDiagnostic = {
+        def getTypeParameterConstraintVisibilityError()
+          : SymbolAccessibilityDiagnostic = {
           var diagnosticMessage: DiagnosticMessage = zeroOfMyType
           node.parent.kind match {
             case SyntaxKind.ClassDeclaration =>
@@ -1106,10 +1190,12 @@ object DeclarationEmitter {
                 Diagnostics.Type_parameter_0_of_exported_function_has_or_is_using_private_name_1)
             case _ =>
               Debug.fail(
-                  ("This is unknown parent for type parameter: " + node.parent.kind))
+                ("This is unknown parent for type parameter: " + node.parent.kind))
           }
-          return Map("diagnosticMessage" -> diagnosticMessage,
-              "errorNode" -> node, "typeName" -> node.name)
+          return Map(
+            "diagnosticMessage" -> diagnosticMessage,
+            "errorNode" -> node,
+            "typeName" -> node.name)
 
         }
 
@@ -1123,7 +1209,7 @@ object DeclarationEmitter {
 
     }
     def emitHeritageClause(typeReferences: Array[ExpressionWithTypeArguments],
-        isImplementsList: Boolean) = {
+                           isImplementsList: Boolean) = {
       if (typeReferences) {
         write((if (isImplementsList) " implements " else " extends "))
         emitCommaList(typeReferences, emitTypeOfTypeReference)
@@ -1131,8 +1217,9 @@ object DeclarationEmitter {
       }
       def emitTypeOfTypeReference(node: ExpressionWithTypeArguments) = {
         if (isEntityNameExpression(node.expression)) {
-          emitTypeWithNewGetSymbolAccessibilityDiagnostic(node,
-              getHeritageClauseVisibilityError)
+          emitTypeWithNewGetSymbolAccessibilityDiagnostic(
+            node,
+            getHeritageClauseVisibilityError)
 
         } else if (((!isImplementsList) && (node.expression.kind === SyntaxKind.NullKeyword))) {
           write("null")
@@ -1141,13 +1228,14 @@ object DeclarationEmitter {
           (writer.getSymbolAccessibilityDiagnostic =
             getHeritageClauseVisibilityError)
           resolver.writeBaseConstructorTypeOfClass(
-              enclosingDeclaration.asInstanceOf[ClassLikeDeclaration],
-              enclosingDeclaration,
-              (TypeFormatFlags.UseTypeOfFunction | TypeFormatFlags.UseTypeAliasValue),
-              writer)
+            enclosingDeclaration.asInstanceOf[ClassLikeDeclaration],
+            enclosingDeclaration,
+            (TypeFormatFlags.UseTypeOfFunction | TypeFormatFlags.UseTypeAliasValue),
+            writer)
 
         }
-        def getHeritageClauseVisibilityError(): SymbolAccessibilityDiagnostic = {
+        def getHeritageClauseVisibilityError()
+          : SymbolAccessibilityDiagnostic = {
           var diagnosticMessage: DiagnosticMessage = zeroOfMyType
           if ((node.parent.parent.kind === SyntaxKind.ClassDeclaration)) {
             (diagnosticMessage =
@@ -1161,9 +1249,10 @@ object DeclarationEmitter {
               Diagnostics.Extends_clause_of_exported_interface_0_has_or_is_using_private_name_1)
 
           }
-          return Map("diagnosticMessage" -> diagnosticMessage,
-              "errorNode" -> node,
-              "typeName" -> (node.parent.parent.asInstanceOf[Declaration]).name)
+          return Map(
+            "diagnosticMessage" -> diagnosticMessage,
+            "errorNode" -> node,
+            "typeName" -> (node.parent.parent.asInstanceOf[Declaration]).name)
 
         }
 
@@ -1174,15 +1263,15 @@ object DeclarationEmitter {
       def emitParameterProperties(
           constructorDeclaration: ConstructorDeclaration) = {
         if (constructorDeclaration) {
-          forEach(constructorDeclaration.parameters,
-              (param => {
-                if (hasModifier(param,
-                        ModifierFlags.ParameterPropertyModifier)) {
-                  emitPropertyDeclaration(param)
+          forEach(
+            constructorDeclaration.parameters,
+            (param => {
+               if (hasModifier(param, ModifierFlags.ParameterPropertyModifier)) {
+                 emitPropertyDeclaration(param)
 
-                }
+               }
 
-              }))
+             }))
 
         }
 
@@ -1256,8 +1345,9 @@ object DeclarationEmitter {
         } else {
           writeTextOfNode(currentText, node.name)
           if ((((((node.kind === SyntaxKind.PropertyDeclaration) || (node.kind === SyntaxKind.PropertySignature)) || (((node.kind === SyntaxKind.Parameter) && (!isParameterPropertyDeclaration(
-                  node.asInstanceOf[ParameterDeclaration])))))) && hasQuestionToken(
-                  node))) {
+                node
+                  .asInstanceOf[ParameterDeclaration])))))) && hasQuestionToken(
+                node))) {
             write("?")
 
           }
@@ -1269,8 +1359,10 @@ object DeclarationEmitter {
             resolver.writeLiteralConstValue(node, writer)
 
           } else if ((!hasModifier(node, ModifierFlags.Private))) {
-            writeTypeOfDeclaration(node, node.`type`,
-                getVariableDeclarationTypeVisibilityError)
+            writeTypeOfDeclaration(
+              node,
+              node.`type`,
+              getVariableDeclarationTypeVisibilityError)
 
           }
 
@@ -1319,13 +1411,16 @@ object DeclarationEmitter {
 
       }
       def getVariableDeclarationTypeVisibilityError(
-          symbolAccessibilityResult: SymbolAccessibilityResult): SymbolAccessibilityDiagnostic = {
+          symbolAccessibilityResult: SymbolAccessibilityResult)
+        : SymbolAccessibilityDiagnostic = {
         val diagnosticMessage =
           getVariableDeclarationTypeVisibilityDiagnosticMessage(
-              symbolAccessibilityResult)
+            symbolAccessibilityResult)
         return (if ((diagnosticMessage !== undefined))
-                  Map("diagnosticMessage" -> diagnosticMessage,
-                      "errorNode" -> node, "typeName" -> node.name)
+                  Map(
+                    "diagnosticMessage" -> diagnosticMessage,
+                    "errorNode" -> node,
+                    "typeName" -> node.name)
                 else undefined)
 
       }
@@ -1345,26 +1440,30 @@ object DeclarationEmitter {
       }
       def emitBindingElement(bindingElement: BindingElement) = {
         def getBindingElementTypeVisibilityError(
-            symbolAccessibilityResult: SymbolAccessibilityResult): SymbolAccessibilityDiagnostic = {
+            symbolAccessibilityResult: SymbolAccessibilityResult)
+          : SymbolAccessibilityDiagnostic = {
           val diagnosticMessage =
             getVariableDeclarationTypeVisibilityDiagnosticMessage(
-                symbolAccessibilityResult)
+              symbolAccessibilityResult)
           return (if ((diagnosticMessage !== undefined))
-                    Map("diagnosticMessage" -> diagnosticMessage,
-                        "errorNode" -> bindingElement,
-                        "typeName" -> bindingElement.name)
+                    Map(
+                      "diagnosticMessage" -> diagnosticMessage,
+                      "errorNode" -> bindingElement,
+                      "typeName" -> bindingElement.name)
                   else undefined)
 
         }
         if (bindingElement.name) {
           if (isBindingPattern(bindingElement.name)) {
             emitBindingPattern(
-                bindingElement.name.asInstanceOf[BindingPattern])
+              bindingElement.name.asInstanceOf[BindingPattern])
 
           } else {
             writeTextOfNode(currentText, bindingElement.name)
-            writeTypeOfDeclaration(bindingElement, undefined,
-                getBindingElementTypeVisibilityError)
+            writeTypeOfDeclaration(
+              bindingElement,
+              undefined,
+              getBindingElementTypeVisibilityError)
 
           }
 
@@ -1383,8 +1482,9 @@ object DeclarationEmitter {
 
     }
     def isVariableStatementVisible(node: VariableStatement) = {
-      return forEach(node.declarationList.declarations,
-          (varDeclaration => resolver.isDeclarationVisible(varDeclaration)))
+      return forEach(
+        node.declarationList.declarations,
+        (varDeclaration => resolver.isDeclarationVisible(varDeclaration)))
 
     }
     def writeVariableStatement(node: VariableStatement) = {
@@ -1400,8 +1500,10 @@ object DeclarationEmitter {
         write("var ")
 
       }
-      emitCommaList(node.declarationList.declarations, emitVariableDeclaration,
-          resolver.isDeclarationVisible)
+      emitCommaList(
+        node.declarationList.declarations,
+        emitVariableDeclaration,
+        resolver.isDeclarationVisible)
       write(";")
       writeLine()
 
@@ -1412,14 +1514,15 @@ object DeclarationEmitter {
 
       }
       val accessors = getAllAccessorDeclarations(
-          (node.parent.asInstanceOf[ClassDeclaration]).members, node)
+        (node.parent.asInstanceOf[ClassDeclaration]).members,
+        node)
       var accessorWithTypeAnnotation: AccessorDeclaration = zeroOfMyType
       if ((node === accessors.firstAccessor)) {
         emitJsDocComments(accessors.getAccessor)
         emitJsDocComments(accessors.setAccessor)
         emitClassMemberDeclarationFlags(
-            (getModifierFlags(node) | ((if (accessors.setAccessor) 0
-                else ModifierFlags.Readonly) )))
+          (getModifierFlags(node) | ((if (accessors.setAccessor) 0
+                                      else ModifierFlags.Readonly) )))
         writeTextOfNode(currentText, node.name)
         if ((!hasModifier(node, ModifierFlags.Private))) {
           (accessorWithTypeAnnotation = node)
@@ -1436,8 +1539,10 @@ object DeclarationEmitter {
             }
 
           }
-          writeTypeOfDeclaration(node, `type`,
-              getAccessorDeclarationTypeVisibilityError)
+          writeTypeOfDeclaration(
+            node,
+            `type`,
+            getAccessorDeclarationTypeVisibilityError)
 
         }
         write(";")
@@ -1458,11 +1563,13 @@ object DeclarationEmitter {
 
       }
       def getAccessorDeclarationTypeVisibilityError(
-          symbolAccessibilityResult: SymbolAccessibilityResult): SymbolAccessibilityDiagnostic = {
+          symbolAccessibilityResult: SymbolAccessibilityResult)
+        : SymbolAccessibilityDiagnostic = {
         var diagnosticMessage: DiagnosticMessage = zeroOfMyType
         if ((accessorWithTypeAnnotation.kind === SyntaxKind.SetAccessor)) {
-          if (hasModifier(accessorWithTypeAnnotation.parent,
-                  ModifierFlags.Static)) {
+          if (hasModifier(
+                accessorWithTypeAnnotation.parent,
+                ModifierFlags.Static)) {
             (diagnosticMessage =
               (if (symbolAccessibilityResult.errorModuleName)
                  Diagnostics.Parameter_0_of_public_static_property_setter_from_exported_class_has_or_is_using_name_1_from_private_module_2
@@ -1477,11 +1584,12 @@ object DeclarationEmitter {
                  Diagnostics.Parameter_0_of_public_property_setter_from_exported_class_has_or_is_using_private_name_1))
 
           }
-          return Map("diagnosticMessage" -> diagnosticMessage,
-              "errorNode" -> accessorWithTypeAnnotation
-                .parameters(0)
-                .asInstanceOf[Node],
-              "typeName" -> accessorWithTypeAnnotation.name)
+          return Map(
+            "diagnosticMessage" -> diagnosticMessage,
+            "errorNode" -> accessorWithTypeAnnotation
+              .parameters(0)
+              .asInstanceOf[Node],
+            "typeName" -> accessorWithTypeAnnotation.name)
 
         } else {
           if (hasModifier(accessorWithTypeAnnotation, ModifierFlags.Static)) {
@@ -1505,10 +1613,10 @@ object DeclarationEmitter {
                  Diagnostics.Return_type_of_public_property_getter_from_exported_class_has_or_is_using_private_name_0))
 
           }
-          return Map("diagnosticMessage" -> diagnosticMessage,
-              "errorNode" -> accessorWithTypeAnnotation.name
-                .asInstanceOf[Node],
-              "typeName" -> undefined)
+          return Map(
+            "diagnosticMessage" -> diagnosticMessage,
+            "errorNode" -> accessorWithTypeAnnotation.name.asInstanceOf[Node],
+            "typeName" -> undefined)
 
         }
 
@@ -1549,8 +1657,7 @@ object DeclarationEmitter {
       }
 
     }
-    def emitSignatureDeclarationWithJsDocComments(
-        node: SignatureDeclaration) = {
+    def emitSignatureDeclarationWithJsDocComments(node: SignatureDeclaration) = {
       emitJsDocComments(node)
       emitSignatureDeclaration(node)
 
@@ -1570,7 +1677,7 @@ object DeclarationEmitter {
         } else if ((node.kind === SyntaxKind.FunctionType)) {
           val currentOutput = writer.getText()
           if ((node.typeParameters && (currentOutput.charAt(
-                  (currentOutput.length - 1)) === "<"))) {
+                (currentOutput.length - 1)) === "<"))) {
             (closeParenthesizedFunctionType = true)
             write("(")
 
@@ -1597,8 +1704,9 @@ object DeclarationEmitter {
 
         }
 
-      } else if (((node.kind !== SyntaxKind.Constructor) && (!hasModifier(node,
-              ModifierFlags.Private)))) {
+      } else if (((node.kind !== SyntaxKind.Constructor) && (!hasModifier(
+                   node,
+                   ModifierFlags.Private)))) {
         writeReturnTypeAtSignature(node, getReturnTypeVisibilityError)
 
       }
@@ -1612,7 +1720,8 @@ object DeclarationEmitter {
 
       }
       def getReturnTypeVisibilityError(
-          symbolAccessibilityResult: SymbolAccessibilityResult): SymbolAccessibilityDiagnostic = {
+          symbolAccessibilityResult: SymbolAccessibilityResult)
+        : SymbolAccessibilityDiagnostic = {
         var diagnosticMessage: DiagnosticMessage = zeroOfMyType
         node.kind match {
           case SyntaxKind.ConstructSignature =>
@@ -1674,8 +1783,9 @@ object DeclarationEmitter {
           case _ =>
             Debug.fail(("This is unknown kind for signature: " + node.kind))
         }
-        return Map("diagnosticMessage" -> diagnosticMessage,
-            "errorNode" -> (node.name.asInstanceOf[Node] || node))
+        return Map(
+          "diagnosticMessage" -> diagnosticMessage,
+          "errorNode" -> (node.name.asInstanceOf[Node] || node))
 
       }
 
@@ -1703,23 +1813,29 @@ object DeclarationEmitter {
         emitTypeOfVariableDeclarationFromTypeLiteral(node)
 
       } else if ((!hasModifier(node.parent, ModifierFlags.Private))) {
-        writeTypeOfDeclaration(node, node.`type`,
-            getParameterDeclarationTypeVisibilityError)
+        writeTypeOfDeclaration(
+          node,
+          node.`type`,
+          getParameterDeclarationTypeVisibilityError)
 
       }
       def getParameterDeclarationTypeVisibilityError(
-          symbolAccessibilityResult: SymbolAccessibilityResult): SymbolAccessibilityDiagnostic = {
+          symbolAccessibilityResult: SymbolAccessibilityResult)
+        : SymbolAccessibilityDiagnostic = {
         val diagnosticMessage: DiagnosticMessage =
           getParameterDeclarationTypeVisibilityDiagnosticMessage(
-              symbolAccessibilityResult)
+            symbolAccessibilityResult)
         return (if ((diagnosticMessage !== undefined))
-                  Map("diagnosticMessage" -> diagnosticMessage,
-                      "errorNode" -> node, "typeName" -> node.name)
+                  Map(
+                    "diagnosticMessage" -> diagnosticMessage,
+                    "errorNode" -> node,
+                    "typeName" -> node.name)
                 else undefined)
 
       }
       def getParameterDeclarationTypeVisibilityDiagnosticMessage(
-          symbolAccessibilityResult: SymbolAccessibilityResult): DiagnosticMessage = {
+          symbolAccessibilityResult: SymbolAccessibilityResult)
+        : DiagnosticMessage = {
         node.parent.kind match {
           case SyntaxKind.Constructor =>
             return (if (symbolAccessibilityResult.errorModuleName)
@@ -1775,7 +1891,7 @@ object DeclarationEmitter {
                       Diagnostics.Parameter_0_of_exported_function_has_or_is_using_private_name_1)
           case _ =>
             Debug.fail(
-                ("This is unknown parent for parameter: " + node.parent.kind))
+              ("This is unknown parent for parameter: " + node.parent.kind))
         }
 
       }
@@ -1812,11 +1928,11 @@ object DeclarationEmitter {
           if (bindingElement.name) {
             if (isBindingPattern(bindingElement.name)) {
               emitBindingPattern(
-                  bindingElement.name.asInstanceOf[BindingPattern])
+                bindingElement.name.asInstanceOf[BindingPattern])
 
             } else {
               Debug.assert(
-                  (bindingElement.name.kind === SyntaxKind.Identifier))
+                (bindingElement.name.kind === SyntaxKind.Identifier))
               if (bindingElement.dotDotDotToken) {
                 write("...")
 
@@ -1838,30 +1954,33 @@ object DeclarationEmitter {
             SyntaxKind.ImportEqualsDeclaration |
             SyntaxKind.InterfaceDeclaration | SyntaxKind.ClassDeclaration |
             SyntaxKind.TypeAliasDeclaration | SyntaxKind.EnumDeclaration =>
-          return emitModuleElement(node,
-              isModuleElementVisible(node.asInstanceOf[Declaration]))
+          return emitModuleElement(
+            node,
+            isModuleElementVisible(node.asInstanceOf[Declaration]))
         case SyntaxKind.VariableStatement =>
-          return emitModuleElement(node,
-              isVariableStatementVisible(node.asInstanceOf[VariableStatement]))
+          return emitModuleElement(
+            node,
+            isVariableStatementVisible(node.asInstanceOf[VariableStatement]))
         case SyntaxKind.ImportDeclaration =>
-          return emitModuleElement(node,
-              (!(node.asInstanceOf[ImportDeclaration]).importClause))
+          return emitModuleElement(
+            node,
+            (!(node.asInstanceOf[ImportDeclaration]).importClause))
         case SyntaxKind.ExportDeclaration =>
           return emitExportDeclaration(node.asInstanceOf[ExportDeclaration])
         case SyntaxKind.Constructor | SyntaxKind.MethodDeclaration |
             SyntaxKind.MethodSignature =>
           return writeFunctionDeclaration(
-              node.asInstanceOf[FunctionLikeDeclaration])
+            node.asInstanceOf[FunctionLikeDeclaration])
         case SyntaxKind.ConstructSignature | SyntaxKind.CallSignature |
             SyntaxKind.IndexSignature =>
           return emitSignatureDeclarationWithJsDocComments(
-              node.asInstanceOf[SignatureDeclaration])
+            node.asInstanceOf[SignatureDeclaration])
         case SyntaxKind.GetAccessor | SyntaxKind.SetAccessor =>
           return emitAccessorDeclaration(
-              node.asInstanceOf[AccessorDeclaration])
+            node.asInstanceOf[AccessorDeclaration])
         case SyntaxKind.PropertyDeclaration | SyntaxKind.PropertySignature =>
           return emitPropertyDeclaration(
-              node.asInstanceOf[PropertyDeclaration])
+            node.asInstanceOf[PropertyDeclaration])
         case SyntaxKind.EnumMember =>
           return emitEnumMemberDeclaration(node.asInstanceOf[EnumMember])
         case SyntaxKind.ExportAssignment =>
@@ -1873,37 +1992,43 @@ object DeclarationEmitter {
 
     }
     def writeReferencePath(referencedFile: SourceFile,
-        addBundledFileReference: Boolean,
-        emitOnlyDtsFiles: Boolean): Boolean = {
+                           addBundledFileReference: Boolean,
+                           emitOnlyDtsFiles: Boolean): Boolean = {
       var declFileName: String = zeroOfMyType
       var addedBundledEmitReference = false
       if (isDeclarationFile(referencedFile)) {
         (declFileName = referencedFile.fileName)
 
       } else {
-        forEachExpectedEmitFile(host, getDeclFileName, referencedFile,
-            emitOnlyDtsFiles)
+        forEachExpectedEmitFile(
+          host,
+          getDeclFileName,
+          referencedFile,
+          emitOnlyDtsFiles)
 
       }
       if (declFileName) {
         (declFileName = getRelativePathToDirectoryOrUrl(
-            getDirectoryPath(normalizeSlashes(declarationFilePath)),
-            declFileName, host.getCurrentDirectory(),
-            host.getCanonicalFileName, false))
+          getDirectoryPath(normalizeSlashes(declarationFilePath)),
+          declFileName,
+          host.getCurrentDirectory(),
+          host.getCanonicalFileName,
+          false))
         (referencesOutput += s"""/// <reference path=\"${declFileName}\" />${newLine}""")
 
       }
       return addedBundledEmitReference
       def getDeclFileName(emitFileNames: EmitFileNames,
-          _sourceFiles: Array[SourceFile], isBundledEmit: Boolean) = {
+                          _sourceFiles: Array[SourceFile],
+                          isBundledEmit: Boolean) = {
         if ((isBundledEmit && (!addBundledFileReference))) {
           return
 
         }
         Debug.assert(
-            ((!(!emitFileNames.declarationFilePath)) || isSourceFileJavaScript(
-                referencedFile)),
-            "Declaration file is not present only for javascript files")
+          ((!(!emitFileNames.declarationFilePath)) || isSourceFileJavaScript(
+            referencedFile)),
+          "Declaration file is not present only for javascript files")
         (declFileName = (emitFileNames.declarationFilePath || emitFileNames.jsFilePath))
         (addedBundledEmitReference = isBundledEmit)
 
@@ -1913,45 +2038,60 @@ object DeclarationEmitter {
 
   }
   def writeDeclarationFile(declarationFilePath: String,
-      sourceFiles: Array[SourceFile], isBundledEmit: Boolean, host: EmitHost,
-      resolver: EmitResolver, emitterDiagnostics: DiagnosticCollection,
-      emitOnlyDtsFiles: Boolean) = {
+                           sourceFiles: Array[SourceFile],
+                           isBundledEmit: Boolean,
+                           host: EmitHost,
+                           resolver: EmitResolver,
+                           emitterDiagnostics: DiagnosticCollection,
+                           emitOnlyDtsFiles: Boolean) = {
     val emitDeclarationResult =
-      emitDeclarations(host, resolver, emitterDiagnostics, declarationFilePath,
-          sourceFiles, isBundledEmit, emitOnlyDtsFiles)
+      emitDeclarations(
+        host,
+        resolver,
+        emitterDiagnostics,
+        declarationFilePath,
+        sourceFiles,
+        isBundledEmit,
+        emitOnlyDtsFiles)
     val emitSkipped = ((emitDeclarationResult.reportedDeclarationError || host
         .isEmitBlocked(declarationFilePath)) || host
         .getCompilerOptions()
         .noEmit)
     if ((!emitSkipped)) {
       val declarationOutput = (emitDeclarationResult.referencesOutput + getDeclarationOutput(
-            emitDeclarationResult.synchronousDeclarationOutput,
-            emitDeclarationResult.moduleElementDeclarationEmitInfo))
-      writeFile(host, emitterDiagnostics, declarationFilePath,
-          declarationOutput, host.getCompilerOptions().emitBOM, sourceFiles)
+          emitDeclarationResult.synchronousDeclarationOutput,
+          emitDeclarationResult.moduleElementDeclarationEmitInfo))
+      writeFile(
+        host,
+        emitterDiagnostics,
+        declarationFilePath,
+        declarationOutput,
+        host.getCompilerOptions().emitBOM,
+        sourceFiles)
 
     }
     return emitSkipped
     def getDeclarationOutput(synchronousDeclarationOutput: String,
-        moduleElementDeclarationEmitInfo: Array[
-            ModuleElementDeclarationEmitInfo]) = {
+                             moduleElementDeclarationEmitInfo: Array[
+                               ModuleElementDeclarationEmitInfo]) = {
       var appliedSyncOutputPos = 0
       var declarationOutput = ""
-      forEach(moduleElementDeclarationEmitInfo,
-          (aliasEmitInfo => {
-            if (aliasEmitInfo.asynchronousOutput) {
-              (declarationOutput += synchronousDeclarationOutput.substring(
-                  appliedSyncOutputPos, aliasEmitInfo.outputPos))
-              (declarationOutput += getDeclarationOutput(
-                  aliasEmitInfo.asynchronousOutput,
-                  aliasEmitInfo.subModuleElementDeclarationEmitInfo))
-              (appliedSyncOutputPos = aliasEmitInfo.outputPos)
+      forEach(
+        moduleElementDeclarationEmitInfo,
+        (aliasEmitInfo => {
+           if (aliasEmitInfo.asynchronousOutput) {
+             (declarationOutput += synchronousDeclarationOutput
+               .substring(appliedSyncOutputPos, aliasEmitInfo.outputPos))
+             (declarationOutput += getDeclarationOutput(
+               aliasEmitInfo.asynchronousOutput,
+               aliasEmitInfo.subModuleElementDeclarationEmitInfo))
+             (appliedSyncOutputPos = aliasEmitInfo.outputPos)
 
-            }
+           }
 
-          }))
+         }))
       (declarationOutput += synchronousDeclarationOutput.substring(
-          appliedSyncOutputPos))
+        appliedSyncOutputPos))
       return declarationOutput
 
     }

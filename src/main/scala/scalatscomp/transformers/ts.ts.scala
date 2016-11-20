@@ -84,7 +84,7 @@ object TS {
           return visitImportDeclaration(node.asInstanceOf[ImportDeclaration])
         case SyntaxKind.ImportEqualsDeclaration =>
           return visitImportEqualsDeclaration(
-              node.asInstanceOf[ImportEqualsDeclaration])
+            node.asInstanceOf[ImportEqualsDeclaration])
         case SyntaxKind.ExportAssignment =>
           return visitExportAssignment(node.asInstanceOf[ExportAssignment])
         case SyntaxKind.ExportDeclaration =>
@@ -99,15 +99,15 @@ object TS {
 
     }
     def namespaceElementVisitorWorker(node: Node): VisitResult[Node] = {
-      if (((((node.kind === SyntaxKind.ExportDeclaration) || (node.kind === SyntaxKind.ImportDeclaration)) || (node.kind === SyntaxKind.ImportClause)) || (((node.kind === SyntaxKind.ImportEqualsDeclaration) && ((
-              node
-                .asInstanceOf[ImportEqualsDeclaration])
+      if (((((node.kind === SyntaxKind.ExportDeclaration) || (node.kind === SyntaxKind.ImportDeclaration)) || (node.kind === SyntaxKind.ImportClause)) || (((node.kind === SyntaxKind.ImportEqualsDeclaration) && ((node
+            .asInstanceOf[ImportEqualsDeclaration])
             .moduleReference
             .kind === SyntaxKind.ExternalModuleReference))))) {
         return undefined
 
       } else if (((node.transformFlags & TransformFlags.TypeScript) || hasModifier(
-              node, ModifierFlags.Export))) {
+                   node,
+                   ModifierFlags.Export))) {
         return visitTypeScript(node)
 
       } else if ((node.transformFlags & TransformFlags.ContainsTypeScript)) {
@@ -173,7 +173,7 @@ object TS {
           return visitHeritageClause(node.asInstanceOf[HeritageClause])
         case SyntaxKind.ExpressionWithTypeArguments =>
           return visitExpressionWithTypeArguments(
-              node.asInstanceOf[ExpressionWithTypeArguments])
+            node.asInstanceOf[ExpressionWithTypeArguments])
         case SyntaxKind.MethodDeclaration =>
           return visitMethodDeclaration(node.asInstanceOf[MethodDeclaration])
         case SyntaxKind.GetAccessor =>
@@ -182,7 +182,7 @@ object TS {
           return visitSetAccessor(node.asInstanceOf[SetAccessorDeclaration])
         case SyntaxKind.FunctionDeclaration =>
           return visitFunctionDeclaration(
-              node.asInstanceOf[FunctionDeclaration])
+            node.asInstanceOf[FunctionDeclaration])
         case SyntaxKind.FunctionExpression =>
           return visitFunctionExpression(node.asInstanceOf[FunctionExpression])
         case SyntaxKind.ArrowFunction =>
@@ -191,10 +191,10 @@ object TS {
           return visitParameter(node.asInstanceOf[ParameterDeclaration])
         case SyntaxKind.ParenthesizedExpression =>
           return visitParenthesizedExpression(
-              node.asInstanceOf[ParenthesizedExpression])
+            node.asInstanceOf[ParenthesizedExpression])
         case SyntaxKind.TypeAssertionExpression | SyntaxKind.AsExpression =>
           return visitAssertionExpression(
-              node.asInstanceOf[AssertionExpression])
+            node.asInstanceOf[AssertionExpression])
         case SyntaxKind.CallExpression =>
           return visitCallExpression(node.asInstanceOf[CallExpression])
         case SyntaxKind.NewExpression =>
@@ -207,12 +207,12 @@ object TS {
           return visitVariableStatement(node.asInstanceOf[VariableStatement])
         case SyntaxKind.VariableDeclaration =>
           return visitVariableDeclaration(
-              node.asInstanceOf[VariableDeclaration])
+            node.asInstanceOf[VariableDeclaration])
         case SyntaxKind.ModuleDeclaration =>
           return visitModuleDeclaration(node.asInstanceOf[ModuleDeclaration])
         case SyntaxKind.ImportEqualsDeclaration =>
           return visitImportEqualsDeclaration(
-              node.asInstanceOf[ImportEqualsDeclaration])
+            node.asInstanceOf[ImportEqualsDeclaration])
         case _ =>
           Debug.failBadSyntaxKind(node)
           return visitEachChild(node, visitor, context)
@@ -243,7 +243,7 @@ object TS {
 
       }
       if ((((node.flags & NodeFlags.EmitHelperFlags) && compilerOptions.importHelpers) && ((isExternalModule(
-              node) || compilerOptions.isolatedModules)))) {
+            node) || compilerOptions.isolatedModules)))) {
         startLexicalEnvironment()
         val statements: Array[Statement] = Array()
         val statementOffset =
@@ -251,21 +251,29 @@ object TS {
         val externalHelpersModuleName =
           createUniqueName(externalHelpersModuleNameText)
         val externalHelpersModuleImport =
-          createImportDeclaration(undefined, undefined,
-              createImportClause(undefined,
-                  createNamespaceImport(externalHelpersModuleName)),
-              createLiteral(externalHelpersModuleNameText))
+          createImportDeclaration(
+            undefined,
+            undefined,
+            createImportClause(
+              undefined,
+              createNamespaceImport(externalHelpersModuleName)),
+            createLiteral(externalHelpersModuleNameText))
         (externalHelpersModuleImport.parent = node)
         (externalHelpersModuleImport.flags &= (~NodeFlags.Synthesized))
         statements.push(externalHelpersModuleImport)
         (currentSourceFileExternalHelpersModuleName = externalHelpersModuleName)
-        addRange(statements,
-            visitNodes(node.statements, sourceElementVisitor, isStatement,
-                statementOffset))
+        addRange(
+          statements,
+          visitNodes(
+            node.statements,
+            sourceElementVisitor,
+            isStatement,
+            statementOffset))
         addRange(statements, endLexicalEnvironment())
         (currentSourceFileExternalHelpersModuleName = undefined)
-        (node = updateSourceFileNode(node,
-            createNodeArray(statements, node.statements)))
+        (node = updateSourceFileNode(
+          node,
+          createNodeArray(statements, node.statements)))
         (node.externalHelpersModuleName = externalHelpersModuleName)
 
       } else {
@@ -283,8 +291,9 @@ object TS {
       }
       val `constructor` = getFirstConstructorWithBody(node)
       if (`constructor`) {
-        return forEach(`constructor`.parameters,
-            shouldEmitDecorateCallForParameter)
+        return forEach(
+          `constructor`.parameters,
+          shouldEmitDecorateCallForParameter)
 
       }
       return false
@@ -294,8 +303,7 @@ object TS {
       return ((parameter.decorators !== undefined) && (parameter.decorators.length > 0))
 
     }
-    def visitClassDeclaration(
-        node: ClassDeclaration): VisitResult[Statement] = {
+    def visitClassDeclaration(node: ClassDeclaration): VisitResult[Statement] = {
       val staticProperties = getInitializedProperties(node, true)
       val hasExtendsClause = (getClassExtendsHeritageClauseElement(node) !== undefined)
       val isDecoratedClass = shouldEmitDecorateCallForClass(node)
@@ -307,26 +315,36 @@ object TS {
       }
       val statements: Array[Statement] = Array()
       if ((!isDecoratedClass)) {
-        val classDeclaration = createClassDeclaration(undefined,
-            visitNodes(node.modifiers, visitor, isModifier), name, undefined,
-            visitNodes(node.heritageClauses, visitor, isHeritageClause),
-            transformClassMembers(node, hasExtendsClause), node)
+        val classDeclaration = createClassDeclaration(
+          undefined,
+          visitNodes(node.modifiers, visitor, isModifier),
+          name,
+          undefined,
+          visitNodes(node.heritageClauses, visitor, isHeritageClause),
+          transformClassMembers(node, hasExtendsClause),
+          node)
         setOriginalNode(classDeclaration, node)
         if ((staticProperties.length > 0)) {
-          setEmitFlags(classDeclaration,
-              (EmitFlags.NoTrailingSourceMap | getEmitFlags(classDeclaration)))
+          setEmitFlags(
+            classDeclaration,
+            (EmitFlags.NoTrailingSourceMap | getEmitFlags(classDeclaration)))
 
         }
         statements.push(classDeclaration)
 
       } else {
-        (classAlias = addClassDeclarationHeadWithDecorators(statements, node,
-            name, hasExtendsClause))
+        (classAlias = addClassDeclarationHeadWithDecorators(
+          statements,
+          node,
+          name,
+          hasExtendsClause))
 
       }
       if (staticProperties.length) {
-        addInitializedPropertyStatements(statements, staticProperties,
-            getLocalName(node, true))
+        addInitializedPropertyStatements(
+          statements,
+          staticProperties,
+          getLocalName(node, true))
 
       }
       addClassElementDecorationStatements(statements, node, false)
@@ -337,8 +355,12 @@ object TS {
 
       } else if (isDecoratedClass) {
         if (isDefaultExternalModuleExport(node)) {
-          statements.push(createExportAssignment(undefined, undefined, false,
-                  getLocalName(node)))
+          statements.push(
+            createExportAssignment(
+              undefined,
+              undefined,
+              false,
+              getLocalName(node)))
 
         } else if (isNamedExternalModuleExport(node)) {
           statements.push(createExternalModuleExport(name))
@@ -350,41 +372,53 @@ object TS {
 
     }
     def addClassDeclarationHeadWithDecorators(statements: Array[Statement],
-        node: ClassDeclaration, name: Identifier,
-        hasExtendsClause: Boolean) = {
+                                              node: ClassDeclaration,
+                                              name: Identifier,
+                                              hasExtendsClause: Boolean) = {
       val location = moveRangePastDecorators(node)
       val classExpression: Expression = setOriginalNode(
-          createClassExpression(undefined, name, undefined,
-              visitNodes(node.heritageClauses, visitor, isHeritageClause),
-              transformClassMembers(node, hasExtendsClause), location), node)
+        createClassExpression(
+          undefined,
+          name,
+          undefined,
+          visitNodes(node.heritageClauses, visitor, isHeritageClause),
+          transformClassMembers(node, hasExtendsClause),
+          location),
+        node)
       if ((!name)) {
         (name = getGeneratedNameForNode(node))
 
       }
       var classAlias: Identifier = zeroOfMyType
-      if ((resolver
-            .getNodeCheckFlags(node) & NodeCheckFlags.ClassWithConstructorReference)) {
+      if ((resolver.getNodeCheckFlags(node) & NodeCheckFlags.ClassWithConstructorReference)) {
         enableSubstitutionForClassAliases()
         (classAlias = createUniqueName(
-            (if ((node.name && (!isGeneratedIdentifier(node.name))))
-               node.name.text
-             else "default")))
+          (if ((node.name && (!isGeneratedIdentifier(node.name))))
+             node.name.text
+           else "default")))
         (classAliases(getOriginalNodeId(node)) = classAlias)
 
       }
       val declaredName = getDeclarationName(node, true)
-      val transformedClassExpression = createVariableStatement(undefined,
-          createLetDeclarationList(
-              Array(createVariableDeclaration((classAlias || declaredName),
-                      undefined, classExpression))),
-          location)
+      val transformedClassExpression = createVariableStatement(
+        undefined,
+        createLetDeclarationList(
+          Array(
+            createVariableDeclaration(
+              (classAlias || declaredName),
+              undefined,
+              classExpression))),
+        location)
       setCommentRange(transformedClassExpression, node)
       statements.push(setOriginalNode(transformedClassExpression, node))
       if (classAlias) {
-        statements.push(setOriginalNode(createVariableStatement(undefined,
-                    createLetDeclarationList(Array(createVariableDeclaration(
-                                declaredName, undefined, classAlias))),
-                    location), node))
+        statements.push(setOriginalNode(
+          createVariableStatement(
+            undefined,
+            createLetDeclarationList(Array(
+              createVariableDeclaration(declaredName, undefined, classAlias))),
+            location),
+          node))
 
       }
       return classAlias
@@ -394,26 +428,34 @@ object TS {
       val staticProperties = getInitializedProperties(node, true)
       val heritageClauses =
         visitNodes(node.heritageClauses, visitor, isHeritageClause)
-      val members = transformClassMembers(node,
-          some(heritageClauses,
-              (c => (c.token === SyntaxKind.ExtendsKeyword))))
-      val classExpression = setOriginalNode(createClassExpression(undefined,
-              node.name, undefined, heritageClauses, members, node), node)
+      val members = transformClassMembers(
+        node,
+        some(heritageClauses, (c => (c.token === SyntaxKind.ExtendsKeyword))))
+      val classExpression = setOriginalNode(
+        createClassExpression(
+          undefined,
+          node.name,
+          undefined,
+          heritageClauses,
+          members,
+          node),
+        node)
       if ((staticProperties.length > 0)) {
         val expressions: Array[Expression] = Array()
         val temp = createTempVariable(hoistVariableDeclaration)
-        if ((resolver
-              .getNodeCheckFlags(node) & NodeCheckFlags.ClassWithConstructorReference)) {
+        if ((resolver.getNodeCheckFlags(node) & NodeCheckFlags.ClassWithConstructorReference)) {
           enableSubstitutionForClassAliases()
           (classAliases(getOriginalNodeId(node)) = getSynthesizedClone(temp))
 
         }
-        setEmitFlags(classExpression,
-            (EmitFlags.Indented | getEmitFlags(classExpression)))
-        expressions
-          .push(startOnNewLine(createAssignment(temp, classExpression)))
-        addRange(expressions,
-            generateInitializedPropertyExpressions(staticProperties, temp))
+        setEmitFlags(
+          classExpression,
+          (EmitFlags.Indented | getEmitFlags(classExpression)))
+        expressions.push(
+          startOnNewLine(createAssignment(temp, classExpression)))
+        addRange(
+          expressions,
+          generateInitializedPropertyExpressions(staticProperties, temp))
         expressions.push(startOnNewLine(temp))
         return inlineExpressions(expressions)
 
@@ -422,20 +464,21 @@ object TS {
 
     }
     def transformClassMembers(node: (ClassDeclaration | ClassExpression),
-        hasExtendsClause: Boolean) = {
+                              hasExtendsClause: Boolean) = {
       val members: Array[ClassElement] = Array()
       val `constructor` = transformConstructor(node, hasExtendsClause)
       if (`constructor`) {
         members.push(`constructor`)
 
       }
-      addRange(members,
-          visitNodes(node.members, classElementVisitor, isClassElement))
+      addRange(
+        members,
+        visitNodes(node.members, classElementVisitor, isClassElement))
       return createNodeArray(members, node.members)
 
     }
     def transformConstructor(node: (ClassDeclaration | ClassExpression),
-        hasExtendsClause: Boolean) = {
+                             hasExtendsClause: Boolean) = {
       val hasInstancePropertyWithInitializer =
         forEach(node.members, isInstanceInitializedProperty)
       val hasParameterPropertyAssignments = (node.transformFlags & TransformFlags.ContainsParameterPropertyAssignments)
@@ -447,20 +490,26 @@ object TS {
       val parameters = transformConstructorParameters(`constructor`)
       val body =
         transformConstructorBody(node, `constructor`, hasExtendsClause)
-      return startOnNewLine(setOriginalNode(createConstructor(undefined,
-                  undefined, parameters, body, (`constructor` || node)),
-              `constructor`))
+      return startOnNewLine(
+        setOriginalNode(
+          createConstructor(
+            undefined,
+            undefined,
+            parameters,
+            body,
+            (`constructor` || node)),
+          `constructor`))
 
     }
-    def transformConstructorParameters(
-        `constructor`: ConstructorDeclaration) = {
+    def transformConstructorParameters(`constructor`: ConstructorDeclaration) = {
       return (if (`constructor`)
                 visitNodes(`constructor`.parameters, visitor, isParameter)
               else Array().asInstanceOf[Array[ParameterDeclaration]])
 
     }
     def transformConstructorBody(node: (ClassExpression | ClassDeclaration),
-        `constructor`: ConstructorDeclaration, hasExtendsClause: Boolean) = {
+                                 `constructor`: ConstructorDeclaration,
+                                 hasExtendsClause: Boolean) = {
       val statements: Array[Statement] = Array()
       var indexOfFirstStatement = 0
       startLexicalEnvironment()
@@ -469,30 +518,44 @@ object TS {
           addPrologueDirectivesAndInitialSuperCall(`constructor`, statements))
         val propertyAssignments =
           getParametersWithPropertyAssignments(`constructor`)
-        addRange(statements,
-            map(propertyAssignments, transformParameterWithPropertyAssignment))
+        addRange(
+          statements,
+          map(propertyAssignments, transformParameterWithPropertyAssignment))
 
       } else if (hasExtendsClause) {
-        statements.push(createStatement(createCall(createSuper(), undefined,
-                    Array(createSpread(createIdentifier("arguments"))))))
+        statements.push(
+          createStatement(
+            createCall(
+              createSuper(),
+              undefined,
+              Array(createSpread(createIdentifier("arguments"))))))
 
       }
       val properties = getInitializedProperties(node, false)
       addInitializedPropertyStatements(statements, properties, createThis())
       if (`constructor`) {
-        addRange(statements,
-            visitNodes(`constructor`.body.statements, visitor, isStatement,
-                indexOfFirstStatement))
+        addRange(
+          statements,
+          visitNodes(
+            `constructor`.body.statements,
+            visitor,
+            isStatement,
+            indexOfFirstStatement))
 
       }
       addRange(statements, endLexicalEnvironment())
-      return setMultiLine(createBlock(createNodeArray(statements,
-                  (if (`constructor`) `constructor`.body.statements
-                   else node.members)),
-              (if (`constructor`) `constructor`.body else undefined)), true)
+      return setMultiLine(
+        createBlock(
+          createNodeArray(
+            statements,
+            (if (`constructor`) `constructor`.body.statements
+             else node.members)),
+          (if (`constructor`) `constructor`.body else undefined)),
+        true)
 
     }
-    def addPrologueDirectivesAndInitialSuperCall(ctor: ConstructorDeclaration,
+    def addPrologueDirectivesAndInitialSuperCall(
+        ctor: ConstructorDeclaration,
         result: Array[Statement]): Int = {
       if (ctor.body) {
         val statements = ctor.body.statements
@@ -503,7 +566,7 @@ object TS {
         }
         val statement = statements(index)
         if (((statement.kind === SyntaxKind.ExpressionStatement) && isSuperCall(
-                (statement.asInstanceOf[ExpressionStatement]).expression))) {
+              (statement.asInstanceOf[ExpressionStatement]).expression))) {
           result.push(visitNode(statement, visitor, isStatement))
           return (index + 1)
 
@@ -520,30 +583,34 @@ object TS {
 
     }
     def isParameterWithPropertyAssignment(parameter: ParameterDeclaration) = {
-      return (hasModifier(parameter,
-          ModifierFlags.ParameterPropertyModifier) && isIdentifier(
-          parameter.name))
+      return (hasModifier(parameter, ModifierFlags.ParameterPropertyModifier) && isIdentifier(
+        parameter.name))
 
     }
-    def transformParameterWithPropertyAssignment(
-        node: ParameterDeclaration) = {
+    def transformParameterWithPropertyAssignment(node: ParameterDeclaration) = {
       Debug.assert(isIdentifier(node.name))
       val name = node.name.asInstanceOf[Identifier]
       val propertyName = getMutableClone(name)
-      setEmitFlags(propertyName,
-          (EmitFlags.NoComments | EmitFlags.NoSourceMap))
+      setEmitFlags(
+        propertyName,
+        (EmitFlags.NoComments | EmitFlags.NoSourceMap))
       val localName = getMutableClone(name)
       setEmitFlags(localName, EmitFlags.NoComments)
-      return startOnNewLine(createStatement(createAssignment(
-                  createPropertyAccess(createThis(), propertyName, node.name),
-                  localName), moveRangePos(node, (-1))))
+      return startOnNewLine(
+        createStatement(
+          createAssignment(
+            createPropertyAccess(createThis(), propertyName, node.name),
+            localName),
+          moveRangePos(node, (-1))))
 
     }
-    def getInitializedProperties(node: (ClassExpression | ClassDeclaration),
+    def getInitializedProperties(
+        node: (ClassExpression | ClassDeclaration),
         isStatic: Boolean): Array[PropertyDeclaration] = {
-      return filter(node.members,
-          (if (isStatic) isStaticInitializedProperty
-           else isInstanceInitializedProperty))
+      return filter(
+        node.members,
+        (if (isStatic) isStaticInitializedProperty
+         else isInstanceInitializedProperty))
 
     }
     def isStaticInitializedProperty(member: ClassElement): Boolean = {
@@ -556,11 +623,14 @@ object TS {
     }
     def isInitializedProperty(member: ClassElement, isStatic: Boolean) = {
       return (((member.kind === SyntaxKind.PropertyDeclaration) && (isStatic === hasModifier(
-          member, ModifierFlags.Static))) && ((
-          member.asInstanceOf[PropertyDeclaration]).initializer !== undefined))
+        member,
+        ModifierFlags.Static))) && ((member
+        .asInstanceOf[PropertyDeclaration])
+        .initializer !== undefined))
 
     }
-    def addInitializedPropertyStatements(statements: Array[Statement],
+    def addInitializedPropertyStatements(
+        statements: Array[Statement],
         properties: Array[PropertyDeclaration],
         receiver: LeftHandSideExpression) = {
       (properties).foreach { fresh2 =>
@@ -593,7 +663,7 @@ object TS {
 
     }
     def transformInitializedProperty(property: PropertyDeclaration,
-        receiver: LeftHandSideExpression) = {
+                                     receiver: LeftHandSideExpression) = {
       val propertyName = visitPropertyNameOfClassElement(property)
       val initializer = visitNode(property.initializer, visitor, isExpression)
       val memberAccess =
@@ -602,10 +672,11 @@ object TS {
 
     }
     def getDecoratedClassElements(node: (ClassExpression | ClassDeclaration),
-        isStatic: Boolean): Array[ClassElement] = {
-      return filter(node.members,
-          (if (isStatic) isStaticDecoratedClassElement
-           else isInstanceDecoratedClassElement))
+                                  isStatic: Boolean): Array[ClassElement] = {
+      return filter(
+        node.members,
+        (if (isStatic) isStaticDecoratedClassElement
+         else isInstanceDecoratedClassElement))
 
     }
     def isStaticDecoratedClassElement(member: ClassElement) = {
@@ -618,7 +689,8 @@ object TS {
     }
     def isDecoratedClassElement(member: ClassElement, isStatic: Boolean) = {
       return (nodeOrChildIsDecorated(member) && (isStatic === hasModifier(
-          member, ModifierFlags.Static)))
+        member,
+        ModifierFlags.Static)))
 
     }
     trait AllDecorators {
@@ -668,20 +740,22 @@ object TS {
         member: ClassElement): AllDecorators = {
       member.kind match {
         case SyntaxKind.GetAccessor | SyntaxKind.SetAccessor =>
-          return getAllDecoratorsOfAccessors(node,
-              member.asInstanceOf[AccessorDeclaration])
+          return getAllDecoratorsOfAccessors(
+            node,
+            member.asInstanceOf[AccessorDeclaration])
         case SyntaxKind.MethodDeclaration =>
           return getAllDecoratorsOfMethod(
-              member.asInstanceOf[MethodDeclaration])
+            member.asInstanceOf[MethodDeclaration])
         case SyntaxKind.PropertyDeclaration =>
           return getAllDecoratorsOfProperty(
-              member.asInstanceOf[PropertyDeclaration])
+            member.asInstanceOf[PropertyDeclaration])
         case _ =>
           return undefined
       }
 
     }
-    def getAllDecoratorsOfAccessors(node: (ClassExpression | ClassDeclaration),
+    def getAllDecoratorsOfAccessors(
+        node: (ClassExpression | ClassDeclaration),
         accessor: AccessorDeclaration): AllDecorators = {
       if ((!accessor.body)) {
         return undefined
@@ -729,29 +803,35 @@ object TS {
 
     }
     def transformAllDecoratorsOfDeclaration(node: Declaration,
-        allDecorators: AllDecorators) = {
+                                            allDecorators: AllDecorators) = {
       if ((!allDecorators)) {
         return undefined
 
       }
       val decoratorExpressions: Array[Expression] = Array()
-      addRange(decoratorExpressions,
-          map(allDecorators.decorators, transformDecorator))
-      addRange(decoratorExpressions,
-          flatMap(allDecorators.parameters, transformDecoratorsOfParameter))
+      addRange(
+        decoratorExpressions,
+        map(allDecorators.decorators, transformDecorator))
+      addRange(
+        decoratorExpressions,
+        flatMap(allDecorators.parameters, transformDecoratorsOfParameter))
       addTypeMetadata(node, decoratorExpressions)
       return decoratorExpressions
 
     }
     def addClassElementDecorationStatements(statements: Array[Statement],
-        node: ClassDeclaration, isStatic: Boolean) = {
-      addRange(statements,
-          map(generateClassElementDecorationExpressions(node, isStatic),
-              expressionToStatement))
+                                            node: ClassDeclaration,
+                                            isStatic: Boolean) = {
+      addRange(
+        statements,
+        map(
+          generateClassElementDecorationExpressions(node, isStatic),
+          expressionToStatement))
 
     }
     def generateClassElementDecorationExpressions(
-        node: (ClassExpression | ClassDeclaration), isStatic: Boolean) = {
+        node: (ClassExpression | ClassDeclaration),
+        isStatic: Boolean) = {
       val members = getDecoratedClassElements(node, isStatic)
       var expressions: Array[Expression] = zeroOfMyType
       (members).foreach { fresh5 =>
@@ -775,7 +855,8 @@ object TS {
 
     }
     def generateClassElementDecorationExpression(
-        node: (ClassExpression | ClassDeclaration), member: ClassElement) = {
+        node: (ClassExpression | ClassDeclaration),
+        member: ClassElement) = {
       val allDecorators = getAllDecoratorsOfClassElement(node, member)
       val decoratorExpressions =
         transformAllDecoratorsOfDeclaration(member, allDecorators)
@@ -792,14 +873,19 @@ object TS {
             else createNull())
          else undefined)
       val helper = createDecorateHelper(
-          currentSourceFileExternalHelpersModuleName, decoratorExpressions,
-          prefix, memberName, descriptor, moveRangePastDecorators(member))
+        currentSourceFileExternalHelpersModuleName,
+        decoratorExpressions,
+        prefix,
+        memberName,
+        descriptor,
+        moveRangePastDecorators(member))
       setEmitFlags(helper, EmitFlags.NoComments)
       return helper
 
     }
     def addConstructorDecorationStatement(statements: Array[Statement],
-        node: ClassDeclaration, decoratedClassAlias: Identifier) = {
+                                          node: ClassDeclaration,
+                                          decoratedClassAlias: Identifier) = {
       val expression =
         generateConstructorDecorationExpression(node, decoratedClassAlias)
       if (expression) {
@@ -819,19 +905,27 @@ object TS {
 
       }
       if (decoratedClassAlias) {
-        val expression = createAssignment(decoratedClassAlias,
-            createDecorateHelper(currentSourceFileExternalHelpersModuleName,
-                decoratorExpressions, getDeclarationName(node)))
-        val result = createAssignment(getDeclarationName(node), expression,
-            moveRangePastDecorators(node))
+        val expression = createAssignment(
+          decoratedClassAlias,
+          createDecorateHelper(
+            currentSourceFileExternalHelpersModuleName,
+            decoratorExpressions,
+            getDeclarationName(node)))
+        val result = createAssignment(
+          getDeclarationName(node),
+          expression,
+          moveRangePastDecorators(node))
         setEmitFlags(result, EmitFlags.NoComments)
         return result
 
       } else {
-        val result = createAssignment(getDeclarationName(node),
-            createDecorateHelper(currentSourceFileExternalHelpersModuleName,
-                decoratorExpressions, getDeclarationName(node)),
-            moveRangePastDecorators(node))
+        val result = createAssignment(
+          getDeclarationName(node),
+          createDecorateHelper(
+            currentSourceFileExternalHelpersModuleName,
+            decoratorExpressions,
+            getDeclarationName(node)),
+          moveRangePastDecorators(node))
         setEmitFlags(result, EmitFlags.NoComments)
         return result
 
@@ -843,16 +937,17 @@ object TS {
 
     }
     def transformDecoratorsOfParameter(decorators: Array[Decorator],
-        parameterOffset: Int) = {
+                                       parameterOffset: Int) = {
       var expressions: Array[Expression] = zeroOfMyType
       if (decorators) {
         (expressions = Array())
         (decorators).foreach { fresh6 =>
           val decorator = zeroOfMyType = fresh6 {
             val helper = createParamHelper(
-                currentSourceFileExternalHelpersModuleName,
-                transformDecorator(decorator), parameterOffset,
-                decorator.expression)
+              currentSourceFileExternalHelpersModuleName,
+              transformDecorator(decorator),
+              parameterOffset,
+              decorator.expression)
             setEmitFlags(helper, EmitFlags.NoComments)
             expressions.push(helper)
 
@@ -864,7 +959,7 @@ object TS {
 
     }
     def addTypeMetadata(node: Declaration,
-        decoratorExpressions: Array[Expression]) = {
+                        decoratorExpressions: Array[Expression]) = {
       if (USE_NEW_TYPE_METADATA_FORMAT) {
         addNewTypeMetadata(node, decoratorExpressions)
 
@@ -875,24 +970,30 @@ object TS {
 
     }
     def addOldTypeMetadata(node: Declaration,
-        decoratorExpressions: Array[Expression]) = {
+                           decoratorExpressions: Array[Expression]) = {
       if (compilerOptions.emitDecoratorMetadata) {
         if (shouldAddTypeMetadata(node)) {
           decoratorExpressions.push(
-              createMetadataHelper(currentSourceFileExternalHelpersModuleName,
-                  "design:type", serializeTypeOfNode(node)))
+            createMetadataHelper(
+              currentSourceFileExternalHelpersModuleName,
+              "design:type",
+              serializeTypeOfNode(node)))
 
         }
         if (shouldAddParamTypesMetadata(node)) {
           decoratorExpressions.push(
-              createMetadataHelper(currentSourceFileExternalHelpersModuleName,
-                  "design:paramtypes", serializeParameterTypesOfNode(node)))
+            createMetadataHelper(
+              currentSourceFileExternalHelpersModuleName,
+              "design:paramtypes",
+              serializeParameterTypesOfNode(node)))
 
         }
         if (shouldAddReturnTypeMetadata(node)) {
           decoratorExpressions.push(
-              createMetadataHelper(currentSourceFileExternalHelpersModuleName,
-                  "design:returntype", serializeReturnTypeOfNode(node)))
+            createMetadataHelper(
+              currentSourceFileExternalHelpersModuleName,
+              "design:returntype",
+              serializeReturnTypeOfNode(node)))
 
         }
 
@@ -900,37 +1001,54 @@ object TS {
 
     }
     def addNewTypeMetadata(node: Declaration,
-        decoratorExpressions: Array[Expression]) = {
+                           decoratorExpressions: Array[Expression]) = {
       if (compilerOptions.emitDecoratorMetadata) {
         var properties: Array[ObjectLiteralElementLike] = zeroOfMyType
         if (shouldAddTypeMetadata(node)) {
           ((properties || ((properties = Array())))).push(
-              createPropertyAssignment("type",
-                  createArrowFunction(undefined, undefined, Array(), undefined,
-                      undefined, serializeTypeOfNode(node))))
+            createPropertyAssignment(
+              "type",
+              createArrowFunction(
+                undefined,
+                undefined,
+                Array(),
+                undefined,
+                undefined,
+                serializeTypeOfNode(node))))
 
         }
         if (shouldAddParamTypesMetadata(node)) {
           ((properties || ((properties = Array())))).push(
-              createPropertyAssignment("paramTypes",
-                  createArrowFunction(undefined, undefined, Array(), undefined,
-                      undefined, serializeParameterTypesOfNode(node))))
+            createPropertyAssignment(
+              "paramTypes",
+              createArrowFunction(
+                undefined,
+                undefined,
+                Array(),
+                undefined,
+                undefined,
+                serializeParameterTypesOfNode(node))))
 
         }
         if (shouldAddReturnTypeMetadata(node)) {
           ((properties || ((properties = Array())))).push(
-              createPropertyAssignment("returnType",
-                  createArrowFunction(undefined, undefined, Array(), undefined,
-                      undefined, serializeReturnTypeOfNode(node))))
+            createPropertyAssignment(
+              "returnType",
+              createArrowFunction(
+                undefined,
+                undefined,
+                Array(),
+                undefined,
+                undefined,
+                serializeReturnTypeOfNode(node))))
 
         }
         if (properties) {
-          decoratorExpressions
-            .push(
-                createMetadataHelper(
-                    currentSourceFileExternalHelpersModuleName,
-                    "design:typeinfo",
-                    createObjectLiteral(properties, undefined, true)))
+          decoratorExpressions.push(
+            createMetadataHelper(
+              currentSourceFileExternalHelpersModuleName,
+              "design:typeinfo",
+              createObjectLiteral(properties, undefined, true)))
 
         }
 
@@ -956,15 +1074,13 @@ object TS {
         case SyntaxKind.PropertyDeclaration | SyntaxKind.Parameter |
             SyntaxKind.GetAccessor =>
           return serializeTypeNode(
-              (
-                  node
-                    .asInstanceOf[
-                        (PropertyDeclaration | ParameterDeclaration | GetAccessorDeclaration)])
-                .`type`)
+            (node
+              .asInstanceOf[(PropertyDeclaration | ParameterDeclaration | GetAccessorDeclaration)])
+              .`type`)
         case SyntaxKind.SetAccessor =>
           return serializeTypeNode(
-              getSetAccessorTypeAnnotationNode(
-                  node.asInstanceOf[SetAccessorDeclaration]))
+            getSetAccessorTypeAnnotationNode(
+              node.asInstanceOf[SetAccessorDeclaration]))
         case SyntaxKind.ClassDeclaration | SyntaxKind.ClassExpression |
             SyntaxKind.MethodDeclaration =>
           return createIdentifier("Function")
@@ -979,7 +1095,7 @@ object TS {
 
       } else if ((node && (node.kind === SyntaxKind.TypeReference))) {
         return singleOrUndefined(
-            (node.asInstanceOf[TypeReferenceNode]).typeArguments)
+          (node.asInstanceOf[TypeReferenceNode]).typeArguments)
 
       } else {
         return undefined
@@ -1006,8 +1122,8 @@ object TS {
               }
               if (parameter.dotDotDotToken) {
                 expressions.push(
-                    serializeTypeNode(
-                        getRestParameterElementType(parameter.`type`)))
+                  serializeTypeNode(
+                    getRestParameterElementType(parameter.`type`)))
 
               } else {
                 expressions.push(serializeTypeOfNode(parameter))
@@ -1044,7 +1160,7 @@ object TS {
           return createVoidZero()
         case SyntaxKind.ParenthesizedType =>
           return serializeTypeNode(
-              (node.asInstanceOf[ParenthesizedTypeNode]).`type`)
+            (node.asInstanceOf[ParenthesizedTypeNode]).`type`)
         case SyntaxKind.FunctionType | SyntaxKind.ConstructorType =>
           return createIdentifier("Function")
         case SyntaxKind.ArrayType | SyntaxKind.TupleType =>
@@ -1063,7 +1179,7 @@ object TS {
               return createIdentifier("Boolean")
             case _ =>
               Debug.failBadSyntaxKind(
-                  (node.asInstanceOf[LiteralTypeNode]).literal)
+                (node.asInstanceOf[LiteralTypeNode]).literal)
           }
         case SyntaxKind.NumberKeyword =>
           return createIdentifier("Number")
@@ -1073,7 +1189,7 @@ object TS {
                   else createIdentifier("Symbol"))
         case SyntaxKind.TypeReference =>
           return serializeTypeReferenceNode(
-              node.asInstanceOf[TypeReferenceNode])
+            node.asInstanceOf[TypeReferenceNode])
         case SyntaxKind.IntersectionType | SyntaxKind.UnionType => {
           val unionOrIntersection =
             node.asInstanceOf[UnionOrIntersectionTypeNode]
@@ -1121,10 +1237,12 @@ object TS {
           val serialized = serializeEntityNameAsExpression(node.typeName, true)
           val temp = createTempVariable(hoistVariableDeclaration)
           return createLogicalOr(
-              createLogicalAnd(createStrictEquality(
-                      createTypeOf(createAssignment(temp, serialized)),
-                      createLiteral("function")), temp),
-              createIdentifier("Object"))
+            createLogicalAnd(
+              createStrictEquality(
+                createTypeOf(createAssignment(temp, serialized)),
+                createLiteral("function")),
+              temp),
+            createIdentifier("Object"))
         case TypeReferenceSerializationKind.TypeWithConstructSignatureAndValue =>
           return serializeEntityNameAsExpression(node.typeName, false)
         case TypeReferenceSerializationKind.VoidNullableOrNeverType =>
@@ -1151,7 +1269,7 @@ object TS {
 
     }
     def serializeEntityNameAsExpression(node: EntityName,
-        useFallback: Boolean): Expression = {
+                                        useFallback: Boolean): Expression = {
       node.kind match {
         case SyntaxKind.Identifier =>
           val name = getMutableClone(node.asInstanceOf[Identifier])
@@ -1159,19 +1277,24 @@ object TS {
           (name.original = undefined)
           (name.parent = currentScope)
           if (useFallback) {
-            return createLogicalAnd(createStrictInequality(createTypeOf(name),
-                    createLiteral("undefined")), name)
+            return createLogicalAnd(
+              createStrictInequality(
+                createTypeOf(name),
+                createLiteral("undefined")),
+              name)
 
           }
           return name
         case SyntaxKind.QualifiedName =>
           return serializeQualifiedNameAsExpression(
-              node.asInstanceOf[QualifiedName], useFallback)
+            node.asInstanceOf[QualifiedName],
+            useFallback)
         case _ =>
       }
 
     }
-    def serializeQualifiedNameAsExpression(node: QualifiedName,
+    def serializeQualifiedNameAsExpression(
+        node: QualifiedName,
         useFallback: Boolean): Expression = {
       var left: Expression = zeroOfMyType
       if ((node.left.kind === SyntaxKind.Identifier)) {
@@ -1179,8 +1302,11 @@ object TS {
 
       } else if (useFallback) {
         val temp = createTempVariable(hoistVariableDeclaration)
-        (left = createLogicalAnd(createAssignment(temp,
-                serializeEntityNameAsExpression(node.left, true)), temp))
+        (left = createLogicalAnd(
+          createAssignment(
+            temp,
+            serializeEntityNameAsExpression(node.left, true)),
+          temp))
 
       } else {
         (left = serializeEntityNameAsExpression(node.left, false))
@@ -1191,13 +1317,17 @@ object TS {
     }
     def getGlobalSymbolNameWithFallback(): Expression = {
       return createConditional(
-          createStrictEquality(createTypeOf(createIdentifier("Symbol")),
-              createLiteral("function")),
-          createToken(SyntaxKind.QuestionToken), createIdentifier("Symbol"),
-          createToken(SyntaxKind.ColonToken), createIdentifier("Object"))
+        createStrictEquality(
+          createTypeOf(createIdentifier("Symbol")),
+          createLiteral("function")),
+        createToken(SyntaxKind.QuestionToken),
+        createIdentifier("Symbol"),
+        createToken(SyntaxKind.ColonToken),
+        createIdentifier("Object"))
 
     }
-    def getExpressionForPropertyName(member: (ClassElement | EnumMember),
+    def getExpressionForPropertyName(
+        member: (ClassElement | EnumMember),
         generateNameForComputedPropertyName: Boolean): Expression = {
       val name = member.name
       if (isComputedPropertyName(name)) {
@@ -1224,8 +1354,9 @@ object TS {
           (expression = createAssignment(generatedName, expression))
 
         }
-        return setOriginalNode(createComputedPropertyName(expression, name),
-            name)
+        return setOriginalNode(
+          createComputedPropertyName(expression, name),
+          name)
 
       } else {
         return name
@@ -1267,11 +1398,16 @@ object TS {
         return undefined
 
       }
-      val method = createMethod(undefined,
-          visitNodes(node.modifiers, visitor, isModifier), node.asteriskToken,
-          visitPropertyNameOfClassElement(node), undefined,
-          visitNodes(node.parameters, visitor, isParameter), undefined,
-          transformFunctionBody(node), node)
+      val method = createMethod(
+        undefined,
+        visitNodes(node.modifiers, visitor, isModifier),
+        node.asteriskToken,
+        visitPropertyNameOfClassElement(node),
+        undefined,
+        visitNodes(node.parameters, visitor, isParameter),
+        undefined,
+        transformFunctionBody(node),
+        node)
       setCommentRange(method, node)
       setSourceMapRange(method, moveRangePastDecorators(node))
       setOriginalNode(method, node)
@@ -1279,8 +1415,9 @@ object TS {
 
     }
     def shouldEmitAccessorDeclaration(node: AccessorDeclaration) = {
-      return (!((nodeIsMissing(node.body) && hasModifier(node,
-          ModifierFlags.Abstract))))
+      return (!((nodeIsMissing(node.body) && hasModifier(
+        node,
+        ModifierFlags.Abstract))))
 
     }
     def visitGetAccessor(node: GetAccessorDeclaration) = {
@@ -1288,13 +1425,15 @@ object TS {
         return undefined
 
       }
-      val accessor = createGetAccessor(undefined,
-          visitNodes(node.modifiers, visitor, isModifier),
-          visitPropertyNameOfClassElement(node),
-          visitNodes(node.parameters, visitor, isParameter), undefined,
-          (if (node.body) visitEachChild(node.body, visitor, context)
-           else createBlock(Array())),
-          node)
+      val accessor = createGetAccessor(
+        undefined,
+        visitNodes(node.modifiers, visitor, isModifier),
+        visitPropertyNameOfClassElement(node),
+        visitNodes(node.parameters, visitor, isParameter),
+        undefined,
+        (if (node.body) visitEachChild(node.body, visitor, context)
+         else createBlock(Array())),
+        node)
       setCommentRange(accessor, node)
       setSourceMapRange(accessor, moveRangePastDecorators(node))
       setOriginalNode(accessor, node)
@@ -1306,13 +1445,14 @@ object TS {
         return undefined
 
       }
-      val accessor = createSetAccessor(undefined,
-          visitNodes(node.modifiers, visitor, isModifier),
-          visitPropertyNameOfClassElement(node),
-          visitNodes(node.parameters, visitor, isParameter),
-          (if (node.body) visitEachChild(node.body, visitor, context)
-           else createBlock(Array())),
-          node)
+      val accessor = createSetAccessor(
+        undefined,
+        visitNodes(node.modifiers, visitor, isModifier),
+        visitPropertyNameOfClassElement(node),
+        visitNodes(node.parameters, visitor, isParameter),
+        (if (node.body) visitEachChild(node.body, visitor, context)
+         else createBlock(Array())),
+        node)
       setCommentRange(accessor, node)
       setSourceMapRange(accessor, moveRangePastDecorators(node))
       setOriginalNode(accessor, node)
@@ -1325,11 +1465,16 @@ object TS {
         return createNotEmittedStatement(node)
 
       }
-      val func = createFunctionDeclaration(undefined,
-          visitNodes(node.modifiers, visitor, isModifier), node.asteriskToken,
-          node.name, undefined,
-          visitNodes(node.parameters, visitor, isParameter), undefined,
-          transformFunctionBody(node), node)
+      val func = createFunctionDeclaration(
+        undefined,
+        visitNodes(node.modifiers, visitor, isModifier),
+        node.asteriskToken,
+        node.name,
+        undefined,
+        visitNodes(node.parameters, visitor, isParameter),
+        undefined,
+        transformFunctionBody(node),
+        node)
       setOriginalNode(func, node)
       if (isNamespaceExport(node)) {
         val statements: Array[Statement] = Array(func)
@@ -1345,26 +1490,36 @@ object TS {
         return createOmittedExpression()
 
       }
-      val func = createFunctionExpression(visitNodes(node.modifiers, visitor,
-              isModifier), node.asteriskToken, node.name, undefined,
-          visitNodes(node.parameters, visitor, isParameter), undefined,
-          transformFunctionBody(node), node)
+      val func = createFunctionExpression(
+        visitNodes(node.modifiers, visitor, isModifier),
+        node.asteriskToken,
+        node.name,
+        undefined,
+        visitNodes(node.parameters, visitor, isParameter),
+        undefined,
+        transformFunctionBody(node),
+        node)
       setOriginalNode(func, node)
       return func
 
     }
     def visitArrowFunction(node: ArrowFunction) = {
       val func =
-        createArrowFunction(visitNodes(node.modifiers, visitor, isModifier),
-            undefined, visitNodes(node.parameters, visitor, isParameter),
-            undefined, node.equalsGreaterThanToken, transformConciseBody(node),
-            node)
+        createArrowFunction(
+          visitNodes(node.modifiers, visitor, isModifier),
+          undefined,
+          visitNodes(node.parameters, visitor, isParameter),
+          undefined,
+          node.equalsGreaterThanToken,
+          transformConciseBody(node),
+          node)
       setOriginalNode(func, node)
       return func
 
     }
     def transformFunctionBody(
-        node: (MethodDeclaration | AccessorDeclaration | FunctionDeclaration | FunctionExpression)): FunctionBody = {
+        node: (MethodDeclaration | AccessorDeclaration | FunctionDeclaration | FunctionExpression))
+      : FunctionBody = {
       return transformFunctionBodyWorker(node.body)
 
     }
@@ -1389,7 +1544,7 @@ object TS {
 
     }
     def transformConciseBodyWorker(body: (Block | Expression),
-        forceBlockFunctionBody: Boolean) = {
+                                   forceBlockFunctionBody: Boolean) = {
       if (isBlock(body)) {
         return transformFunctionBodyWorker(body)
 
@@ -1401,7 +1556,7 @@ object TS {
         val merged = mergeFunctionBodyLexicalEnvironment(visited, declarations)
         if ((forceBlockFunctionBody && (!isBlock(merged)))) {
           return createBlock(
-              Array(createReturn(merged.asInstanceOf[Expression])))
+            Array(createReturn(merged.asInstanceOf[Expression])))
 
         } else {
           return merged
@@ -1417,10 +1572,15 @@ object TS {
 
       }
       val parameter =
-        createParameterDeclaration(undefined, undefined, node.dotDotDotToken,
-            visitNode(node.name, visitor, isBindingName), undefined, undefined,
-            visitNode(node.initializer, visitor, isExpression),
-            moveRangePastModifiers(node))
+        createParameterDeclaration(
+          undefined,
+          undefined,
+          node.dotDotDotToken,
+          visitNode(node.name, visitor, isBindingName),
+          undefined,
+          undefined,
+          visitNode(node.initializer, visitor, isExpression),
+          moveRangePastModifiers(node))
       setOriginalNode(parameter, node)
       setCommentRange(parameter, node)
       setSourceMapRange(parameter, moveRangePastModifiers(node))
@@ -1435,8 +1595,9 @@ object TS {
           return undefined
 
         }
-        return createStatement(inlineExpressions(map(variables,
-                    transformInitializedVariable)), node)
+        return createStatement(
+          inlineExpressions(map(variables, transformInitializedVariable)),
+          node)
 
       } else {
         return visitEachChild(node, visitor, context)
@@ -1447,28 +1608,34 @@ object TS {
     def transformInitializedVariable(node: VariableDeclaration): Expression = {
       val name = node.name
       if (isBindingPattern(name)) {
-        return flattenVariableDestructuringToExpression(node,
-            hoistVariableDeclaration,
-            getNamespaceMemberNameWithSourceMapsAndWithoutComments, visitor)
+        return flattenVariableDestructuringToExpression(
+          node,
+          hoistVariableDeclaration,
+          getNamespaceMemberNameWithSourceMapsAndWithoutComments,
+          visitor)
 
       } else {
         return createAssignment(
-            getNamespaceMemberNameWithSourceMapsAndWithoutComments(name),
-            visitNode(node.initializer, visitor, isExpression), node)
+          getNamespaceMemberNameWithSourceMapsAndWithoutComments(name),
+          visitNode(node.initializer, visitor, isExpression),
+          node)
 
       }
 
     }
     def visitVariableDeclaration(node: VariableDeclaration) = {
-      return updateVariableDeclaration(node,
-          visitNode(node.name, visitor, isBindingName), undefined,
-          visitNode(node.initializer, visitor, isExpression))
+      return updateVariableDeclaration(
+        node,
+        visitNode(node.name, visitor, isBindingName),
+        undefined,
+        visitNode(node.initializer, visitor, isExpression))
 
     }
     def visitParenthesizedExpression(
         node: ParenthesizedExpression): Expression = {
-      val innerExpression = skipOuterExpressions(node.expression,
-          (~OuterExpressionKinds.Assertions))
+      val innerExpression = skipOuterExpressions(
+        node.expression,
+        (~OuterExpressionKinds.Assertions))
       if (isAssertionExpression(innerExpression)) {
         val expression = visitNode(node.expression, visitor, isExpression)
         return createPartiallyEmittedExpression(expression, node)
@@ -1489,14 +1656,19 @@ object TS {
 
     }
     def visitCallExpression(node: CallExpression) = {
-      return updateCall(node,
-          visitNode(node.expression, visitor, isExpression), undefined,
-          visitNodes(node.arguments, visitor, isExpression))
+      return updateCall(
+        node,
+        visitNode(node.expression, visitor, isExpression),
+        undefined,
+        visitNodes(node.arguments, visitor, isExpression))
 
     }
     def visitNewExpression(node: NewExpression) = {
-      return updateNew(node, visitNode(node.expression, visitor, isExpression),
-          undefined, visitNodes(node.arguments, visitor, isExpression))
+      return updateNew(
+        node,
+        visitNode(node.expression, visitor, isExpression),
+        undefined,
+        visitNodes(node.arguments, visitor, isExpression))
 
     }
     def shouldEmitEnumDeclaration(node: EnumDeclaration) = {
@@ -1505,15 +1677,21 @@ object TS {
     }
     def shouldEmitVarForEnumDeclaration(
         node: (EnumDeclaration | ModuleDeclaration)) = {
-      return (isFirstEmittedDeclarationInScope(node) && (((!hasModifier(node,
-          ModifierFlags.Export)) || isES6ExportedDeclaration(node))))
+      return (isFirstEmittedDeclarationInScope(node) && (((!hasModifier(
+        node,
+        ModifierFlags.Export)) || isES6ExportedDeclaration(node))))
 
     }
-    def addVarForEnumExportedFromNamespace(statements: Array[Statement],
+    def addVarForEnumExportedFromNamespace(
+        statements: Array[Statement],
         node: (EnumDeclaration | ModuleDeclaration)) = {
-      val statement = createVariableStatement(undefined,
-          Array(createVariableDeclaration(getDeclarationName(node), undefined,
-                  getExportName(node))))
+      val statement = createVariableStatement(
+        undefined,
+        Array(
+          createVariableDeclaration(
+            getDeclarationName(node),
+            undefined,
+            getExportName(node))))
       setSourceMapRange(statement, node)
       statements.push(statement)
 
@@ -1538,12 +1716,21 @@ object TS {
       val containerName = getNamespaceContainerName(node)
       val exportName = getExportName(node)
       val enumStatement = createStatement(
-          createCall(createFunctionExpression(undefined, undefined, undefined,
-                  undefined, Array(createParameter(parameterName)), undefined,
-                  transformEnumBody(node, containerName)), undefined,
-              Array(createLogicalOr(exportName,
-                      createAssignment(exportName, createObjectLiteral())))),
-          node)
+        createCall(
+          createFunctionExpression(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            Array(createParameter(parameterName)),
+            undefined,
+            transformEnumBody(node, containerName)),
+          undefined,
+          Array(
+            createLogicalOr(
+              exportName,
+              createAssignment(exportName, createObjectLiteral())))),
+        node)
       setOriginalNode(enumStatement, node)
       setEmitFlags(enumStatement, emitFlags)
       statements.push(enumStatement)
@@ -1555,7 +1742,7 @@ object TS {
 
     }
     def transformEnumBody(node: EnumDeclaration,
-        localName: Identifier): Block = {
+                          localName: Identifier): Block = {
       val savedCurrentNamespaceLocalName = currentNamespaceContainerName
       (currentNamespaceContainerName = localName)
       val statements: Array[Statement] = Array()
@@ -1563,18 +1750,24 @@ object TS {
       addRange(statements, map(node.members, transformEnumMember))
       addRange(statements, endLexicalEnvironment())
       (currentNamespaceContainerName = savedCurrentNamespaceLocalName)
-      return createBlock(createNodeArray(statements, node.members), undefined,
-          true)
+      return createBlock(
+        createNodeArray(statements, node.members),
+        undefined,
+        true)
 
     }
     def transformEnumMember(member: EnumMember): Statement = {
       val name = getExpressionForPropertyName(member, false)
       return createStatement(
-          createAssignment(createElementAccess(currentNamespaceContainerName,
-                  createAssignment(
-                      createElementAccess(currentNamespaceContainerName, name),
-                      transformEnumMemberDeclarationValue(member))), name,
-              member), member)
+        createAssignment(
+          createElementAccess(
+            currentNamespaceContainerName,
+            createAssignment(
+              createElementAccess(currentNamespaceContainerName, name),
+              transformEnumMemberDeclarationValue(member))),
+          name,
+          member),
+        member)
 
     }
     def transformEnumMemberDeclarationValue(member: EnumMember): Expression = {
@@ -1596,8 +1789,9 @@ object TS {
 
     }
     def shouldEmitModuleDeclaration(node: ModuleDeclaration) = {
-      return isInstantiatedModule(node,
-          (compilerOptions.preserveConstEnums || compilerOptions.isolatedModules))
+      return isInstantiatedModule(
+        node,
+        (compilerOptions.preserveConstEnums || compilerOptions.isolatedModules))
 
     }
     def isES6ExportedDeclaration(node: Node) = {
@@ -1635,14 +1829,15 @@ object TS {
       return isFirstEmittedDeclarationInScope(node)
 
     }
-    def addVarForEnumOrModuleDeclaration(statements: Array[Statement],
+    def addVarForEnumOrModuleDeclaration(
+        statements: Array[Statement],
         node: (ModuleDeclaration | EnumDeclaration)) = {
       val statement = createVariableStatement(
-          (if (isES6ExportedDeclaration(node))
-             visitNodes(node.modifiers, visitor, isModifier)
-           else undefined),
-          Array(createVariableDeclaration(getDeclarationName(node, false,
-                      true))))
+        (if (isES6ExportedDeclaration(node))
+           visitNodes(node.modifiers, visitor, isModifier)
+         else undefined),
+        Array(
+          createVariableDeclaration(getDeclarationName(node, false, true))))
       setOriginalNode(statement, node)
       if ((node.kind === SyntaxKind.EnumDeclaration)) {
         setSourceMapRange(statement.declarationList, node)
@@ -1662,8 +1857,9 @@ object TS {
         return createNotEmittedStatement(node)
 
       }
-      Debug.assert(isIdentifier(node.name),
-          "TypeScript module should have an Identifier name.")
+      Debug.assert(
+        isIdentifier(node.name),
+        "TypeScript module should have an Identifier name.")
       enableSubstitutionForNamespaceExports()
       val statements: Array[Statement] = Array()
       var emitFlags = EmitFlags.AdviseOnEmitNode
@@ -1679,19 +1875,28 @@ object TS {
       val parameterName = getNamespaceParameterName(node)
       val containerName = getNamespaceContainerName(node)
       val exportName = getExportName(node)
-      var moduleArg = createLogicalOr(exportName,
-          createAssignment(exportName, createObjectLiteral()))
-      if ((hasModifier(node,
-              ModifierFlags.Export) && (!isES6ExportedDeclaration(node)))) {
+      var moduleArg = createLogicalOr(
+        exportName,
+        createAssignment(exportName, createObjectLiteral()))
+      if ((hasModifier(node, ModifierFlags.Export) && (!isES6ExportedDeclaration(
+            node)))) {
         val localName = getLocalName(node)
         (moduleArg = createAssignment(localName, moduleArg))
 
       }
       val moduleStatement = createStatement(
-          createCall(createFunctionExpression(undefined, undefined, undefined,
-                  undefined, Array(createParameter(parameterName)), undefined,
-                  transformModuleBody(node, containerName)), undefined,
-              Array(moduleArg)), node)
+        createCall(
+          createFunctionExpression(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            Array(createParameter(parameterName)),
+            undefined,
+            transformModuleBody(node, containerName)),
+          undefined,
+          Array(moduleArg)),
+        node)
       setOriginalNode(moduleStatement, node)
       setEmitFlags(moduleStatement, emitFlags)
       statements.push(moduleStatement)
@@ -1699,7 +1904,7 @@ object TS {
 
     }
     def transformModuleBody(node: ModuleDeclaration,
-        namespaceLocalName: Identifier): Block = {
+                            namespaceLocalName: Identifier): Block = {
       val savedCurrentNamespaceContainerName = currentNamespaceContainerName
       val savedCurrentNamespace = currentNamespace
       val savedCurrentScopeFirstDeclarationsOfName =
@@ -1713,9 +1918,12 @@ object TS {
       var blockLocation: TextRange = zeroOfMyType
       val body = node.body
       if ((body.kind === SyntaxKind.ModuleBlock)) {
-        addRange(statements,
-            visitNodes((body.asInstanceOf[ModuleBlock]).statements,
-                namespaceElementVisitor, isStatement))
+        addRange(
+          statements,
+          visitNodes(
+            (body.asInstanceOf[ModuleBlock]).statements,
+            namespaceElementVisitor,
+            isStatement))
         (statementsLocation = (body.asInstanceOf[ModuleBlock]).statements)
         (blockLocation = body)
 
@@ -1743,8 +1951,10 @@ object TS {
       (currentNamespace = savedCurrentNamespace)
       (currentScopeFirstDeclarationsOfName =
         savedCurrentScopeFirstDeclarationsOfName)
-      val block = createBlock(createNodeArray(statements, statementsLocation),
-          blockLocation, true)
+      val block = createBlock(
+        createNodeArray(statements, statementsLocation),
+        blockLocation,
+        true)
       if ((body.kind !== SyntaxKind.ModuleBlock)) {
         setEmitFlags(block, (getEmitFlags(block) | EmitFlags.NoComments))
 
@@ -1757,9 +1967,9 @@ object TS {
       if ((moduleDeclaration.body.kind === SyntaxKind.ModuleDeclaration)) {
         val recursiveInnerModule =
           getInnerMostModuleDeclarationFromDottedModule(
-              moduleDeclaration.body.asInstanceOf[ModuleDeclaration])
-        return (recursiveInnerModule || moduleDeclaration.body.asInstanceOf[
-            ModuleDeclaration])
+            moduleDeclaration.body.asInstanceOf[ModuleDeclaration])
+        return (recursiveInnerModule || moduleDeclaration.body
+          .asInstanceOf[ModuleDeclaration])
 
       }
 
@@ -1773,8 +1983,12 @@ object TS {
       val importClause =
         visitNode(node.importClause, visitImportClause, isImportClause, true)
       return (if (importClause)
-                updateImportDeclaration(node, undefined, undefined,
-                    importClause, node.moduleSpecifier)
+                updateImportDeclaration(
+                  node,
+                  undefined,
+                  undefined,
+                  importClause,
+                  node.moduleSpecifier)
               else undefined)
 
     }
@@ -1782,8 +1996,11 @@ object TS {
       val name =
         (if (resolver.isReferencedAliasDeclaration(node)) node.name
          else undefined)
-      val namedBindings = visitNode(node.namedBindings,
-          visitNamedImportBindings, isNamedImportBindings, true)
+      val namedBindings = visitNode(
+        node.namedBindings,
+        visitNamedImportBindings,
+        isNamedImportBindings,
+        true)
       return (if (((name || namedBindings)))
                 updateImportClause(node, name, namedBindings)
               else undefined)
@@ -1810,8 +2027,7 @@ object TS {
               else undefined)
 
     }
-    def visitExportAssignment(
-        node: ExportAssignment): VisitResult[Statement] = {
+    def visitExportAssignment(node: ExportAssignment): VisitResult[Statement] = {
       return (if (resolver.isValueAliasDeclaration(node))
                 visitEachChild(node, visitor, context)
               else undefined)
@@ -1831,8 +2047,12 @@ object TS {
       val exportClause =
         visitNode(node.exportClause, visitNamedExports, isNamedExports, true)
       return (if (exportClause)
-                updateExportDeclaration(node, undefined, undefined,
-                    exportClause, node.moduleSpecifier)
+                updateExportDeclaration(
+                  node,
+                  undefined,
+                  undefined,
+                  exportClause,
+                  node.moduleSpecifier)
               else undefined)
 
     }
@@ -1849,9 +2069,8 @@ object TS {
 
     }
     def shouldEmitImportEqualsDeclaration(node: ImportEqualsDeclaration) = {
-      return (resolver
-        .isReferencedAliasDeclaration(node) || (((!isExternalModule(
-          currentSourceFile)) && resolver
+      return (resolver.isReferencedAliasDeclaration(node) || (((!isExternalModule(
+        currentSourceFile)) && resolver
         .isTopLevelValueImportEqualsWithEntityName(node))))
 
     }
@@ -1868,48 +2087,61 @@ object TS {
 
       }
       val moduleReference = createExpressionFromEntityName(
-          node.moduleReference.asInstanceOf[EntityName])
-      setEmitFlags(moduleReference,
-          (EmitFlags.NoComments | EmitFlags.NoNestedComments))
+        node.moduleReference.asInstanceOf[EntityName])
+      setEmitFlags(
+        moduleReference,
+        (EmitFlags.NoComments | EmitFlags.NoNestedComments))
       if ((isNamedExternalModuleExport(node) || (!isNamespaceExport(node)))) {
-        return setOriginalNode(createVariableStatement(
-                visitNodes(node.modifiers, visitor, isModifier),
-                createVariableDeclarationList(Array(createVariableDeclaration(
-                            node.name, undefined, moduleReference))),
-                node), node)
+        return setOriginalNode(
+          createVariableStatement(
+            visitNodes(node.modifiers, visitor, isModifier),
+            createVariableDeclarationList(
+              Array(
+                createVariableDeclaration(
+                  node.name,
+                  undefined,
+                  moduleReference))),
+            node),
+          node)
 
       } else {
-        return setOriginalNode(createNamespaceExport(node.name,
-                moduleReference, node), node)
+        return setOriginalNode(
+          createNamespaceExport(node.name, moduleReference, node),
+          node)
 
       }
 
     }
     def isNamespaceExport(node: Node) = {
-      return ((currentNamespace !== undefined) && hasModifier(node,
-          ModifierFlags.Export))
+      return ((currentNamespace !== undefined) && hasModifier(
+        node,
+        ModifierFlags.Export))
 
     }
     def isExternalModuleExport(node: Node) = {
-      return ((currentNamespace === undefined) && hasModifier(node,
-          ModifierFlags.Export))
+      return ((currentNamespace === undefined) && hasModifier(
+        node,
+        ModifierFlags.Export))
 
     }
     def isNamedExternalModuleExport(node: Node) = {
-      return (isExternalModuleExport(node) && (!hasModifier(node,
-          ModifierFlags.Default)))
+      return (isExternalModuleExport(node) && (!hasModifier(
+        node,
+        ModifierFlags.Default)))
 
     }
     def isDefaultExternalModuleExport(node: Node) = {
-      return (isExternalModuleExport(node) && hasModifier(node,
-          ModifierFlags.Default))
+      return (isExternalModuleExport(node) && hasModifier(
+        node,
+        ModifierFlags.Default))
 
     }
     def expressionToStatement(expression: Expression) = {
       return createStatement(expression, undefined)
 
     }
-    def addExportMemberAssignment(statements: Array[Statement],
+    def addExportMemberAssignment(
+        statements: Array[Statement],
         node: (ClassDeclaration | FunctionDeclaration)) = {
       val expression =
         createAssignment(getExportName(node), getLocalName(node, true))
@@ -1919,22 +2151,30 @@ object TS {
       statements.push(statement)
 
     }
-    def createNamespaceExport(exportName: Identifier, exportValue: Expression,
-        location: TextRange) = {
+    def createNamespaceExport(exportName: Identifier,
+                              exportValue: Expression,
+                              location: TextRange) = {
       return createStatement(
-          createAssignment(getNamespaceMemberName(exportName, false, true),
-              exportValue), location)
+        createAssignment(
+          getNamespaceMemberName(exportName, false, true),
+          exportValue),
+        location)
 
     }
     def createExternalModuleExport(exportName: Identifier) = {
-      return createExportDeclaration(undefined, undefined,
-          createNamedExports(Array(createExportSpecifier(exportName))))
+      return createExportDeclaration(
+        undefined,
+        undefined,
+        createNamedExports(Array(createExportSpecifier(exportName))))
 
     }
-    def getNamespaceMemberName(name: Identifier, allowComments: Boolean,
-        allowSourceMaps: Boolean): Expression = {
-      val qualifiedName = createPropertyAccess(currentNamespaceContainerName,
-          getSynthesizedClone(name), name)
+    def getNamespaceMemberName(name: Identifier,
+                               allowComments: Boolean,
+                               allowSourceMaps: Boolean): Expression = {
+      val qualifiedName = createPropertyAccess(
+        currentNamespaceContainerName,
+        getSynthesizedClone(name),
+        name)
       var emitFlags: EmitFlags = zeroOfMyType
       if ((!allowComments)) {
         (emitFlags |= EmitFlags.NoComments)
@@ -1970,26 +2210,37 @@ object TS {
     }
     def getLocalName(
         node: (FunctionDeclaration | ClassDeclaration | ClassExpression | ModuleDeclaration | EnumDeclaration),
-        noSourceMaps: Boolean, allowComments: Boolean) = {
-      return getDeclarationName(node, allowComments, (!noSourceMaps),
-          EmitFlags.LocalName)
+        noSourceMaps: Boolean,
+        allowComments: Boolean) = {
+      return getDeclarationName(
+        node,
+        allowComments,
+        (!noSourceMaps),
+        EmitFlags.LocalName)
 
     }
     def getExportName(
         node: (FunctionDeclaration | ClassDeclaration | ClassExpression | ModuleDeclaration | EnumDeclaration),
-        noSourceMaps: Boolean, allowComments: Boolean) = {
+        noSourceMaps: Boolean,
+        allowComments: Boolean) = {
       if (isNamespaceExport(node)) {
-        return getNamespaceMemberName(getDeclarationName(node), allowComments,
-            (!noSourceMaps))
+        return getNamespaceMemberName(
+          getDeclarationName(node),
+          allowComments,
+          (!noSourceMaps))
 
       }
-      return getDeclarationName(node, allowComments, (!noSourceMaps),
-          EmitFlags.ExportName)
+      return getDeclarationName(
+        node,
+        allowComments,
+        (!noSourceMaps),
+        EmitFlags.ExportName)
 
     }
     def getDeclarationName(
         node: (FunctionDeclaration | ClassDeclaration | ClassExpression | ModuleDeclaration | EnumDeclaration),
-        allowComments: Boolean, allowSourceMaps: Boolean,
+        allowComments: Boolean,
+        allowSourceMaps: Boolean,
         emitFlags: EmitFlags) = {
       if (node.name) {
         val name = getMutableClone(node.name.asInstanceOf[Identifier])
@@ -2019,7 +2270,7 @@ object TS {
 
     }
     def getClassMemberPrefix(node: (ClassExpression | ClassDeclaration),
-        member: ClassElement) = {
+                             member: ClassElement) = {
       return (if (hasModifier(member, ModifierFlags.Static))
                 getDeclarationName(node)
               else getClassPrototype(node))
@@ -2060,16 +2311,17 @@ object TS {
       return (getOriginalNode(node).kind === SyntaxKind.EnumDeclaration)
 
     }
-    def onEmitNode(emitContext: EmitContext, node: Node,
-        emitCallback: ((EmitContext, Node) => Unit)): Unit = {
+    def onEmitNode(emitContext: EmitContext,
+                   node: Node,
+                   emitCallback: ((EmitContext, Node) => Unit)): Unit = {
       val savedApplicableSubstitutions = applicableSubstitutions
       if (((enabledSubstitutions & TypeScriptSubstitutionFlags.NamespaceExports) && isTransformedModuleDeclaration(
-              node))) {
+            node))) {
         (applicableSubstitutions |= TypeScriptSubstitutionFlags.NamespaceExports)
 
       }
       if (((enabledSubstitutions & TypeScriptSubstitutionFlags.NonQualifiedEnumMembers) && isTransformedEnumDeclaration(
-              node))) {
+            node))) {
         (applicableSubstitutions |= TypeScriptSubstitutionFlags.NonQualifiedEnumMembers)
 
       }
@@ -2115,10 +2367,10 @@ object TS {
           return substituteExpressionIdentifier(node.asInstanceOf[Identifier])
         case SyntaxKind.PropertyAccessExpression =>
           return substitutePropertyAccessExpression(
-              node.asInstanceOf[PropertyAccessExpression])
+            node.asInstanceOf[PropertyAccessExpression])
         case SyntaxKind.ElementAccessExpression =>
           return substituteElementAccessExpression(
-              node.asInstanceOf[ElementAccessExpression])
+            node.asInstanceOf[ElementAccessExpression])
         case _ =>
       }
       return node
@@ -2126,13 +2378,12 @@ object TS {
     }
     def substituteExpressionIdentifier(node: Identifier): Expression = {
       return ((trySubstituteClassAlias(node) || trySubstituteNamespaceExportedName(
-          node)) || node)
+        node)) || node)
 
     }
     def trySubstituteClassAlias(node: Identifier): Expression = {
       if ((enabledSubstitutions & TypeScriptSubstitutionFlags.ClassAliases)) {
-        if ((resolver
-              .getNodeCheckFlags(node) & NodeCheckFlags.ConstructorReferenceInClass)) {
+        if ((resolver.getNodeCheckFlags(node) & NodeCheckFlags.ConstructorReferenceInClass)) {
           val declaration = resolver.getReferencedValueDeclaration(node)
           if (declaration) {
             val classAlias = classAliases(declaration.id)
@@ -2154,13 +2405,15 @@ object TS {
     }
     def trySubstituteNamespaceExportedName(node: Identifier): Expression = {
       if (((enabledSubstitutions & applicableSubstitutions) && (((getEmitFlags(
-              node) & EmitFlags.LocalName)) === 0))) {
+            node) & EmitFlags.LocalName)) === 0))) {
         val container = resolver.getReferencedExportContainer(node, false)
         if (container) {
           val substitute = ((((applicableSubstitutions & TypeScriptSubstitutionFlags.NamespaceExports) && (container.kind === SyntaxKind.ModuleDeclaration))) || (((applicableSubstitutions & TypeScriptSubstitutionFlags.NonQualifiedEnumMembers) && (container.kind === SyntaxKind.EnumDeclaration))))
           if (substitute) {
-            return createPropertyAccess(getGeneratedNameForNode(container),
-                node, node)
+            return createPropertyAccess(
+              getGeneratedNameForNode(container),
+              node,
+              node)
 
           }
 
@@ -2179,7 +2432,8 @@ object TS {
 
     }
     def substituteConstantValue(
-        node: (PropertyAccessExpression | ElementAccessExpression)): LeftHandSideExpression = {
+        node: (PropertyAccessExpression | ElementAccessExpression))
+      : LeftHandSideExpression = {
       val constantValue = tryGetConstEnumValue(node)
       if ((constantValue !== undefined)) {
         val substitute = createLiteral(constantValue)
@@ -2206,10 +2460,10 @@ object TS {
 
       }
       return (if ((isPropertyAccessExpression(node) || isElementAccessExpression(
-                      node)))
+                    node)))
                 resolver.getConstantValue(
-                    node.asInstanceOf[
-                        (PropertyAccessExpression | ElementAccessExpression)])
+                  node.asInstanceOf[
+                    (PropertyAccessExpression | ElementAccessExpression)])
               else undefined)
 
     }

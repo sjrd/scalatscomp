@@ -16,7 +16,8 @@ object Generators {
     case object Endfinally extends OpCode
   }
   type OperationArguments =
-    ((Label) | (Label, Expression) | (Statement) | (Expression) | (Expression, Expression))
+    ((Label) | (Label, Expression) | (Statement) | (Expression) | (Expression,
+                                                                   Expression))
   sealed abstract class BlockAction
   object BlockAction {
     case object Open extends BlockAction
@@ -78,10 +79,13 @@ object Generators {
     case object Catch extends Instruction
     case object Endfinally extends Instruction
   }
-  val instructionNames = createMap[String](Map(Instruction.Return -> "return",
-          Instruction.Break -> "break", Instruction.Yield -> "yield",
-          Instruction.YieldStar -> "yield*",
-          Instruction.Endfinally -> "endfinally"))
+  val instructionNames = createMap[String](
+    Map(
+      Instruction.Return -> "return",
+      Instruction.Break -> "break",
+      Instruction.Yield -> "yield",
+      Instruction.YieldStar -> "yield*",
+      Instruction.Endfinally -> "endfinally"))
   def transformGenerators(context: TransformationContext) = {
     const fresh1 = context
     val startLexicalEnvironment = fresh1.startLexicalEnvironment
@@ -170,17 +174,16 @@ object Generators {
       }
 
     }
-    def visitJavaScriptInGeneratorFunctionBody(
-        node: Node): VisitResult[Node] = {
+    def visitJavaScriptInGeneratorFunctionBody(node: Node): VisitResult[Node] = {
       node.kind match {
         case SyntaxKind.FunctionDeclaration =>
           return visitFunctionDeclaration(
-              node.asInstanceOf[FunctionDeclaration])
+            node.asInstanceOf[FunctionDeclaration])
         case SyntaxKind.FunctionExpression =>
           return visitFunctionExpression(node.asInstanceOf[FunctionExpression])
         case SyntaxKind.GetAccessor | SyntaxKind.SetAccessor =>
           return visitAccessorDeclaration(
-              node.asInstanceOf[AccessorDeclaration])
+            node.asInstanceOf[AccessorDeclaration])
         case SyntaxKind.VariableStatement =>
           return visitVariableStatement(node.asInstanceOf[VariableStatement])
         case SyntaxKind.ForStatement =>
@@ -213,18 +216,18 @@ object Generators {
           return visitBinaryExpression(node.asInstanceOf[BinaryExpression])
         case SyntaxKind.ConditionalExpression =>
           return visitConditionalExpression(
-              node.asInstanceOf[ConditionalExpression])
+            node.asInstanceOf[ConditionalExpression])
         case SyntaxKind.YieldExpression =>
           return visitYieldExpression(node.asInstanceOf[YieldExpression])
         case SyntaxKind.ArrayLiteralExpression =>
           return visitArrayLiteralExpression(
-              node.asInstanceOf[ArrayLiteralExpression])
+            node.asInstanceOf[ArrayLiteralExpression])
         case SyntaxKind.ObjectLiteralExpression =>
           return visitObjectLiteralExpression(
-              node.asInstanceOf[ObjectLiteralExpression])
+            node.asInstanceOf[ObjectLiteralExpression])
         case SyntaxKind.ElementAccessExpression =>
           return visitElementAccessExpression(
-              node.asInstanceOf[ElementAccessExpression])
+            node.asInstanceOf[ElementAccessExpression])
         case SyntaxKind.CallExpression =>
           return visitCallExpression(node.asInstanceOf[CallExpression])
         case SyntaxKind.NewExpression =>
@@ -238,7 +241,7 @@ object Generators {
       node.kind match {
         case SyntaxKind.FunctionDeclaration =>
           return visitFunctionDeclaration(
-              node.asInstanceOf[FunctionDeclaration])
+            node.asInstanceOf[FunctionDeclaration])
         case SyntaxKind.FunctionExpression =>
           return visitFunctionExpression(node.asInstanceOf[FunctionExpression])
         case _ =>
@@ -249,9 +252,18 @@ object Generators {
     }
     def visitFunctionDeclaration(node: FunctionDeclaration): Statement = {
       if ((node.asteriskToken && (getEmitFlags(node) & EmitFlags.AsyncFunctionBody))) {
-        (node = setOriginalNode(createFunctionDeclaration(undefined, undefined,
-                undefined, node.name, undefined, node.parameters, undefined,
-                transformGeneratorFunctionBody(node.body), node), node))
+        (node = setOriginalNode(
+          createFunctionDeclaration(
+            undefined,
+            undefined,
+            undefined,
+            node.name,
+            undefined,
+            node.parameters,
+            undefined,
+            transformGeneratorFunctionBody(node.body),
+            node),
+          node))
 
       } else {
         val savedInGeneratorFunctionBody = inGeneratorFunctionBody
@@ -275,9 +287,17 @@ object Generators {
     }
     def visitFunctionExpression(node: FunctionExpression): Expression = {
       if ((node.asteriskToken && (getEmitFlags(node) & EmitFlags.AsyncFunctionBody))) {
-        (node = setOriginalNode(createFunctionExpression(undefined, undefined,
-                node.name, undefined, node.parameters, undefined,
-                transformGeneratorFunctionBody(node.body), node), node))
+        (node = setOriginalNode(
+          createFunctionExpression(
+            undefined,
+            undefined,
+            node.name,
+            undefined,
+            node.parameters,
+            undefined,
+            transformGeneratorFunctionBody(node.body),
+            node),
+          node))
 
       } else {
         val savedInGeneratorFunctionBody = inGeneratorFunctionBody
@@ -375,8 +395,8 @@ object Generators {
           return undefined
 
         }
-        return createStatement(inlineExpressions(map(variables,
-                    transformInitializedVariable)))
+        return createStatement(
+          inlineExpressions(map(variables, transformInitializedVariable)))
 
       }
 
@@ -436,34 +456,48 @@ object Generators {
         left.kind match {
           case SyntaxKind.PropertyAccessExpression =>
             (target = updatePropertyAccess(
-                left.asInstanceOf[PropertyAccessExpression],
-                cacheExpression(visitNode((left
-                              .asInstanceOf[PropertyAccessExpression])
-                          .expression, visitor, isLeftHandSideExpression)),
-                (left.asInstanceOf[PropertyAccessExpression]).name))
+              left.asInstanceOf[PropertyAccessExpression],
+              cacheExpression(
+                visitNode(
+                  (left.asInstanceOf[PropertyAccessExpression]).expression,
+                  visitor,
+                  isLeftHandSideExpression)),
+              (left.asInstanceOf[PropertyAccessExpression]).name))
           case SyntaxKind.ElementAccessExpression =>
             (target = updateElementAccess(
-                left.asInstanceOf[ElementAccessExpression],
-                cacheExpression(visitNode((left
-                              .asInstanceOf[ElementAccessExpression])
-                          .expression, visitor, isLeftHandSideExpression)),
-                cacheExpression(visitNode((left
-                              .asInstanceOf[ElementAccessExpression])
-                          .argumentExpression, visitor, isExpression))))
+              left.asInstanceOf[ElementAccessExpression],
+              cacheExpression(
+                visitNode(
+                  (left.asInstanceOf[ElementAccessExpression]).expression,
+                  visitor,
+                  isLeftHandSideExpression)),
+              cacheExpression(
+                visitNode(
+                  (left
+                    .asInstanceOf[ElementAccessExpression])
+                    .argumentExpression,
+                  visitor,
+                  isExpression))))
           case _ =>
             (target = visitNode(left, visitor, isExpression))
         }
         val operator = node.operatorToken.kind
         if (isCompoundAssignment(operator)) {
-          return createBinary(target, SyntaxKind.EqualsToken,
-              createBinary(cacheExpression(target),
-                  getOperatorForCompoundAssignment(operator),
-                  visitNode(right, visitor, isExpression), node),
-              node)
+          return createBinary(
+            target,
+            SyntaxKind.EqualsToken,
+            createBinary(
+              cacheExpression(target),
+              getOperatorForCompoundAssignment(operator),
+              visitNode(right, visitor, isExpression),
+              node),
+            node)
 
         } else {
-          return updateBinary(node, target,
-              visitNode(right, visitor, isExpression))
+          return updateBinary(
+            node,
+            target,
+            visitNode(right, visitor, isExpression))
 
         }
 
@@ -481,8 +515,8 @@ object Generators {
 
         }
         val clone = getMutableClone(node)
-        (clone.left =
-          cacheExpression(visitNode(node.left, visitor, isExpression)))
+        (clone.left = cacheExpression(
+          visitNode(node.left, visitor, isExpression)))
         (clone.right = visitNode(node.right, visitor, isExpression))
         return clone
 
@@ -493,8 +527,10 @@ object Generators {
     def visitLogicalBinaryExpression(node: BinaryExpression) = {
       val resultLabel = defineLabel()
       val resultLocal = declareLocal()
-      emitAssignment(resultLocal, visitNode(node.left, visitor, isExpression),
-          node.left)
+      emitAssignment(
+        resultLocal,
+        visitNode(node.left, visitor, isExpression),
+        node.left)
       if ((node.operatorToken.kind === SyntaxKind.AmpersandAmpersandToken)) {
         emitBreakWhenFalse(resultLabel, resultLocal, node.left)
 
@@ -502,8 +538,10 @@ object Generators {
         emitBreakWhenTrue(resultLabel, resultLocal, node.left)
 
       }
-      emitAssignment(resultLocal, visitNode(node.right, visitor, isExpression),
-          node.right)
+      emitAssignment(
+        resultLocal,
+        visitNode(node.right, visitor, isExpression),
+        node.right)
       markLabel(resultLabel)
       return resultLocal
 
@@ -520,8 +558,9 @@ object Generators {
 
         } else {
           if ((containsYield(node) && (pendingExpressions.length > 0))) {
-            emitWorker(OpCode.Statement,
-                Array(createStatement(inlineExpressions(pendingExpressions))))
+            emitWorker(
+              OpCode.Statement,
+              Array(createStatement(inlineExpressions(pendingExpressions))))
             (pendingExpressions = Array())
 
           }
@@ -537,14 +576,20 @@ object Generators {
         val whenFalseLabel = defineLabel()
         val resultLabel = defineLabel()
         val resultLocal = declareLocal()
-        emitBreakWhenFalse(whenFalseLabel,
-            visitNode(node.condition, visitor, isExpression), node.condition)
-        emitAssignment(resultLocal,
-            visitNode(node.whenTrue, visitor, isExpression), node.whenTrue)
+        emitBreakWhenFalse(
+          whenFalseLabel,
+          visitNode(node.condition, visitor, isExpression),
+          node.condition)
+        emitAssignment(
+          resultLocal,
+          visitNode(node.whenTrue, visitor, isExpression),
+          node.whenTrue)
         emitBreak(resultLabel)
         markLabel(whenFalseLabel)
-        emitAssignment(resultLocal,
-            visitNode(node.whenFalse, visitor, isExpression), node.whenFalse)
+        emitAssignment(
+          resultLocal,
+          visitNode(node.whenFalse, visitor, isExpression),
+          node.whenFalse)
         markLabel(resultLabel)
         return resultLocal
 
@@ -575,25 +620,33 @@ object Generators {
       val temp = declareLocal()
       var hasAssignedTemp = false
       if ((numInitialElements > 0)) {
-        emitAssignment(temp,
-            createArrayLiteral(visitNodes(elements, visitor, isExpression, 0,
-                    numInitialElements)))
+        emitAssignment(
+          temp,
+          createArrayLiteral(
+            visitNodes(
+              elements,
+              visitor,
+              isExpression,
+              0,
+              numInitialElements)))
         (hasAssignedTemp = true)
 
       }
-      val expressions = reduceLeft(elements, reduceElement,
-          Array().asInstanceOf[Array[Expression]], numInitialElements)
+      val expressions = reduceLeft(
+        elements,
+        reduceElement,
+        Array().asInstanceOf[Array[Expression]],
+        numInitialElements)
       return (if (hasAssignedTemp)
                 createArrayConcat(temp, Array(createArrayLiteral(expressions)))
               else createArrayLiteral(expressions))
-      def reduceElement(expressions: Array[Expression],
-          element: Expression) = {
+      def reduceElement(expressions: Array[Expression], element: Expression) = {
         if ((containsYield(element) && (expressions.length > 0))) {
-          emitAssignment(temp,
-              (if (hasAssignedTemp)
-                 createArrayConcat(temp,
-                     Array(createArrayLiteral(expressions)))
-               else createArrayLiteral(expressions)))
+          emitAssignment(
+            temp,
+            (if (hasAssignedTemp)
+               createArrayConcat(temp, Array(createArrayLiteral(expressions)))
+             else createArrayLiteral(expressions)))
           (hasAssignedTemp = true)
           (expressions = Array())
 
@@ -609,17 +662,27 @@ object Generators {
       val multiLine = node.multiLine
       val numInitialProperties = countInitialNodesWithoutYield(properties)
       val temp = declareLocal()
-      emitAssignment(temp,
-          createObjectLiteral(visitNodes(properties, visitor,
-                  isObjectLiteralElementLike, 0, numInitialProperties),
-              undefined, multiLine))
-      val expressions = reduceLeft(properties, reduceProperty,
-          Array().asInstanceOf[Array[Expression]], numInitialProperties)
+      emitAssignment(
+        temp,
+        createObjectLiteral(
+          visitNodes(
+            properties,
+            visitor,
+            isObjectLiteralElementLike,
+            0,
+            numInitialProperties),
+          undefined,
+          multiLine))
+      val expressions = reduceLeft(
+        properties,
+        reduceProperty,
+        Array().asInstanceOf[Array[Expression]],
+        numInitialProperties)
       expressions.push(
-          (if (multiLine) startOnNewLine(getMutableClone(temp)) else temp))
+        (if (multiLine) startOnNewLine(getMutableClone(temp)) else temp))
       return inlineExpressions(expressions)
       def reduceProperty(expressions: Array[Expression],
-          property: ObjectLiteralElementLike) = {
+                         property: ObjectLiteralElementLike) = {
         if ((containsYield(property) && (expressions.length > 0))) {
           emitStatement(createStatement(inlineExpressions(expressions)))
           (expressions = Array())
@@ -644,8 +707,8 @@ object Generators {
     def visitElementAccessExpression(node: ElementAccessExpression) = {
       if (containsYield(node.argumentExpression)) {
         val clone = getMutableClone(node)
-        (clone.expression = cacheExpression(visitNode(node.expression, visitor,
-                isLeftHandSideExpression)))
+        (clone.expression = cacheExpression(
+          visitNode(node.expression, visitor, isLeftHandSideExpression)))
         (clone.argumentExpression =
           visitNode(node.argumentExpression, visitor, isExpression))
         return clone
@@ -656,13 +719,21 @@ object Generators {
     }
     def visitCallExpression(node: CallExpression) = {
       if (forEach(node.arguments, containsYield)) {
-        const fresh4 = createCallBinding(node.expression,
-            hoistVariableDeclaration, languageVersion, true)
+        const fresh4 = createCallBinding(
+          node.expression,
+          hoistVariableDeclaration,
+          languageVersion,
+          true)
         val target = fresh4.target
         val thisArg = fresh4.thisArg
-        return setOriginalNode(createFunctionApply(cacheExpression(
-                    visitNode(target, visitor, isLeftHandSideExpression)),
-                thisArg, visitElements(node.arguments), node), node)
+        return setOriginalNode(
+          createFunctionApply(
+            cacheExpression(
+              visitNode(target, visitor, isLeftHandSideExpression)),
+            thisArg,
+            visitElements(node.arguments),
+            node),
+          node)
 
       }
       return visitEachChild(node, visitor, context)
@@ -670,22 +741,28 @@ object Generators {
     }
     def visitNewExpression(node: NewExpression) = {
       if (forEach(node.arguments, containsYield)) {
-        const fresh5 =
-          createCallBinding(createPropertyAccess(node.expression, "bind"),
-              hoistVariableDeclaration)
+        const fresh5 = createCallBinding(
+          createPropertyAccess(node.expression, "bind"),
+          hoistVariableDeclaration)
         val target = fresh5.target
         val thisArg = fresh5.thisArg
-        return setOriginalNode(createNew(createFunctionApply(
-                    cacheExpression(visitNode(target, visitor, isExpression)),
-                    thisArg, visitElements(node.arguments)), undefined,
-                Array(), node), node)
+        return setOriginalNode(
+          createNew(
+            createFunctionApply(
+              cacheExpression(visitNode(target, visitor, isExpression)),
+              thisArg,
+              visitElements(node.arguments)),
+            undefined,
+            Array(),
+            node),
+          node)
 
       }
       return visitEachChild(node, visitor, context)
 
     }
     def transformAndEmitStatements(statements: Array[Statement],
-        start: Nothing = 0) = {
+                                   start: Nothing = 0) = {
       val numStatements = statements.length {
         var i = start
         while ((i < numStatements)) {
@@ -724,40 +801,40 @@ object Generators {
           return transformAndEmitBlock(node.asInstanceOf[Block])
         case SyntaxKind.ExpressionStatement =>
           return transformAndEmitExpressionStatement(
-              node.asInstanceOf[ExpressionStatement])
+            node.asInstanceOf[ExpressionStatement])
         case SyntaxKind.IfStatement =>
           return transformAndEmitIfStatement(node.asInstanceOf[IfStatement])
         case SyntaxKind.DoStatement =>
           return transformAndEmitDoStatement(node.asInstanceOf[DoStatement])
         case SyntaxKind.WhileStatement =>
           return transformAndEmitWhileStatement(
-              node.asInstanceOf[WhileStatement])
+            node.asInstanceOf[WhileStatement])
         case SyntaxKind.ForStatement =>
           return transformAndEmitForStatement(node.asInstanceOf[ForStatement])
         case SyntaxKind.ForInStatement =>
           return transformAndEmitForInStatement(
-              node.asInstanceOf[ForInStatement])
+            node.asInstanceOf[ForInStatement])
         case SyntaxKind.ContinueStatement =>
           return transformAndEmitContinueStatement(
-              node.asInstanceOf[ContinueStatement])
+            node.asInstanceOf[ContinueStatement])
         case SyntaxKind.BreakStatement =>
           return transformAndEmitBreakStatement(
-              node.asInstanceOf[BreakStatement])
+            node.asInstanceOf[BreakStatement])
         case SyntaxKind.ReturnStatement =>
           return transformAndEmitReturnStatement(
-              node.asInstanceOf[ReturnStatement])
+            node.asInstanceOf[ReturnStatement])
         case SyntaxKind.WithStatement =>
           return transformAndEmitWithStatement(
-              node.asInstanceOf[WithStatement])
+            node.asInstanceOf[WithStatement])
         case SyntaxKind.SwitchStatement =>
           return transformAndEmitSwitchStatement(
-              node.asInstanceOf[SwitchStatement])
+            node.asInstanceOf[SwitchStatement])
         case SyntaxKind.LabeledStatement =>
           return transformAndEmitLabeledStatement(
-              node.asInstanceOf[LabeledStatement])
+            node.asInstanceOf[LabeledStatement])
         case SyntaxKind.ThrowStatement =>
           return transformAndEmitThrowStatement(
-              node.asInstanceOf[ThrowStatement])
+            node.asInstanceOf[ThrowStatement])
         case SyntaxKind.TryStatement =>
           return transformAndEmitTryStatement(node.asInstanceOf[TryStatement])
         case _ =>
@@ -810,7 +887,7 @@ object Generators {
           }
           if (pendingExpressions.length) {
             emitStatement(
-                createStatement(inlineExpressions(pendingExpressions)))
+              createStatement(inlineExpressions(pendingExpressions)))
             (variablesWritten += pendingExpressions.length)
             (pendingExpressions = Array())
 
@@ -823,19 +900,20 @@ object Generators {
     }
     def transformInitializedVariable(node: VariableDeclaration) = {
       return createAssignment(
-          getSynthesizedClone(node.name).asInstanceOf[Identifier],
-          visitNode(node.initializer, visitor, isExpression))
+        getSynthesizedClone(node.name).asInstanceOf[Identifier],
+        visitNode(node.initializer, visitor, isExpression))
 
     }
     def transformAndEmitIfStatement(node: IfStatement) = {
       if (containsYield(node)) {
         if ((containsYield(node.thenStatement) || containsYield(
-                node.elseStatement))) {
+              node.elseStatement))) {
           val endLabel = defineLabel()
           val elseLabel =
             (if (node.elseStatement) defineLabel() else undefined)
-          emitBreakWhenFalse((if (node.elseStatement) elseLabel else endLabel),
-              visitNode(node.expression, visitor, isExpression))
+          emitBreakWhenFalse(
+            (if (node.elseStatement) elseLabel else endLabel),
+            visitNode(node.expression, visitor, isExpression))
           transformAndEmitEmbeddedStatement(node.thenStatement)
           if (node.elseStatement) {
             emitBreak(endLabel)
@@ -864,8 +942,9 @@ object Generators {
         markLabel(loopLabel)
         transformAndEmitEmbeddedStatement(node.statement)
         markLabel(conditionLabel)
-        emitBreakWhenTrue(loopLabel,
-            visitNode(node.expression, visitor, isExpression))
+        emitBreakWhenTrue(
+          loopLabel,
+          visitNode(node.expression, visitor, isExpression))
         endLoopBlock()
 
       } else {
@@ -892,8 +971,9 @@ object Generators {
         val loopLabel = defineLabel()
         val endLabel = beginLoopBlock(loopLabel)
         markLabel(loopLabel)
-        emitBreakWhenFalse(endLabel,
-            visitNode(node.expression, visitor, isExpression))
+        emitBreakWhenFalse(
+          endLabel,
+          visitNode(node.expression, visitor, isExpression))
         transformAndEmitEmbeddedStatement(node.statement)
         emitBreak(loopLabel)
         endLoopBlock()
@@ -928,23 +1008,28 @@ object Generators {
             transformAndEmitVariableDeclarationList(initializer)
 
           } else {
-            emitStatement(createStatement(visitNode(initializer, visitor,
-                        isExpression), initializer))
+            emitStatement(
+              createStatement(
+                visitNode(initializer, visitor, isExpression),
+                initializer))
 
           }
 
         }
         markLabel(conditionLabel)
         if (node.condition) {
-          emitBreakWhenFalse(endLabel,
-              visitNode(node.condition, visitor, isExpression))
+          emitBreakWhenFalse(
+            endLabel,
+            visitNode(node.condition, visitor, isExpression))
 
         }
         transformAndEmitEmbeddedStatement(node.statement)
         markLabel(incrementLabel)
         if (node.incrementor) {
-          emitStatement(createStatement(visitNode(node.incrementor, visitor,
-                      isExpression), node.incrementor))
+          emitStatement(
+            createStatement(
+              visitNode(node.incrementor, visitor, isExpression),
+              node.incrementor))
 
         }
         emitBreak(conditionLabel)
@@ -970,14 +1055,14 @@ object Generators {
           }
         }
         val variables = getInitializedVariables(initializer)
-        (node = updateFor(node,
-            (if ((variables.length > 0))
-               inlineExpressions(map(variables, transformInitializedVariable))
-             else undefined),
-            visitNode(node.condition, visitor, isExpression, true),
-            visitNode(node.incrementor, visitor, isExpression, true),
-            visitNode(node.statement, visitor, isStatement, false,
-                liftToBlock)))
+        (node = updateFor(
+          node,
+          (if ((variables.length > 0))
+             inlineExpressions(map(variables, transformInitializedVariable))
+           else undefined),
+          visitNode(node.condition, visitor, isExpression, true),
+          visitNode(node.incrementor, visitor, isExpression, true),
+          visitNode(node.statement, visitor, isStatement, false, liftToBlock)))
 
       } else {
         (node = visitEachChild(node, visitor, context))
@@ -998,18 +1083,23 @@ object Generators {
         val initializer = node.initializer
         hoistVariableDeclaration(keysIndex)
         emitAssignment(keysArray, createArrayLiteral())
-        emitStatement(createForIn(key,
-                visitNode(node.expression, visitor, isExpression),
-                createStatement(createCall(createPropertyAccess(keysArray,
-                            "push"), undefined, Array(key)))))
+        emitStatement(
+          createForIn(
+            key,
+            visitNode(node.expression, visitor, isExpression),
+            createStatement(
+              createCall(
+                createPropertyAccess(keysArray, "push"),
+                undefined,
+                Array(key)))))
         emitAssignment(keysIndex, createLiteral(0))
         val conditionLabel = defineLabel()
         val incrementLabel = defineLabel()
         val endLabel = beginLoopBlock(incrementLabel)
         markLabel(conditionLabel)
-        emitBreakWhenFalse(endLabel,
-            createLessThan(keysIndex,
-                createPropertyAccess(keysArray, "length")))
+        emitBreakWhenFalse(
+          endLabel,
+          createLessThan(keysIndex, createPropertyAccess(keysArray, "length")))
         var variable: Expression = zeroOfMyType
         if (isVariableDeclarationList(initializer)) {
           (initializer.declarations).foreach { fresh8 =>
@@ -1052,11 +1142,11 @@ object Generators {
 
           }
         }
-        (node = updateForIn(node,
-            initializer.declarations(0).name.asInstanceOf[Identifier],
-            visitNode(node.expression, visitor, isExpression),
-            visitNode(node.statement, visitor, isStatement, false,
-                liftToBlock)))
+        (node = updateForIn(
+          node,
+          initializer.declarations(0).name.asInstanceOf[Identifier],
+          visitNode(node.expression, visitor, isExpression),
+          visitNode(node.statement, visitor, isStatement, false, liftToBlock)))
 
       } else {
         (node = visitEachChild(node, visitor, context))
@@ -1072,8 +1162,9 @@ object Generators {
     def transformAndEmitContinueStatement(node: ContinueStatement): Unit = {
       val label =
         findContinueTarget((if (node.label) node.label.text else undefined))
-      Debug.assert((label > 0),
-          "Expected continue statment to point to a valid Label.")
+      Debug.assert(
+        (label > 0),
+        "Expected continue statment to point to a valid Label.")
       emitBreak(label, node)
 
     }
@@ -1092,8 +1183,9 @@ object Generators {
     def transformAndEmitBreakStatement(node: BreakStatement): Unit = {
       val label =
         findBreakTarget((if (node.label) node.label.text else undefined))
-      Debug.assert((label > 0),
-          "Expected break statment to point to a valid Label.")
+      Debug.assert(
+        (label > 0),
+        "Expected break statment to point to a valid Label.")
       emitBreak(label, node)
 
     }
@@ -1114,14 +1206,15 @@ object Generators {
 
     }
     def visitReturnStatement(node: ReturnStatement) = {
-      return createInlineReturn(visitNode(node.expression, visitor,
-              isExpression, true), node)
+      return createInlineReturn(
+        visitNode(node.expression, visitor, isExpression, true),
+        node)
 
     }
     def transformAndEmitWithStatement(node: WithStatement) = {
       if (containsYield(node)) {
-        beginWithBlock(cacheExpression(visitNode(node.expression, visitor,
-                    isExpression)))
+        beginWithBlock(
+          cacheExpression(visitNode(node.expression, visitor, isExpression)))
         transformAndEmitEmbeddedStatement(node.statement)
         endWithBlock()
 
@@ -1170,10 +1263,15 @@ object Generators {
 
                     }
                     pendingClauses.push(
-                        createCaseClause(visitNode(caseClause.expression,
-                                visitor, isExpression),
-                            Array(createInlineBreak(clauseLabels(i),
-                                    caseClause.expression))))
+                      createCaseClause(
+                        visitNode(
+                          caseClause.expression,
+                          visitor,
+                          isExpression),
+                        Array(
+                          createInlineBreak(
+                            clauseLabels(i),
+                            caseClause.expression))))
 
                   } else {
                     (defaultClausesSkipped += 1)
@@ -1185,8 +1283,8 @@ object Generators {
               }
             }
             if (pendingClauses.length) {
-              emitStatement(createSwitch(expression,
-                      createCaseBlock(pendingClauses)))
+              emitStatement(
+                createSwitch(expression, createCaseBlock(pendingClauses)))
               (clausesWritten += pendingClauses.length)
               (pendingClauses = Array())
 
@@ -1328,14 +1426,16 @@ object Generators {
 
     }
     def substituteExpressionIdentifier(node: Identifier) = {
-      if ((renamedCatchVariables && hasProperty(renamedCatchVariables,
-              node.text))) {
+      if ((renamedCatchVariables && hasProperty(
+            renamedCatchVariables,
+            node.text))) {
         val original = getOriginalNode(node)
         if ((isIdentifier(original) && original.parent)) {
           val declaration = resolver.getReferencedValueDeclaration(original)
           if (declaration) {
-            val name = getProperty(renamedCatchVariableDeclarations,
-                String(getOriginalNodeId(declaration)))
+            val name = getProperty(
+              renamedCatchVariableDeclarations,
+              String(getOriginalNodeId(declaration)))
             if (name) {
               val clone = getMutableClone(name)
               setSourceMapRange(clone, node)
@@ -1426,9 +1526,12 @@ object Generators {
       val startLabel = defineLabel()
       val endLabel = defineLabel()
       markLabel(startLabel)
-      beginBlock(Map("kind" -> CodeBlockKind.With, "expression" -> expression,
-              "startLabel" -> startLabel, "endLabel" -> endLabel).asInstanceOf[
-              WithBlock])
+      beginBlock(
+        Map(
+          "kind" -> CodeBlockKind.With,
+          "expression" -> expression,
+          "startLabel" -> startLabel,
+          "endLabel" -> endLabel).asInstanceOf[WithBlock])
 
     }
     def endWithBlock(): Unit = {
@@ -1445,9 +1548,12 @@ object Generators {
       val startLabel = defineLabel()
       val endLabel = defineLabel()
       markLabel(startLabel)
-      beginBlock(Map("kind" -> CodeBlockKind.Exception,
-              "state" -> ExceptionBlockState.Try, "startLabel" -> startLabel,
-              "endLabel" -> endLabel).asInstanceOf[ExceptionBlock])
+      beginBlock(
+        Map(
+          "kind" -> CodeBlockKind.Exception,
+          "state" -> ExceptionBlockState.Try,
+          "startLabel" -> startLabel,
+          "endLabel" -> endLabel).asInstanceOf[ExceptionBlock])
       emitNop()
       return endLabel
 
@@ -1473,8 +1579,9 @@ object Generators {
       (exception.state = ExceptionBlockState.Catch)
       (exception.catchVariable = name)
       (exception.catchLabel = catchLabel)
-      emitAssignment(name,
-          createCall(createPropertyAccess(state, "sent"), undefined, Array()))
+      emitAssignment(
+        name,
+        createCall(createPropertyAccess(state, "sent"), undefined, Array()))
       emitNop()
 
     }
@@ -1511,16 +1618,22 @@ object Generators {
 
     }
     def beginScriptLoopBlock(): Unit = {
-      beginBlock(Map("kind" -> CodeBlockKind.Loop, "isScript" -> true,
-              "breakLabel" -> (-1), "continueLabel" -> (-1)).asInstanceOf[
-              LoopBlock])
+      beginBlock(
+        Map(
+          "kind" -> CodeBlockKind.Loop,
+          "isScript" -> true,
+          "breakLabel" -> (-1),
+          "continueLabel" -> (-1)).asInstanceOf[LoopBlock])
 
     }
     def beginLoopBlock(continueLabel: Label): Label = {
       val breakLabel = defineLabel()
-      beginBlock(Map("kind" -> CodeBlockKind.Loop, "isScript" -> false,
-              "breakLabel" -> breakLabel, "continueLabel" -> continueLabel)
-            .asInstanceOf[LoopBlock])
+      beginBlock(
+        Map(
+          "kind" -> CodeBlockKind.Loop,
+          "isScript" -> false,
+          "breakLabel" -> breakLabel,
+          "continueLabel" -> continueLabel).asInstanceOf[LoopBlock])
       return breakLabel
 
     }
@@ -1535,14 +1648,20 @@ object Generators {
 
     }
     def beginScriptSwitchBlock(): Unit = {
-      beginBlock(Map("kind" -> CodeBlockKind.Switch, "isScript" -> true,
-              "breakLabel" -> (-1)).asInstanceOf[SwitchBlock])
+      beginBlock(
+        Map(
+          "kind" -> CodeBlockKind.Switch,
+          "isScript" -> true,
+          "breakLabel" -> (-1)).asInstanceOf[SwitchBlock])
 
     }
     def beginSwitchBlock(): Label = {
       val breakLabel = defineLabel()
-      beginBlock(Map("kind" -> CodeBlockKind.Switch, "isScript" -> false,
-              "breakLabel" -> breakLabel).asInstanceOf[SwitchBlock])
+      beginBlock(
+        Map(
+          "kind" -> CodeBlockKind.Switch,
+          "isScript" -> false,
+          "breakLabel" -> breakLabel).asInstanceOf[SwitchBlock])
       return breakLabel
 
     }
@@ -1557,16 +1676,22 @@ object Generators {
 
     }
     def beginScriptLabeledBlock(labelText: String) = {
-      beginBlock(Map("kind" -> CodeBlockKind.Labeled, "isScript" -> true,
-              "labelText" -> labelText, "breakLabel" -> (-1)).asInstanceOf[
-              LabeledBlock])
+      beginBlock(
+        Map(
+          "kind" -> CodeBlockKind.Labeled,
+          "isScript" -> true,
+          "labelText" -> labelText,
+          "breakLabel" -> (-1)).asInstanceOf[LabeledBlock])
 
     }
     def beginLabeledBlock(labelText: String) = {
       val breakLabel = defineLabel()
-      beginBlock(Map("kind" -> CodeBlockKind.Labeled, "isScript" -> false,
-              "labelText" -> labelText, "breakLabel" -> breakLabel)
-            .asInstanceOf[LabeledBlock])
+      beginBlock(
+        Map(
+          "kind" -> CodeBlockKind.Labeled,
+          "isScript" -> false,
+          "labelText" -> labelText,
+          "breakLabel" -> breakLabel).asInstanceOf[LabeledBlock])
 
     }
     def endLabeledBlock() = {
@@ -1626,7 +1751,8 @@ object Generators {
                 return block.breakLabel
 
               } else if ((supportsUnlabeledBreak(block) && hasImmediateContainingLabeledBlock(
-                      labelText, (i - 1)))) {
+                           labelText,
+                           (i - 1)))) {
                 return block.breakLabel
 
               }
@@ -1665,7 +1791,8 @@ object Generators {
             {
               val block = blockStack(i)
               if ((supportsUnlabeledContinue(block) && hasImmediateContainingLabeledBlock(
-                      labelText, (i - 1)))) {
+                    labelText,
+                    (i - 1)))) {
                 return block.continueLabel
 
               }
@@ -1713,8 +1840,8 @@ object Generators {
         return expression
 
       }
-      return createNode(SyntaxKind.OmittedExpression).asInstanceOf[
-          OmittedExpression]
+      return createNode(SyntaxKind.OmittedExpression)
+        .asInstanceOf[OmittedExpression]
 
     }
     def createInstruction(instruction: Instruction): NumericLiteral = {
@@ -1723,26 +1850,30 @@ object Generators {
       return literal
 
     }
-    def createInlineBreak(label: Label,
-        location: TextRange): ReturnStatement = {
+    def createInlineBreak(label: Label, location: TextRange): ReturnStatement = {
       Debug.assert((label > 0), s"""Invalid label: ${label}""")
-      return createReturn(createArrayLiteral(
-              Array(createInstruction(Instruction.Break), createLabel(label))),
-          location)
+      return createReturn(
+        createArrayLiteral(
+          Array(createInstruction(Instruction.Break), createLabel(label))),
+        location)
 
     }
     def createInlineReturn(expression: Expression,
-        location: TextRange): ReturnStatement = {
+                           location: TextRange): ReturnStatement = {
       return createReturn(
-          createArrayLiteral(
-              (if (expression)
-                 Array(createInstruction(Instruction.Return), expression)
-               else Array(createInstruction(Instruction.Return)))), location)
+        createArrayLiteral(
+          (if (expression)
+             Array(createInstruction(Instruction.Return), expression)
+           else Array(createInstruction(Instruction.Return)))),
+        location)
 
     }
     def createGeneratorResume(location: TextRange): LeftHandSideExpression = {
-      return createCall(createPropertyAccess(state, "sent"), undefined,
-          Array(), location)
+      return createCall(
+        createPropertyAccess(state, "sent"),
+        undefined,
+        Array(),
+        location)
 
     }
     def emitNop() = {
@@ -1759,8 +1890,9 @@ object Generators {
       }
 
     }
-    def emitAssignment(left: Expression, right: Expression,
-        location: TextRange): Unit = {
+    def emitAssignment(left: Expression,
+                       right: Expression,
+                       location: TextRange): Unit = {
       emitWorker(OpCode.Assign, Array(left, right), location)
 
     }
@@ -1768,13 +1900,15 @@ object Generators {
       emitWorker(OpCode.Break, Array(label), location)
 
     }
-    def emitBreakWhenTrue(label: Label, condition: Expression,
-        location: TextRange): Unit = {
+    def emitBreakWhenTrue(label: Label,
+                          condition: Expression,
+                          location: TextRange): Unit = {
       emitWorker(OpCode.BreakWhenTrue, Array(label, condition), location)
 
     }
-    def emitBreakWhenFalse(label: Label, condition: Expression,
-        location: TextRange): Unit = {
+    def emitBreakWhenFalse(label: Label,
+                           condition: Expression,
+                           location: TextRange): Unit = {
       emitWorker(OpCode.BreakWhenFalse, Array(label, condition), location)
 
     }
@@ -1798,8 +1932,9 @@ object Generators {
       emitWorker(OpCode.Endfinally)
 
     }
-    def emitWorker(code: OpCode, args: OperationArguments,
-        location: TextRange): Unit = {
+    def emitWorker(code: OpCode,
+                   args: OperationArguments,
+                   location: TextRange): Unit = {
       if ((operations === undefined)) {
         (operations = Array())
         (operationArguments = Array())
@@ -1829,15 +1964,22 @@ object Generators {
       (withBlockStack = undefined)
       val buildResult = buildStatements()
       return createCall(
-          createHelperName(currentSourceFile.externalHelpersModuleName,
-              "__generator"), undefined,
-          Array(createThis(),
-              setEmitFlags(createFunctionExpression(undefined, undefined,
-                      undefined, undefined, Array(createParameter(state)),
-                      undefined,
-                      createBlock(buildResult, undefined,
-                          (buildResult.length > 0))),
-                  EmitFlags.ReuseTempVariableScope)))
+        createHelperName(
+          currentSourceFile.externalHelpersModuleName,
+          "__generator"),
+        undefined,
+        Array(
+          createThis(),
+          setEmitFlags(
+            createFunctionExpression(
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              Array(createParameter(state)),
+              undefined,
+              createBlock(buildResult, undefined, (buildResult.length > 0))),
+            EmitFlags.ReuseTempVariableScope)))
 
     }
     def buildStatements(): Array[Statement] = {
@@ -1912,7 +2054,7 @@ object Generators {
         while ((label < labelOffsets.length)) {
           {
             if (((labelOffsets(label) === operationIndex) && labelExpressions(
-                    label))) {
+                  label))) {
               return true
 
             }
@@ -1936,8 +2078,8 @@ object Generators {
             while ((i >= 0)) {
               {
                 val withBlock = withBlockStack(i)
-                (statements = Array(createWith(withBlock.expression,
-                        createBlock(statements))))
+                (statements = Array(
+                  createWith(withBlock.expression, createBlock(statements))))
 
               }
               (i -= 1)
@@ -1952,26 +2094,34 @@ object Generators {
           val finallyLabel = fresh10.finallyLabel
           val endLabel = fresh10.endLabel
           statements.unshift(
-              createStatement(createCall(
-                      createPropertyAccess(createPropertyAccess(state, "trys"),
-                          "push"), undefined,
-                      Array(createArrayLiteral(Array(createLabel(startLabel),
-                                  createLabel(catchLabel),
-                                  createLabel(finallyLabel),
-                                  createLabel(endLabel)))))))
+            createStatement(
+              createCall(
+                createPropertyAccess(
+                  createPropertyAccess(state, "trys"),
+                  "push"),
+                undefined,
+                Array(
+                  createArrayLiteral(
+                    Array(
+                      createLabel(startLabel),
+                      createLabel(catchLabel),
+                      createLabel(finallyLabel),
+                      createLabel(endLabel)))))))
           (currentExceptionBlock = undefined)
 
         }
         if (markLabelEnd) {
-          statements.push(createStatement(
-                  createAssignment(createPropertyAccess(state, "label"),
-                      createLiteral((labelNumber + 1)))))
+          statements.push(
+            createStatement(
+              createAssignment(
+                createPropertyAccess(state, "label"),
+                createLiteral((labelNumber + 1)))))
 
         }
 
       }
-      clauses.push(createCaseClause(createLiteral(labelNumber),
-              (statements || Array())))
+      clauses.push(
+        createCaseClause(createLiteral(labelNumber), (statements || Array())))
       (statements = undefined)
 
     }
@@ -2044,7 +2194,7 @@ object Generators {
       if (blocks) {
         {
           while (((blockIndex < blockActions.length) && (blockOffsets(
-                  blockIndex) <= operationIndex))) {
+                   blockIndex) <= operationIndex))) {
             {
               val block = blocks(blockIndex)
               val blockAction = blockActions(blockIndex)
@@ -2114,16 +2264,22 @@ object Generators {
       val location = operationLocations(operationIndex)
       opcode match {
         case OpCode.Assign =>
-          return writeAssign(args(0).asInstanceOf[Expression],
-              args(1).asInstanceOf[Expression], location)
+          return writeAssign(
+            args(0).asInstanceOf[Expression],
+            args(1).asInstanceOf[Expression],
+            location)
         case OpCode.Break =>
           return writeBreak(args(0).asInstanceOf[Label], location)
         case OpCode.BreakWhenTrue =>
-          return writeBreakWhenTrue(args(0).asInstanceOf[Label],
-              args(1).asInstanceOf[Expression], location)
+          return writeBreakWhenTrue(
+            args(0).asInstanceOf[Label],
+            args(1).asInstanceOf[Expression],
+            location)
         case OpCode.BreakWhenFalse =>
-          return writeBreakWhenFalse(args(0).asInstanceOf[Label],
-              args(1).asInstanceOf[Expression], location)
+          return writeBreakWhenFalse(
+            args(0).asInstanceOf[Label],
+            args(1).asInstanceOf[Expression],
+            location)
         case OpCode.Yield =>
           return writeYield(args(0).asInstanceOf[Expression], location)
         case OpCode.YieldStar =>
@@ -2149,84 +2305,92 @@ object Generators {
       }
 
     }
-    def writeAssign(left: Expression, right: Expression,
-        operationLocation: TextRange): Unit = {
-      writeStatement(createStatement(createAssignment(left, right),
-              operationLocation))
+    def writeAssign(left: Expression,
+                    right: Expression,
+                    operationLocation: TextRange): Unit = {
+      writeStatement(
+        createStatement(createAssignment(left, right), operationLocation))
 
     }
     def writeThrow(expression: Expression,
-        operationLocation: TextRange): Unit = {
+                   operationLocation: TextRange): Unit = {
       (lastOperationWasAbrupt = true)
       (lastOperationWasCompletion = true)
       writeStatement(createThrow(expression, operationLocation))
 
     }
     def writeReturn(expression: Expression,
-        operationLocation: TextRange): Unit = {
+                    operationLocation: TextRange): Unit = {
       (lastOperationWasAbrupt = true)
       (lastOperationWasCompletion = true)
       writeStatement(
-          createReturn(
-              createArrayLiteral(
-                  (if (expression)
-                     Array(createInstruction(Instruction.Return), expression)
-                   else Array(createInstruction(Instruction.Return)))),
-              operationLocation))
+        createReturn(
+          createArrayLiteral(
+            (if (expression)
+               Array(createInstruction(Instruction.Return), expression)
+             else Array(createInstruction(Instruction.Return)))),
+          operationLocation))
 
     }
     def writeBreak(label: Label, operationLocation: TextRange): Unit = {
       (lastOperationWasAbrupt = true)
       writeStatement(
+        createReturn(
+          createArrayLiteral(
+            Array(createInstruction(Instruction.Break), createLabel(label))),
+          operationLocation))
+
+    }
+    def writeBreakWhenTrue(label: Label,
+                           condition: Expression,
+                           operationLocation: TextRange): Unit = {
+      writeStatement(
+        createIf(
+          condition,
           createReturn(
-              createArrayLiteral(Array(createInstruction(Instruction.Break),
-                      createLabel(label))), operationLocation))
+            createArrayLiteral(
+              Array(createInstruction(Instruction.Break), createLabel(label))),
+            operationLocation)))
 
     }
-    def writeBreakWhenTrue(label: Label, condition: Expression,
-        operationLocation: TextRange): Unit = {
-      writeStatement(createIf(condition,
-              createReturn(createArrayLiteral(
-                      Array(createInstruction(Instruction.Break),
-                          createLabel(label))), operationLocation)))
-
-    }
-    def writeBreakWhenFalse(label: Label, condition: Expression,
-        operationLocation: TextRange): Unit = {
-      writeStatement(createIf(createLogicalNot(condition),
-              createReturn(createArrayLiteral(
-                      Array(createInstruction(Instruction.Break),
-                          createLabel(label))), operationLocation)))
+    def writeBreakWhenFalse(label: Label,
+                            condition: Expression,
+                            operationLocation: TextRange): Unit = {
+      writeStatement(
+        createIf(
+          createLogicalNot(condition),
+          createReturn(
+            createArrayLiteral(
+              Array(createInstruction(Instruction.Break), createLabel(label))),
+            operationLocation)))
 
     }
     def writeYield(expression: Expression,
-        operationLocation: TextRange): Unit = {
+                   operationLocation: TextRange): Unit = {
       (lastOperationWasAbrupt = true)
       writeStatement(
-          createReturn(
-              createArrayLiteral(
-                  (if (expression)
-                     Array(createInstruction(Instruction.Yield), expression)
-                   else Array(createInstruction(Instruction.Yield)))),
-              operationLocation))
+        createReturn(
+          createArrayLiteral(
+            (if (expression)
+               Array(createInstruction(Instruction.Yield), expression)
+             else Array(createInstruction(Instruction.Yield)))),
+          operationLocation))
 
     }
     def writeYieldStar(expression: Expression,
-        operationLocation: TextRange): Unit = {
+                       operationLocation: TextRange): Unit = {
       (lastOperationWasAbrupt = true)
       writeStatement(
-          createReturn(
-              createArrayLiteral(
-                  Array(createInstruction(Instruction.YieldStar), expression)),
-              operationLocation))
+        createReturn(
+          createArrayLiteral(
+            Array(createInstruction(Instruction.YieldStar), expression)),
+          operationLocation))
 
     }
     def writeEndfinally(): Unit = {
       (lastOperationWasAbrupt = true)
-      writeStatement(
-          createReturn(
-              createArrayLiteral(
-                  Array(createInstruction(Instruction.Endfinally)))))
+      writeStatement(createReturn(
+        createArrayLiteral(Array(createInstruction(Instruction.Endfinally)))))
 
     }
 

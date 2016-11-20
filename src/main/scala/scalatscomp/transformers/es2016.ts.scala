@@ -45,18 +45,22 @@ object ES2016 {
           val expressionTemp = createTempVariable(hoistVariableDeclaration)
           val argumentExpressionTemp =
             createTempVariable(hoistVariableDeclaration)
-          (target = createElementAccess(createAssignment(expressionTemp,
-                  left.expression, left.expression),
-              createAssignment(argumentExpressionTemp, left.argumentExpression,
-                  left.argumentExpression),
-              left))
+          (target = createElementAccess(
+            createAssignment(expressionTemp, left.expression, left.expression),
+            createAssignment(
+              argumentExpressionTemp,
+              left.argumentExpression,
+              left.argumentExpression),
+            left))
           (value =
             createElementAccess(expressionTemp, argumentExpressionTemp, left))
 
         } else if (isPropertyAccessExpression(left)) {
           val expressionTemp = createTempVariable(hoistVariableDeclaration)
-          (target = createPropertyAccess(createAssignment(expressionTemp,
-                  left.expression, left.expression), left.name, left))
+          (target = createPropertyAccess(
+            createAssignment(expressionTemp, left.expression, left.expression),
+            left.name,
+            left))
           (value = createPropertyAccess(expressionTemp, left.name, left))
 
         } else {
@@ -64,8 +68,10 @@ object ES2016 {
           (value = left)
 
         }
-        return createAssignment(target, createMathPow(value, right, node),
-            node)
+        return createAssignment(
+          target,
+          createMathPow(value, right, node),
+          node)
 
       } else if ((node.operatorToken.kind === SyntaxKind.AsteriskAsteriskToken)) {
         return createMathPow(left, right, node)

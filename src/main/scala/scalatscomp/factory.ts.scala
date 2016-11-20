@@ -2,15 +2,16 @@ package scalatscomp
 object Factory {
   var NodeConstructor: ((SyntaxKind, Int, Int) => Node) = zeroOfMyType
   var SourceFileConstructor: ((SyntaxKind, Int, Int) => Node) = zeroOfMyType
-  def createNode(kind: SyntaxKind, location: TextRange,
-      flags: NodeFlags): Node = {
+  def createNode(kind: SyntaxKind,
+                 location: TextRange,
+                 flags: NodeFlags): Node = {
     val ConstructorForKind =
       (if ((kind === SyntaxKind.SourceFile))
-         ((SourceFileConstructor || ((SourceFileConstructor = objectAllocator
-           .getSourceFileConstructor()))))
+         ((SourceFileConstructor || ((SourceFileConstructor =
+           objectAllocator.getSourceFileConstructor()))))
        else
-         ((NodeConstructor || ((NodeConstructor = objectAllocator
-           .getNodeConstructor())))))
+         ((NodeConstructor || ((NodeConstructor =
+           objectAllocator.getNodeConstructor())))))
     val node =
       (if (location) new ConstructorForKind(kind, location.pos, location.end)
        else new ConstructorForKind(kind, (-1), (-1)))
@@ -31,8 +32,9 @@ object Factory {
     return updated
 
   }
-  def createNodeArray[T <: Node](elements: Array[T], location: TextRange,
-      hasTrailingComma: Boolean): NodeArray[T] = {
+  def createNodeArray[T <: Node](elements: Array[T],
+                                 location: TextRange,
+                                 hasTrailingComma: Boolean): NodeArray[T] = {
     if (elements) {
       if (isNodeArray(elements)) {
         return elements
@@ -60,15 +62,13 @@ object Factory {
     return array
 
   }
-  def createSynthesizedNode(kind: SyntaxKind,
-      startsOnNewLine: Boolean): Node = {
+  def createSynthesizedNode(kind: SyntaxKind, startsOnNewLine: Boolean): Node = {
     val node = createNode(kind, undefined)
     (node.startsOnNewLine = startsOnNewLine)
     return node
 
   }
-  def createSynthesizedNodeArray[T <: Node](
-      elements: Array[T]): NodeArray[T] = {
+  def createSynthesizedNodeArray[T <: Node](elements: Array[T]): NodeArray[T] = {
     return createNodeArray(elements, undefined)
 
   }
@@ -97,12 +97,12 @@ object Factory {
 
   }
   def createLiteral(textSource: (StringLiteral | Identifier),
-      location: TextRange): StringLiteral
+                    location: TextRange): StringLiteral
   def createLiteral(value: String, location: TextRange): StringLiteral
   def createLiteral(value: Int, location: TextRange): NumericLiteral
   def createLiteral(value: Boolean, location: TextRange): BooleanLiteral
   def createLiteral(value: (String | Int | Boolean),
-      location: TextRange): PrimaryExpression
+                    location: TextRange): PrimaryExpression
   def createLiteral(
       value: (String | Int | Boolean | StringLiteral | Identifier),
       location: TextRange): PrimaryExpression = {
@@ -114,8 +114,9 @@ object Factory {
 
     } else if ((typeof(value) === "boolean")) {
       return createNode(
-          (if (value) SyntaxKind.TrueKeyword else SyntaxKind.FalseKeyword),
-          location, undefined).asInstanceOf[PrimaryExpression]
+        (if (value) SyntaxKind.TrueKeyword else SyntaxKind.FalseKeyword),
+        location,
+        undefined).asInstanceOf[PrimaryExpression]
 
     } else if ((typeof(value) === "string")) {
       val node = createNode(SyntaxKind.StringLiteral, location, undefined)
@@ -206,8 +207,8 @@ object Factory {
 
   }
   def createThis(location: TextRange) = {
-    val node = createNode(SyntaxKind.ThisKeyword, location).asInstanceOf[
-        PrimaryExpression]
+    val node = createNode(SyntaxKind.ThisKeyword, location)
+      .asInstanceOf[PrimaryExpression]
     return node
 
   }
@@ -217,8 +218,7 @@ object Factory {
     return node
 
   }
-  def createComputedPropertyName(expression: Expression,
-      location: TextRange) = {
+  def createComputedPropertyName(expression: Expression, location: TextRange) = {
     val node = createNode(SyntaxKind.ComputedPropertyName, location)
       .asInstanceOf[ComputedPropertyName]
     (node.expression = expression)
@@ -226,7 +226,7 @@ object Factory {
 
   }
   def updateComputedPropertyName(node: ComputedPropertyName,
-      expression: Expression) = {
+                                 expression: Expression) = {
     if ((node.expression !== expression)) {
       return updateNode(createComputedPropertyName(expression, node), node)
 
@@ -235,18 +235,30 @@ object Factory {
 
   }
   def createParameter(name: (String | Identifier | BindingPattern),
-      initializer: Expression, location: TextRange) = {
-    return createParameterDeclaration(undefined, undefined, undefined, name,
-        undefined, undefined, initializer, location)
+                      initializer: Expression,
+                      location: TextRange) = {
+    return createParameterDeclaration(
+      undefined,
+      undefined,
+      undefined,
+      name,
+      undefined,
+      undefined,
+      initializer,
+      location)
 
   }
   def createParameterDeclaration(decorators: Array[Decorator],
-      modifiers: Array[Modifier], dotDotDotToken: DotDotDotToken,
-      name: (String | Identifier | BindingPattern),
-      questionToken: QuestionToken, `type`: TypeNode, initializer: Expression,
-      location: TextRange, flags: NodeFlags) = {
-    val node = createNode(SyntaxKind.Parameter, location, flags).asInstanceOf[
-        ParameterDeclaration]
+                                 modifiers: Array[Modifier],
+                                 dotDotDotToken: DotDotDotToken,
+                                 name: (String | Identifier | BindingPattern),
+                                 questionToken: QuestionToken,
+                                 `type`: TypeNode,
+                                 initializer: Expression,
+                                 location: TextRange,
+                                 flags: NodeFlags) = {
+    val node = createNode(SyntaxKind.Parameter, location, flags)
+      .asInstanceOf[ParameterDeclaration]
     (node.decorators =
       (if (decorators) createNodeArray(decorators) else undefined))
     (node.modifiers =
@@ -263,20 +275,36 @@ object Factory {
 
   }
   def updateParameterDeclaration(node: ParameterDeclaration,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      name: BindingName, `type`: TypeNode, initializer: Expression) = {
+                                 decorators: Array[Decorator],
+                                 modifiers: Array[Modifier],
+                                 name: BindingName,
+                                 `type`: TypeNode,
+                                 initializer: Expression) = {
     if ((((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.name !== name)) || (node.`type` !== `type`)) || (node.initializer !== initializer))) {
-      return updateNode(createParameterDeclaration(decorators, modifiers,
-              node.dotDotDotToken, name, node.questionToken, `type`,
-              initializer, node, node.flags), node)
+      return updateNode(
+        createParameterDeclaration(
+          decorators,
+          modifiers,
+          node.dotDotDotToken,
+          name,
+          node.questionToken,
+          `type`,
+          initializer,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
-  def createProperty(decorators: Array[Decorator], modifiers: Array[Modifier],
-      name: (String | PropertyName), questionToken: QuestionToken,
-      `type`: TypeNode, initializer: Expression, location: TextRange) = {
+  def createProperty(decorators: Array[Decorator],
+                     modifiers: Array[Modifier],
+                     name: (String | PropertyName),
+                     questionToken: QuestionToken,
+                     `type`: TypeNode,
+                     initializer: Expression,
+                     location: TextRange) = {
     val node = createNode(SyntaxKind.PropertyDeclaration, location)
       .asInstanceOf[PropertyDeclaration]
     (node.decorators =
@@ -291,22 +319,38 @@ object Factory {
     return node
 
   }
-  def updateProperty(node: PropertyDeclaration, decorators: Array[Decorator],
-      modifiers: Array[Modifier], name: PropertyName, `type`: TypeNode,
-      initializer: Expression) = {
+  def updateProperty(node: PropertyDeclaration,
+                     decorators: Array[Decorator],
+                     modifiers: Array[Modifier],
+                     name: PropertyName,
+                     `type`: TypeNode,
+                     initializer: Expression) = {
     if ((((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.name !== name)) || (node.`type` !== `type`)) || (node.initializer !== initializer))) {
-      return updateNode(createProperty(decorators, modifiers, name,
-              node.questionToken, `type`, initializer, node), node)
+      return updateNode(
+        createProperty(
+          decorators,
+          modifiers,
+          name,
+          node.questionToken,
+          `type`,
+          initializer,
+          node),
+        node)
 
     }
     return node
 
   }
-  def createMethod(decorators: Array[Decorator], modifiers: Array[Modifier],
-      asteriskToken: AsteriskToken, name: (String | PropertyName),
-      typeParameters: Array[TypeParameterDeclaration],
-      parameters: Array[ParameterDeclaration], `type`: TypeNode, body: Block,
-      location: TextRange, flags: NodeFlags) = {
+  def createMethod(decorators: Array[Decorator],
+                   modifiers: Array[Modifier],
+                   asteriskToken: AsteriskToken,
+                   name: (String | PropertyName),
+                   typeParameters: Array[TypeParameterDeclaration],
+                   parameters: Array[ParameterDeclaration],
+                   `type`: TypeNode,
+                   body: Block,
+                   location: TextRange,
+                   flags: NodeFlags) = {
     val node = createNode(SyntaxKind.MethodDeclaration, location, flags)
       .asInstanceOf[MethodDeclaration]
     (node.decorators =
@@ -324,23 +368,39 @@ object Factory {
     return node
 
   }
-  def updateMethod(node: MethodDeclaration, decorators: Array[Decorator],
-      modifiers: Array[Modifier], name: PropertyName,
-      typeParameters: Array[TypeParameterDeclaration],
-      parameters: Array[ParameterDeclaration], `type`: TypeNode,
-      body: Block) = {
+  def updateMethod(node: MethodDeclaration,
+                   decorators: Array[Decorator],
+                   modifiers: Array[Modifier],
+                   name: PropertyName,
+                   typeParameters: Array[TypeParameterDeclaration],
+                   parameters: Array[ParameterDeclaration],
+                   `type`: TypeNode,
+                   body: Block) = {
     if ((((((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.name !== name)) || (node.typeParameters !== typeParameters)) || (node.parameters !== parameters)) || (node.`type` !== `type`)) || (node.body !== body))) {
-      return updateNode(createMethod(decorators, modifiers, node.asteriskToken,
-              name, typeParameters, parameters, `type`, body, node,
-              node.flags), node)
+      return updateNode(
+        createMethod(
+          decorators,
+          modifiers,
+          node.asteriskToken,
+          name,
+          typeParameters,
+          parameters,
+          `type`,
+          body,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
   def createConstructor(decorators: Array[Decorator],
-      modifiers: Array[Modifier], parameters: Array[ParameterDeclaration],
-      body: Block, location: TextRange, flags: NodeFlags) = {
+                        modifiers: Array[Modifier],
+                        parameters: Array[ParameterDeclaration],
+                        body: Block,
+                        location: TextRange,
+                        flags: NodeFlags) = {
     val node = createNode(SyntaxKind.Constructor, location, flags)
       .asInstanceOf[ConstructorDeclaration]
     (node.decorators =
@@ -355,20 +415,33 @@ object Factory {
 
   }
   def updateConstructor(node: ConstructorDeclaration,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      parameters: Array[ParameterDeclaration], body: Block) = {
+                        decorators: Array[Decorator],
+                        modifiers: Array[Modifier],
+                        parameters: Array[ParameterDeclaration],
+                        body: Block) = {
     if (((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.parameters !== parameters)) || (node.body !== body))) {
-      return updateNode(createConstructor(decorators, modifiers, parameters,
-              body, node, node.flags), node)
+      return updateNode(
+        createConstructor(
+          decorators,
+          modifiers,
+          parameters,
+          body,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
   def createGetAccessor(decorators: Array[Decorator],
-      modifiers: Array[Modifier], name: (String | PropertyName),
-      parameters: Array[ParameterDeclaration], `type`: TypeNode, body: Block,
-      location: TextRange, flags: NodeFlags) = {
+                        modifiers: Array[Modifier],
+                        name: (String | PropertyName),
+                        parameters: Array[ParameterDeclaration],
+                        `type`: TypeNode,
+                        body: Block,
+                        location: TextRange,
+                        flags: NodeFlags) = {
     val node = createNode(SyntaxKind.GetAccessor, location, flags)
       .asInstanceOf[GetAccessorDeclaration]
     (node.decorators =
@@ -385,21 +458,36 @@ object Factory {
 
   }
   def updateGetAccessor(node: GetAccessorDeclaration,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      name: PropertyName, parameters: Array[ParameterDeclaration],
-      `type`: TypeNode, body: Block) = {
+                        decorators: Array[Decorator],
+                        modifiers: Array[Modifier],
+                        name: PropertyName,
+                        parameters: Array[ParameterDeclaration],
+                        `type`: TypeNode,
+                        body: Block) = {
     if (((((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.name !== name)) || (node.parameters !== parameters)) || (node.`type` !== `type`)) || (node.body !== body))) {
-      return updateNode(createGetAccessor(decorators, modifiers, name,
-              parameters, `type`, body, node, node.flags), node)
+      return updateNode(
+        createGetAccessor(
+          decorators,
+          modifiers,
+          name,
+          parameters,
+          `type`,
+          body,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
   def createSetAccessor(decorators: Array[Decorator],
-      modifiers: Array[Modifier], name: (String | PropertyName),
-      parameters: Array[ParameterDeclaration], body: Block,
-      location: TextRange, flags: NodeFlags) = {
+                        modifiers: Array[Modifier],
+                        name: (String | PropertyName),
+                        parameters: Array[ParameterDeclaration],
+                        body: Block,
+                        location: TextRange,
+                        flags: NodeFlags) = {
     val node = createNode(SyntaxKind.SetAccessor, location, flags)
       .asInstanceOf[SetAccessorDeclaration]
     (node.decorators =
@@ -415,19 +503,29 @@ object Factory {
 
   }
   def updateSetAccessor(node: SetAccessorDeclaration,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      name: PropertyName, parameters: Array[ParameterDeclaration],
-      body: Block) = {
+                        decorators: Array[Decorator],
+                        modifiers: Array[Modifier],
+                        name: PropertyName,
+                        parameters: Array[ParameterDeclaration],
+                        body: Block) = {
     if ((((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.name !== name)) || (node.parameters !== parameters)) || (node.body !== body))) {
-      return updateNode(createSetAccessor(decorators, modifiers, name,
-              parameters, body, node, node.flags), node)
+      return updateNode(
+        createSetAccessor(
+          decorators,
+          modifiers,
+          name,
+          parameters,
+          body,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
   def createObjectBindingPattern(elements: Array[BindingElement],
-      location: TextRange) = {
+                                 location: TextRange) = {
     val node = createNode(SyntaxKind.ObjectBindingPattern, location)
       .asInstanceOf[ObjectBindingPattern]
     (node.elements = createNodeArray(elements))
@@ -435,7 +533,7 @@ object Factory {
 
   }
   def updateObjectBindingPattern(node: ObjectBindingPattern,
-      elements: Array[BindingElement]) = {
+                                 elements: Array[BindingElement]) = {
     if ((node.elements !== elements)) {
       return updateNode(createObjectBindingPattern(elements, node), node)
 
@@ -444,7 +542,7 @@ object Factory {
 
   }
   def createArrayBindingPattern(elements: Array[ArrayBindingElement],
-      location: TextRange) = {
+                                location: TextRange) = {
     val node = createNode(SyntaxKind.ArrayBindingPattern, location)
       .asInstanceOf[ArrayBindingPattern]
     (node.elements = createNodeArray(elements))
@@ -452,7 +550,7 @@ object Factory {
 
   }
   def updateArrayBindingPattern(node: ArrayBindingPattern,
-      elements: Array[ArrayBindingElement]) = {
+                                elements: Array[ArrayBindingElement]) = {
     if ((node.elements !== elements)) {
       return updateNode(createArrayBindingPattern(elements, node), node)
 
@@ -461,10 +559,12 @@ object Factory {
 
   }
   def createBindingElement(propertyName: (String | PropertyName),
-      dotDotDotToken: DotDotDotToken, name: (String | BindingName),
-      initializer: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.BindingElement, location).asInstanceOf[
-        BindingElement]
+                           dotDotDotToken: DotDotDotToken,
+                           name: (String | BindingName),
+                           initializer: Expression,
+                           location: TextRange) = {
+    val node = createNode(SyntaxKind.BindingElement, location)
+      .asInstanceOf[BindingElement]
     (node.propertyName =
       (if ((typeof(propertyName) === "string")) createIdentifier(propertyName)
        else propertyName))
@@ -475,18 +575,27 @@ object Factory {
     return node
 
   }
-  def updateBindingElement(node: BindingElement, propertyName: PropertyName,
-      name: BindingName, initializer: Expression) = {
+  def updateBindingElement(node: BindingElement,
+                           propertyName: PropertyName,
+                           name: BindingName,
+                           initializer: Expression) = {
     if ((((node.propertyName !== propertyName) || (node.name !== name)) || (node.initializer !== initializer))) {
-      return updateNode(createBindingElement(propertyName, node.dotDotDotToken,
-              name, initializer, node), node)
+      return updateNode(
+        createBindingElement(
+          propertyName,
+          node.dotDotDotToken,
+          name,
+          initializer,
+          node),
+        node)
 
     }
     return node
 
   }
-  def createArrayLiteral(elements: Array[Expression], location: TextRange,
-      multiLine: Boolean) = {
+  def createArrayLiteral(elements: Array[Expression],
+                         location: TextRange,
+                         multiLine: Boolean) = {
     val node = createNode(SyntaxKind.ArrayLiteralExpression, location)
       .asInstanceOf[ArrayLiteralExpression]
     (node.elements = parenthesizeListElements(createNodeArray(elements)))
@@ -498,17 +607,19 @@ object Factory {
 
   }
   def updateArrayLiteral(node: ArrayLiteralExpression,
-      elements: Array[Expression]) = {
+                         elements: Array[Expression]) = {
     if ((node.elements !== elements)) {
-      return updateNode(createArrayLiteral(elements, node, node.multiLine),
-          node)
+      return updateNode(
+        createArrayLiteral(elements, node, node.multiLine),
+        node)
 
     }
     return node
 
   }
   def createObjectLiteral(properties: Array[ObjectLiteralElementLike],
-      location: TextRange, multiLine: Boolean) = {
+                          location: TextRange,
+                          multiLine: Boolean) = {
     val node = createNode(SyntaxKind.ObjectLiteralExpression, location)
       .asInstanceOf[ObjectLiteralExpression]
     (node.properties = createNodeArray(properties))
@@ -520,42 +631,47 @@ object Factory {
 
   }
   def updateObjectLiteral(node: ObjectLiteralExpression,
-      properties: Array[ObjectLiteralElementLike]) = {
+                          properties: Array[ObjectLiteralElementLike]) = {
     if ((node.properties !== properties)) {
-      return updateNode(createObjectLiteral(properties, node, node.multiLine),
-          node)
+      return updateNode(
+        createObjectLiteral(properties, node, node.multiLine),
+        node)
 
     }
     return node
 
   }
-  def createPropertyAccess(expression: Expression, name: (String | Identifier),
-      location: TextRange, flags: NodeFlags) = {
+  def createPropertyAccess(expression: Expression,
+                           name: (String | Identifier),
+                           location: TextRange,
+                           flags: NodeFlags) = {
     val node = createNode(SyntaxKind.PropertyAccessExpression, location, flags)
       .asInstanceOf[PropertyAccessExpression]
     (node.expression = parenthesizeForAccess(expression))
     (((node.emitNode || ((node.emitNode = Map(
-        ))))).flags |= EmitFlags.NoIndentation)
+      ))))).flags |= EmitFlags.NoIndentation)
     (node.name =
       (if ((typeof(name) === "string")) createIdentifier(name) else name))
     return node
 
   }
   def updatePropertyAccess(node: PropertyAccessExpression,
-      expression: Expression, name: Identifier) = {
+                           expression: Expression,
+                           name: Identifier) = {
     if (((node.expression !== expression) || (node.name !== name))) {
       val propertyAccess =
         createPropertyAccess(expression, name, node, node.flags)
       (((propertyAccess.emitNode || ((propertyAccess.emitNode = Map(
-          ))))).flags = getEmitFlags(node))
+        ))))).flags = getEmitFlags(node))
       return updateNode(propertyAccess, node)
 
     }
     return node
 
   }
-  def createElementAccess(expression: Expression, index: (Int | Expression),
-      location: TextRange) = {
+  def createElementAccess(expression: Expression,
+                          index: (Int | Expression),
+                          location: TextRange) = {
     val node = createNode(SyntaxKind.ElementAccessExpression, location)
       .asInstanceOf[ElementAccessExpression]
     (node.expression = parenthesizeForAccess(expression))
@@ -565,18 +681,22 @@ object Factory {
 
   }
   def updateElementAccess(node: ElementAccessExpression,
-      expression: Expression, argumentExpression: Expression) = {
+                          expression: Expression,
+                          argumentExpression: Expression) = {
     if (((node.expression !== expression) || (node.argumentExpression !== argumentExpression))) {
-      return updateNode(createElementAccess(expression, argumentExpression,
-              node), node)
+      return updateNode(
+        createElementAccess(expression, argumentExpression, node),
+        node)
 
     }
     return node
 
   }
-  def createCall(expression: Expression, typeArguments: Array[TypeNode],
-      argumentsArray: Array[Expression], location: TextRange,
-      flags: NodeFlags) = {
+  def createCall(expression: Expression,
+                 typeArguments: Array[TypeNode],
+                 argumentsArray: Array[Expression],
+                 location: TextRange,
+                 flags: NodeFlags) = {
     val node = createNode(SyntaxKind.CallExpression, location, flags)
       .asInstanceOf[CallExpression]
     (node.expression = parenthesizeForAccess(expression))
@@ -588,19 +708,29 @@ object Factory {
     return node
 
   }
-  def updateCall(node: CallExpression, expression: Expression,
-      typeArguments: Array[TypeNode], argumentsArray: Array[Expression]) = {
+  def updateCall(node: CallExpression,
+                 expression: Expression,
+                 typeArguments: Array[TypeNode],
+                 argumentsArray: Array[Expression]) = {
     if ((((expression !== node.expression) || (typeArguments !== node.typeArguments)) || (argumentsArray !== node.arguments))) {
-      return updateNode(createCall(expression, typeArguments, argumentsArray,
-              node, node.flags), node)
+      return updateNode(
+        createCall(
+          expression,
+          typeArguments,
+          argumentsArray,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
-  def createNew(expression: Expression, typeArguments: Array[TypeNode],
-      argumentsArray: Array[Expression], location: TextRange,
-      flags: NodeFlags) = {
+  def createNew(expression: Expression,
+                typeArguments: Array[TypeNode],
+                argumentsArray: Array[Expression],
+                location: TextRange,
+                flags: NodeFlags) = {
     val node = createNode(SyntaxKind.NewExpression, location, flags)
       .asInstanceOf[NewExpression]
     (node.expression = parenthesizeForNew(expression))
@@ -613,18 +743,22 @@ object Factory {
     return node
 
   }
-  def updateNew(node: NewExpression, expression: Expression,
-      typeArguments: Array[TypeNode], argumentsArray: Array[Expression]) = {
+  def updateNew(node: NewExpression,
+                expression: Expression,
+                typeArguments: Array[TypeNode],
+                argumentsArray: Array[Expression]) = {
     if ((((node.expression !== expression) || (node.typeArguments !== typeArguments)) || (node.arguments !== argumentsArray))) {
-      return updateNode(createNew(expression, typeArguments, argumentsArray,
-              node, node.flags), node)
+      return updateNode(
+        createNew(expression, typeArguments, argumentsArray, node, node.flags),
+        node)
 
     }
     return node
 
   }
-  def createTaggedTemplate(tag: Expression, template: TemplateLiteral,
-      location: TextRange) = {
+  def createTaggedTemplate(tag: Expression,
+                           template: TemplateLiteral,
+                           location: TextRange) = {
     val node = createNode(SyntaxKind.TaggedTemplateExpression, location)
       .asInstanceOf[TaggedTemplateExpression]
     (node.tag = parenthesizeForAccess(tag))
@@ -632,8 +766,9 @@ object Factory {
     return node
 
   }
-  def updateTaggedTemplate(node: TaggedTemplateExpression, tag: Expression,
-      template: TemplateLiteral) = {
+  def updateTaggedTemplate(node: TaggedTemplateExpression,
+                           tag: Expression,
+                           template: TemplateLiteral) = {
     if (((node.tag !== tag) || (node.template !== template))) {
       return updateNode(createTaggedTemplate(tag, template, node), node)
 
@@ -657,10 +792,14 @@ object Factory {
 
   }
   def createFunctionExpression(modifiers: Array[Modifier],
-      asteriskToken: AsteriskToken, name: (String | Identifier),
-      typeParameters: Array[TypeParameterDeclaration],
-      parameters: Array[ParameterDeclaration], `type`: TypeNode, body: Block,
-      location: TextRange, flags: NodeFlags) = {
+                               asteriskToken: AsteriskToken,
+                               name: (String | Identifier),
+                               typeParameters: Array[TypeParameterDeclaration],
+                               parameters: Array[ParameterDeclaration],
+                               `type`: TypeNode,
+                               body: Block,
+                               location: TextRange,
+                               flags: NodeFlags) = {
     val node = createNode(SyntaxKind.FunctionExpression, location, flags)
       .asInstanceOf[FunctionExpression]
     (node.modifiers =
@@ -677,24 +816,38 @@ object Factory {
 
   }
   def updateFunctionExpression(node: FunctionExpression,
-      modifiers: Array[Modifier], name: Identifier,
-      typeParameters: Array[TypeParameterDeclaration],
-      parameters: Array[ParameterDeclaration], `type`: TypeNode,
-      body: Block) = {
+                               modifiers: Array[Modifier],
+                               name: Identifier,
+                               typeParameters: Array[TypeParameterDeclaration],
+                               parameters: Array[ParameterDeclaration],
+                               `type`: TypeNode,
+                               body: Block) = {
     if (((((((node.name !== name) || (node.modifiers !== modifiers)) || (node.typeParameters !== typeParameters)) || (node.parameters !== parameters)) || (node.`type` !== `type`)) || (node.body !== body))) {
-      return updateNode(createFunctionExpression(modifiers, node.asteriskToken,
-              name, typeParameters, parameters, `type`, body, node,
-              node.flags), node)
+      return updateNode(
+        createFunctionExpression(
+          modifiers,
+          node.asteriskToken,
+          name,
+          typeParameters,
+          parameters,
+          `type`,
+          body,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
   def createArrowFunction(modifiers: Array[Modifier],
-      typeParameters: Array[TypeParameterDeclaration],
-      parameters: Array[ParameterDeclaration], `type`: TypeNode,
-      equalsGreaterThanToken: EqualsGreaterThanToken, body: ConciseBody,
-      location: TextRange, flags: NodeFlags) = {
+                          typeParameters: Array[TypeParameterDeclaration],
+                          parameters: Array[ParameterDeclaration],
+                          `type`: TypeNode,
+                          equalsGreaterThanToken: EqualsGreaterThanToken,
+                          body: ConciseBody,
+                          location: TextRange,
+                          flags: NodeFlags) = {
     val node = createNode(SyntaxKind.ArrowFunction, location, flags)
       .asInstanceOf[ArrowFunction]
     (node.modifiers =
@@ -704,27 +857,37 @@ object Factory {
     (node.parameters = createNodeArray(parameters))
     (node.`type` = `type`)
     (node.equalsGreaterThanToken = (equalsGreaterThanToken || createToken(
-          SyntaxKind.EqualsGreaterThanToken)))
+        SyntaxKind.EqualsGreaterThanToken)))
     (node.body = parenthesizeConciseBody(body))
     return node
 
   }
-  def updateArrowFunction(node: ArrowFunction, modifiers: Array[Modifier],
-      typeParameters: Array[TypeParameterDeclaration],
-      parameters: Array[ParameterDeclaration], `type`: TypeNode,
-      body: ConciseBody) = {
+  def updateArrowFunction(node: ArrowFunction,
+                          modifiers: Array[Modifier],
+                          typeParameters: Array[TypeParameterDeclaration],
+                          parameters: Array[ParameterDeclaration],
+                          `type`: TypeNode,
+                          body: ConciseBody) = {
     if ((((((node.modifiers !== modifiers) || (node.typeParameters !== typeParameters)) || (node.parameters !== parameters)) || (node.`type` !== `type`)) || (node.body !== body))) {
-      return updateNode(createArrowFunction(modifiers, typeParameters,
-              parameters, `type`, node.equalsGreaterThanToken, body, node,
-              node.flags), node)
+      return updateNode(
+        createArrowFunction(
+          modifiers,
+          typeParameters,
+          parameters,
+          `type`,
+          node.equalsGreaterThanToken,
+          body,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
   def createDelete(expression: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.DeleteExpression, location).asInstanceOf[
-        DeleteExpression]
+    val node = createNode(SyntaxKind.DeleteExpression, location)
+      .asInstanceOf[DeleteExpression]
     (node.expression = parenthesizePrefixOperand(expression))
     return node
 
@@ -738,8 +901,8 @@ object Factory {
 
   }
   def createTypeOf(expression: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.TypeOfExpression, location).asInstanceOf[
-        TypeOfExpression]
+    val node = createNode(SyntaxKind.TypeOfExpression, location)
+      .asInstanceOf[TypeOfExpression]
     (node.expression = parenthesizePrefixOperand(expression))
     return node
 
@@ -753,8 +916,8 @@ object Factory {
 
   }
   def createVoid(expression: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.VoidExpression, location).asInstanceOf[
-        VoidExpression]
+    val node = createNode(SyntaxKind.VoidExpression, location)
+      .asInstanceOf[VoidExpression]
     (node.expression = parenthesizePrefixOperand(expression))
     return node
 
@@ -768,8 +931,8 @@ object Factory {
 
   }
   def createAwait(expression: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.AwaitExpression, location).asInstanceOf[
-        AwaitExpression]
+    val node = createNode(SyntaxKind.AwaitExpression, location)
+      .asInstanceOf[AwaitExpression]
     (node.expression = parenthesizePrefixOperand(expression))
     return node
 
@@ -782,8 +945,9 @@ object Factory {
     return node
 
   }
-  def createPrefix(operator: PrefixUnaryOperator, operand: Expression,
-      location: TextRange) = {
+  def createPrefix(operator: PrefixUnaryOperator,
+                   operand: Expression,
+                   location: TextRange) = {
     val node = createNode(SyntaxKind.PrefixUnaryExpression, location)
       .asInstanceOf[PrefixUnaryExpression]
     (node.operator = operator)
@@ -799,8 +963,9 @@ object Factory {
     return node
 
   }
-  def createPostfix(operand: Expression, operator: PostfixUnaryOperator,
-      location: TextRange) = {
+  def createPostfix(operand: Expression,
+                    operator: PostfixUnaryOperator,
+                    location: TextRange) = {
     val node = createNode(SyntaxKind.PostfixUnaryExpression, location)
       .asInstanceOf[PostfixUnaryExpression]
     (node.operand = parenthesizePostfixOperand(operand))
@@ -817,14 +982,15 @@ object Factory {
 
   }
   def createBinary(left: Expression,
-      operator: (BinaryOperator | BinaryOperatorToken), right: Expression,
-      location: TextRange) = {
+                   operator: (BinaryOperator | BinaryOperatorToken),
+                   right: Expression,
+                   location: TextRange) = {
     val operatorToken =
       (if ((typeof(operator) === "number")) createToken(operator)
        else operator)
     val operatorKind = operatorToken.kind
-    val node = createNode(SyntaxKind.BinaryExpression, location).asInstanceOf[
-        BinaryExpression]
+    val node = createNode(SyntaxKind.BinaryExpression, location)
+      .asInstanceOf[BinaryExpression]
     (node.left = parenthesizeBinaryOperand(operatorKind, left, true, undefined))
     (node.operatorToken = operatorToken)
     (node.right =
@@ -832,19 +998,24 @@ object Factory {
     return node
 
   }
-  def updateBinary(node: BinaryExpression, left: Expression,
-      right: Expression) = {
+  def updateBinary(node: BinaryExpression,
+                   left: Expression,
+                   right: Expression) = {
     if (((node.left !== left) || (node.right !== right))) {
-      return updateNode(createBinary(left, node.operatorToken, right, node),
-          node)
+      return updateNode(
+        createBinary(left, node.operatorToken, right, node),
+        node)
 
     }
     return node
 
   }
-  def createConditional(condition: Expression, questionToken: QuestionToken,
-      whenTrue: Expression, colonToken: ColonToken, whenFalse: Expression,
-      location: TextRange) = {
+  def createConditional(condition: Expression,
+                        questionToken: QuestionToken,
+                        whenTrue: Expression,
+                        colonToken: ColonToken,
+                        whenFalse: Expression,
+                        location: TextRange) = {
     val node = createNode(SyntaxKind.ConditionalExpression, location)
       .asInstanceOf[ConditionalExpression]
     (node.condition = condition)
@@ -855,18 +1026,28 @@ object Factory {
     return node
 
   }
-  def updateConditional(node: ConditionalExpression, condition: Expression,
-      whenTrue: Expression, whenFalse: Expression) = {
+  def updateConditional(node: ConditionalExpression,
+                        condition: Expression,
+                        whenTrue: Expression,
+                        whenFalse: Expression) = {
     if ((((node.condition !== condition) || (node.whenTrue !== whenTrue)) || (node.whenFalse !== whenFalse))) {
-      return updateNode(createConditional(condition, node.questionToken,
-              whenTrue, node.colonToken, whenFalse, node), node)
+      return updateNode(
+        createConditional(
+          condition,
+          node.questionToken,
+          whenTrue,
+          node.colonToken,
+          whenFalse,
+          node),
+        node)
 
     }
     return node
 
   }
   def createTemplateExpression(head: TemplateHead,
-      templateSpans: Array[TemplateSpan], location: TextRange) = {
+                               templateSpans: Array[TemplateSpan],
+                               location: TextRange) = {
     val node = createNode(SyntaxKind.TemplateExpression, location)
       .asInstanceOf[TemplateExpression]
     (node.head = head)
@@ -874,20 +1055,23 @@ object Factory {
     return node
 
   }
-  def updateTemplateExpression(node: TemplateExpression, head: TemplateHead,
-      templateSpans: Array[TemplateSpan]) = {
+  def updateTemplateExpression(node: TemplateExpression,
+                               head: TemplateHead,
+                               templateSpans: Array[TemplateSpan]) = {
     if (((node.head !== head) || (node.templateSpans !== templateSpans))) {
-      return updateNode(createTemplateExpression(head, templateSpans, node),
-          node)
+      return updateNode(
+        createTemplateExpression(head, templateSpans, node),
+        node)
 
     }
     return node
 
   }
-  def createYield(asteriskToken: AsteriskToken, expression: Expression,
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.YieldExpression, location).asInstanceOf[
-        YieldExpression]
+  def createYield(asteriskToken: AsteriskToken,
+                  expression: Expression,
+                  location: TextRange) = {
+    val node = createNode(SyntaxKind.YieldExpression, location)
+      .asInstanceOf[YieldExpression]
     (node.asteriskToken = asteriskToken)
     (node.expression = expression)
     return node
@@ -895,8 +1079,9 @@ object Factory {
   }
   def updateYield(node: YieldExpression, expression: Expression) = {
     if ((node.expression !== expression)) {
-      return updateNode(createYield(node.asteriskToken, expression, node),
-          node)
+      return updateNode(
+        createYield(node.asteriskToken, expression, node),
+        node)
 
     }
     return node
@@ -917,12 +1102,14 @@ object Factory {
     return node
 
   }
-  def createClassExpression(modifiers: Array[Modifier], name: Identifier,
-      typeParameters: Array[TypeParameterDeclaration],
-      heritageClauses: Array[HeritageClause], members: Array[ClassElement],
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.ClassExpression, location).asInstanceOf[
-        ClassExpression]
+  def createClassExpression(modifiers: Array[Modifier],
+                            name: Identifier,
+                            typeParameters: Array[TypeParameterDeclaration],
+                            heritageClauses: Array[HeritageClause],
+                            members: Array[ClassElement],
+                            location: TextRange) = {
+    val node = createNode(SyntaxKind.ClassExpression, location)
+      .asInstanceOf[ClassExpression]
     (node.decorators = undefined)
     (node.modifiers =
       (if (modifiers) createNodeArray(modifiers) else undefined))
@@ -934,25 +1121,36 @@ object Factory {
     return node
 
   }
-  def updateClassExpression(node: ClassExpression, modifiers: Array[Modifier],
-      name: Identifier, typeParameters: Array[TypeParameterDeclaration],
-      heritageClauses: Array[HeritageClause], members: Array[ClassElement]) = {
+  def updateClassExpression(node: ClassExpression,
+                            modifiers: Array[Modifier],
+                            name: Identifier,
+                            typeParameters: Array[TypeParameterDeclaration],
+                            heritageClauses: Array[HeritageClause],
+                            members: Array[ClassElement]) = {
     if ((((((node.modifiers !== modifiers) || (node.name !== name)) || (node.typeParameters !== typeParameters)) || (node.heritageClauses !== heritageClauses)) || (node.members !== members))) {
-      return updateNode(createClassExpression(modifiers, name, typeParameters,
-              heritageClauses, members, node), node)
+      return updateNode(
+        createClassExpression(
+          modifiers,
+          name,
+          typeParameters,
+          heritageClauses,
+          members,
+          node),
+        node)
 
     }
     return node
 
   }
   def createOmittedExpression(location: TextRange) = {
-    val node = createNode(SyntaxKind.OmittedExpression, location).asInstanceOf[
-        OmittedExpression]
+    val node = createNode(SyntaxKind.OmittedExpression, location)
+      .asInstanceOf[OmittedExpression]
     return node
 
   }
   def createExpressionWithTypeArguments(typeArguments: Array[TypeNode],
-      expression: Expression, location: TextRange) = {
+                                        expression: Expression,
+                                        location: TextRange) = {
     val node = createNode(SyntaxKind.ExpressionWithTypeArguments, location)
       .asInstanceOf[ExpressionWithTypeArguments]
     (node.typeArguments =
@@ -962,17 +1160,20 @@ object Factory {
 
   }
   def updateExpressionWithTypeArguments(node: ExpressionWithTypeArguments,
-      typeArguments: Array[TypeNode], expression: Expression) = {
+                                        typeArguments: Array[TypeNode],
+                                        expression: Expression) = {
     if (((node.typeArguments !== typeArguments) || (node.expression !== expression))) {
-      return updateNode(createExpressionWithTypeArguments(typeArguments,
-              expression, node), node)
+      return updateNode(
+        createExpressionWithTypeArguments(typeArguments, expression, node),
+        node)
 
     }
     return node
 
   }
   def createTemplateSpan(expression: Expression,
-      literal: (TemplateMiddle | TemplateTail), location: TextRange) = {
+                         literal: (TemplateMiddle | TemplateTail),
+                         location: TextRange) = {
     val node =
       createNode(SyntaxKind.TemplateSpan, location).asInstanceOf[TemplateSpan]
     (node.expression = expression)
@@ -980,8 +1181,9 @@ object Factory {
     return node
 
   }
-  def updateTemplateSpan(node: TemplateSpan, expression: Expression,
-      literal: (TemplateMiddle | TemplateTail)) = {
+  def updateTemplateSpan(node: TemplateSpan,
+                         expression: Expression,
+                         literal: (TemplateMiddle | TemplateTail)) = {
     if (((node.expression !== expression) || (node.literal !== literal))) {
       return updateNode(createTemplateSpan(expression, literal, node), node)
 
@@ -989,8 +1191,10 @@ object Factory {
     return node
 
   }
-  def createBlock(statements: Array[Statement], location: TextRange,
-      multiLine: Boolean, flags: NodeFlags): Block = {
+  def createBlock(statements: Array[Statement],
+                  location: TextRange,
+                  multiLine: Boolean,
+                  flags: NodeFlags): Block = {
     val block =
       createNode(SyntaxKind.Block, location, flags).asInstanceOf[Block]
     (block.statements = createNodeArray(statements))
@@ -1003,16 +1207,19 @@ object Factory {
   }
   def updateBlock(node: Block, statements: Array[Statement]) = {
     if ((statements !== node.statements)) {
-      return updateNode(createBlock(statements, node, node.multiLine,
-              node.flags), node)
+      return updateNode(
+        createBlock(statements, node, node.multiLine, node.flags),
+        node)
 
     }
     return node
 
   }
-  def createVariableStatement(modifiers: Array[Modifier],
+  def createVariableStatement(
+      modifiers: Array[Modifier],
       declarationList: (VariableDeclarationList | Array[VariableDeclaration]),
-      location: TextRange, flags: NodeFlags): VariableStatement = {
+      location: TextRange,
+      flags: NodeFlags): VariableStatement = {
     val node = createNode(SyntaxKind.VariableStatement, location, flags)
       .asInstanceOf[VariableStatement]
     (node.decorators = undefined)
@@ -1025,38 +1232,46 @@ object Factory {
     return node
 
   }
-  def updateVariableStatement(node: VariableStatement,
+  def updateVariableStatement(
+      node: VariableStatement,
       modifiers: Array[Modifier],
       declarationList: VariableDeclarationList): VariableStatement = {
     if (((node.modifiers !== modifiers) || (node.declarationList !== declarationList))) {
-      return updateNode(createVariableStatement(modifiers, declarationList,
-              node, node.flags), node)
+      return updateNode(
+        createVariableStatement(modifiers, declarationList, node, node.flags),
+        node)
 
     }
     return node
 
   }
-  def createVariableDeclarationList(declarations: Array[VariableDeclaration],
-      location: TextRange, flags: NodeFlags): VariableDeclarationList = {
+  def createVariableDeclarationList(
+      declarations: Array[VariableDeclaration],
+      location: TextRange,
+      flags: NodeFlags): VariableDeclarationList = {
     val node = createNode(SyntaxKind.VariableDeclarationList, location, flags)
       .asInstanceOf[VariableDeclarationList]
     (node.declarations = createNodeArray(declarations))
     return node
 
   }
-  def updateVariableDeclarationList(node: VariableDeclarationList,
+  def updateVariableDeclarationList(
+      node: VariableDeclarationList,
       declarations: Array[VariableDeclaration]) = {
     if ((node.declarations !== declarations)) {
-      return updateNode(createVariableDeclarationList(declarations, node,
-              node.flags), node)
+      return updateNode(
+        createVariableDeclarationList(declarations, node, node.flags),
+        node)
 
     }
     return node
 
   }
   def createVariableDeclaration(name: (String | BindingPattern | Identifier),
-      `type`: TypeNode, initializer: Expression, location: TextRange,
-      flags: NodeFlags): VariableDeclaration = {
+                                `type`: TypeNode,
+                                initializer: Expression,
+                                location: TextRange,
+                                flags: NodeFlags): VariableDeclaration = {
     val node = createNode(SyntaxKind.VariableDeclaration, location, flags)
       .asInstanceOf[VariableDeclaration]
     (node.name =
@@ -1069,23 +1284,27 @@ object Factory {
     return node
 
   }
-  def updateVariableDeclaration(node: VariableDeclaration, name: BindingName,
-      `type`: TypeNode, initializer: Expression) = {
+  def updateVariableDeclaration(node: VariableDeclaration,
+                                name: BindingName,
+                                `type`: TypeNode,
+                                initializer: Expression) = {
     if ((((node.name !== name) || (node.`type` !== `type`)) || (node.initializer !== initializer))) {
-      return updateNode(createVariableDeclaration(name, `type`, initializer,
-              node, node.flags), node)
+      return updateNode(
+        createVariableDeclaration(name, `type`, initializer, node, node.flags),
+        node)
 
     }
     return node
 
   }
   def createEmptyStatement(location: TextRange) = {
-    return createNode(SyntaxKind.EmptyStatement, location).asInstanceOf[
-        EmptyStatement]
+    return createNode(SyntaxKind.EmptyStatement, location)
+      .asInstanceOf[EmptyStatement]
 
   }
-  def createStatement(expression: Expression, location: TextRange,
-      flags: NodeFlags): ExpressionStatement = {
+  def createStatement(expression: Expression,
+                      location: TextRange,
+                      flags: NodeFlags): ExpressionStatement = {
     val node = createNode(SyntaxKind.ExpressionStatement, location, flags)
       .asInstanceOf[ExpressionStatement]
     (node.expression = parenthesizeExpressionForExpressionStatement(expression))
@@ -1100,8 +1319,10 @@ object Factory {
     return node
 
   }
-  def createIf(expression: Expression, thenStatement: Statement,
-      elseStatement: Statement, location: TextRange) = {
+  def createIf(expression: Expression,
+               thenStatement: Statement,
+               elseStatement: Statement,
+               location: TextRange) = {
     val node =
       createNode(SyntaxKind.IfStatement, location).asInstanceOf[IfStatement]
     (node.expression = expression)
@@ -1110,18 +1331,22 @@ object Factory {
     return node
 
   }
-  def updateIf(node: IfStatement, expression: Expression,
-      thenStatement: Statement, elseStatement: Statement) = {
+  def updateIf(node: IfStatement,
+               expression: Expression,
+               thenStatement: Statement,
+               elseStatement: Statement) = {
     if ((((node.expression !== expression) || (node.thenStatement !== thenStatement)) || (node.elseStatement !== elseStatement))) {
-      return updateNode(createIf(expression, thenStatement, elseStatement,
-              node), node)
+      return updateNode(
+        createIf(expression, thenStatement, elseStatement, node),
+        node)
 
     }
     return node
 
   }
-  def createDo(statement: Statement, expression: Expression,
-      location: TextRange) = {
+  def createDo(statement: Statement,
+               expression: Expression,
+               location: TextRange) = {
     val node =
       createNode(SyntaxKind.DoStatement, location).asInstanceOf[DoStatement]
     (node.statement = statement)
@@ -1129,8 +1354,9 @@ object Factory {
     return node
 
   }
-  def updateDo(node: DoStatement, statement: Statement,
-      expression: Expression) = {
+  def updateDo(node: DoStatement,
+               statement: Statement,
+               expression: Expression) = {
     if (((node.statement !== statement) || (node.expression !== expression))) {
       return updateNode(createDo(statement, expression, node), node)
 
@@ -1138,17 +1364,19 @@ object Factory {
     return node
 
   }
-  def createWhile(expression: Expression, statement: Statement,
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.WhileStatement, location).asInstanceOf[
-        WhileStatement]
+  def createWhile(expression: Expression,
+                  statement: Statement,
+                  location: TextRange) = {
+    val node = createNode(SyntaxKind.WhileStatement, location)
+      .asInstanceOf[WhileStatement]
     (node.expression = expression)
     (node.statement = statement)
     return node
 
   }
-  def updateWhile(node: WhileStatement, expression: Expression,
-      statement: Statement) = {
+  def updateWhile(node: WhileStatement,
+                  expression: Expression,
+                  statement: Statement) = {
     if (((node.expression !== expression) || (node.statement !== statement))) {
       return updateNode(createWhile(expression, statement, node), node)
 
@@ -1156,8 +1384,11 @@ object Factory {
     return node
 
   }
-  def createFor(initializer: ForInitializer, condition: Expression,
-      incrementor: Expression, statement: Statement, location: TextRange) = {
+  def createFor(initializer: ForInitializer,
+                condition: Expression,
+                incrementor: Expression,
+                statement: Statement,
+                location: TextRange) = {
     val node = createNode(SyntaxKind.ForStatement, location, undefined)
       .asInstanceOf[ForStatement]
     (node.initializer = initializer)
@@ -1167,60 +1398,74 @@ object Factory {
     return node
 
   }
-  def updateFor(node: ForStatement, initializer: ForInitializer,
-      condition: Expression, incrementor: Expression, statement: Statement) = {
+  def updateFor(node: ForStatement,
+                initializer: ForInitializer,
+                condition: Expression,
+                incrementor: Expression,
+                statement: Statement) = {
     if (((((node.initializer !== initializer) || (node.condition !== condition)) || (node.incrementor !== incrementor)) || (node.statement !== statement))) {
-      return updateNode(createFor(initializer, condition, incrementor,
-              statement, node), node)
+      return updateNode(
+        createFor(initializer, condition, incrementor, statement, node),
+        node)
 
     }
     return node
 
   }
-  def createForIn(initializer: ForInitializer, expression: Expression,
-      statement: Statement, location: TextRange) = {
-    val node = createNode(SyntaxKind.ForInStatement, location).asInstanceOf[
-        ForInStatement]
+  def createForIn(initializer: ForInitializer,
+                  expression: Expression,
+                  statement: Statement,
+                  location: TextRange) = {
+    val node = createNode(SyntaxKind.ForInStatement, location)
+      .asInstanceOf[ForInStatement]
     (node.initializer = initializer)
     (node.expression = expression)
     (node.statement = statement)
     return node
 
   }
-  def updateForIn(node: ForInStatement, initializer: ForInitializer,
-      expression: Expression, statement: Statement) = {
+  def updateForIn(node: ForInStatement,
+                  initializer: ForInitializer,
+                  expression: Expression,
+                  statement: Statement) = {
     if ((((node.initializer !== initializer) || (node.expression !== expression)) || (node.statement !== statement))) {
-      return updateNode(createForIn(initializer, expression, statement, node),
-          node)
+      return updateNode(
+        createForIn(initializer, expression, statement, node),
+        node)
 
     }
     return node
 
   }
-  def createForOf(initializer: ForInitializer, expression: Expression,
-      statement: Statement, location: TextRange) = {
-    val node = createNode(SyntaxKind.ForOfStatement, location).asInstanceOf[
-        ForOfStatement]
+  def createForOf(initializer: ForInitializer,
+                  expression: Expression,
+                  statement: Statement,
+                  location: TextRange) = {
+    val node = createNode(SyntaxKind.ForOfStatement, location)
+      .asInstanceOf[ForOfStatement]
     (node.initializer = initializer)
     (node.expression = expression)
     (node.statement = statement)
     return node
 
   }
-  def updateForOf(node: ForOfStatement, initializer: ForInitializer,
-      expression: Expression, statement: Statement) = {
+  def updateForOf(node: ForOfStatement,
+                  initializer: ForInitializer,
+                  expression: Expression,
+                  statement: Statement) = {
     if ((((node.initializer !== initializer) || (node.expression !== expression)) || (node.statement !== statement))) {
-      return updateNode(createForOf(initializer, expression, statement, node),
-          node)
+      return updateNode(
+        createForOf(initializer, expression, statement, node),
+        node)
 
     }
     return node
 
   }
   def createContinue(label: Identifier,
-      location: TextRange): ContinueStatement = {
-    val node = createNode(SyntaxKind.ContinueStatement, location).asInstanceOf[
-        ContinueStatement]
+                     location: TextRange): ContinueStatement = {
+    val node = createNode(SyntaxKind.ContinueStatement, location)
+      .asInstanceOf[ContinueStatement]
     if (label) {
       (node.label = label)
 
@@ -1237,8 +1482,8 @@ object Factory {
 
   }
   def createBreak(label: Identifier, location: TextRange): BreakStatement = {
-    val node = createNode(SyntaxKind.BreakStatement, location).asInstanceOf[
-        BreakStatement]
+    val node = createNode(SyntaxKind.BreakStatement, location)
+      .asInstanceOf[BreakStatement]
     if (label) {
       (node.label = label)
 
@@ -1255,9 +1500,9 @@ object Factory {
 
   }
   def createReturn(expression: Expression,
-      location: TextRange): ReturnStatement = {
-    val node = createNode(SyntaxKind.ReturnStatement, location).asInstanceOf[
-        ReturnStatement]
+                   location: TextRange): ReturnStatement = {
+    val node = createNode(SyntaxKind.ReturnStatement, location)
+      .asInstanceOf[ReturnStatement]
     (node.expression = expression)
     return node
 
@@ -1270,17 +1515,19 @@ object Factory {
     return node
 
   }
-  def createWith(expression: Expression, statement: Statement,
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.WithStatement, location).asInstanceOf[
-        WithStatement]
+  def createWith(expression: Expression,
+                 statement: Statement,
+                 location: TextRange) = {
+    val node = createNode(SyntaxKind.WithStatement, location)
+      .asInstanceOf[WithStatement]
     (node.expression = expression)
     (node.statement = statement)
     return node
 
   }
-  def updateWith(node: WithStatement, expression: Expression,
-      statement: Statement) = {
+  def updateWith(node: WithStatement,
+                 expression: Expression,
+                 statement: Statement) = {
     if (((node.expression !== expression) || (node.statement !== statement))) {
       return updateNode(createWith(expression, statement, node), node)
 
@@ -1288,17 +1535,19 @@ object Factory {
     return node
 
   }
-  def createSwitch(expression: Expression, caseBlock: CaseBlock,
-      location: TextRange): SwitchStatement = {
-    val node = createNode(SyntaxKind.SwitchStatement, location).asInstanceOf[
-        SwitchStatement]
+  def createSwitch(expression: Expression,
+                   caseBlock: CaseBlock,
+                   location: TextRange): SwitchStatement = {
+    val node = createNode(SyntaxKind.SwitchStatement, location)
+      .asInstanceOf[SwitchStatement]
     (node.expression = parenthesizeExpressionForList(expression))
     (node.caseBlock = caseBlock)
     return node
 
   }
-  def updateSwitch(node: SwitchStatement, expression: Expression,
-      caseBlock: CaseBlock) = {
+  def updateSwitch(node: SwitchStatement,
+                   expression: Expression,
+                   caseBlock: CaseBlock) = {
     if (((node.expression !== expression) || (node.caseBlock !== caseBlock))) {
       return updateNode(createSwitch(expression, caseBlock, node), node)
 
@@ -1306,18 +1555,20 @@ object Factory {
     return node
 
   }
-  def createLabel(label: (String | Identifier), statement: Statement,
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.LabeledStatement, location).asInstanceOf[
-        LabeledStatement]
+  def createLabel(label: (String | Identifier),
+                  statement: Statement,
+                  location: TextRange) = {
+    val node = createNode(SyntaxKind.LabeledStatement, location)
+      .asInstanceOf[LabeledStatement]
     (node.label =
       (if ((typeof(label) === "string")) createIdentifier(label) else label))
     (node.statement = statement)
     return node
 
   }
-  def updateLabel(node: LabeledStatement, label: Identifier,
-      statement: Statement) = {
+  def updateLabel(node: LabeledStatement,
+                  label: Identifier,
+                  statement: Statement) = {
     if (((node.label !== label) || (node.statement !== statement))) {
       return updateNode(createLabel(label, statement, node), node)
 
@@ -1326,8 +1577,8 @@ object Factory {
 
   }
   def createThrow(expression: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.ThrowStatement, location).asInstanceOf[
-        ThrowStatement]
+    val node = createNode(SyntaxKind.ThrowStatement, location)
+      .asInstanceOf[ThrowStatement]
     (node.expression = expression)
     return node
 
@@ -1340,8 +1591,10 @@ object Factory {
     return node
 
   }
-  def createTry(tryBlock: Block, catchClause: CatchClause, finallyBlock: Block,
-      location: TextRange) = {
+  def createTry(tryBlock: Block,
+                catchClause: CatchClause,
+                finallyBlock: Block,
+                location: TextRange) = {
     val node =
       createNode(SyntaxKind.TryStatement, location).asInstanceOf[TryStatement]
     (node.tryBlock = tryBlock)
@@ -1350,18 +1603,21 @@ object Factory {
     return node
 
   }
-  def updateTry(node: TryStatement, tryBlock: Block, catchClause: CatchClause,
-      finallyBlock: Block) = {
+  def updateTry(node: TryStatement,
+                tryBlock: Block,
+                catchClause: CatchClause,
+                finallyBlock: Block) = {
     if ((((node.tryBlock !== tryBlock) || (node.catchClause !== catchClause)) || (node.finallyBlock !== finallyBlock))) {
-      return updateNode(createTry(tryBlock, catchClause, finallyBlock, node),
-          node)
+      return updateNode(
+        createTry(tryBlock, catchClause, finallyBlock, node),
+        node)
 
     }
     return node
 
   }
   def createCaseBlock(clauses: Array[CaseOrDefaultClause],
-      location: TextRange): CaseBlock = {
+                      location: TextRange): CaseBlock = {
     val node =
       createNode(SyntaxKind.CaseBlock, location).asInstanceOf[CaseBlock]
     (node.clauses = createNodeArray(clauses))
@@ -1376,12 +1632,17 @@ object Factory {
     return node
 
   }
-  def createFunctionDeclaration(decorators: Array[Decorator],
-      modifiers: Array[Modifier], asteriskToken: AsteriskToken,
+  def createFunctionDeclaration(
+      decorators: Array[Decorator],
+      modifiers: Array[Modifier],
+      asteriskToken: AsteriskToken,
       name: (String | Identifier),
       typeParameters: Array[TypeParameterDeclaration],
-      parameters: Array[ParameterDeclaration], `type`: TypeNode, body: Block,
-      location: TextRange, flags: NodeFlags) = {
+      parameters: Array[ParameterDeclaration],
+      `type`: TypeNode,
+      body: Block,
+      location: TextRange,
+      flags: NodeFlags) = {
     val node = createNode(SyntaxKind.FunctionDeclaration, location, flags)
       .asInstanceOf[FunctionDeclaration]
     (node.decorators =
@@ -1399,27 +1660,43 @@ object Factory {
     return node
 
   }
-  def updateFunctionDeclaration(node: FunctionDeclaration,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      name: Identifier, typeParameters: Array[TypeParameterDeclaration],
-      parameters: Array[ParameterDeclaration], `type`: TypeNode,
+  def updateFunctionDeclaration(
+      node: FunctionDeclaration,
+      decorators: Array[Decorator],
+      modifiers: Array[Modifier],
+      name: Identifier,
+      typeParameters: Array[TypeParameterDeclaration],
+      parameters: Array[ParameterDeclaration],
+      `type`: TypeNode,
       body: Block) = {
     if ((((((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.name !== name)) || (node.typeParameters !== typeParameters)) || (node.parameters !== parameters)) || (node.`type` !== `type`)) || (node.body !== body))) {
-      return updateNode(createFunctionDeclaration(decorators, modifiers,
-              node.asteriskToken, name, typeParameters, parameters, `type`,
-              body, node, node.flags), node)
+      return updateNode(
+        createFunctionDeclaration(
+          decorators,
+          modifiers,
+          node.asteriskToken,
+          name,
+          typeParameters,
+          parameters,
+          `type`,
+          body,
+          node,
+          node.flags),
+        node)
 
     }
     return node
 
   }
   def createClassDeclaration(decorators: Array[Decorator],
-      modifiers: Array[Modifier], name: Identifier,
-      typeParameters: Array[TypeParameterDeclaration],
-      heritageClauses: Array[HeritageClause], members: Array[ClassElement],
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.ClassDeclaration, location).asInstanceOf[
-        ClassDeclaration]
+                             modifiers: Array[Modifier],
+                             name: Identifier,
+                             typeParameters: Array[TypeParameterDeclaration],
+                             heritageClauses: Array[HeritageClause],
+                             members: Array[ClassElement],
+                             location: TextRange) = {
+    val node = createNode(SyntaxKind.ClassDeclaration, location)
+      .asInstanceOf[ClassDeclaration]
     (node.decorators =
       (if (decorators) createNodeArray(decorators) else undefined))
     (node.modifiers =
@@ -1433,22 +1710,35 @@ object Factory {
 
   }
   def updateClassDeclaration(node: ClassDeclaration,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      name: Identifier, typeParameters: Array[TypeParameterDeclaration],
-      heritageClauses: Array[HeritageClause], members: Array[ClassElement]) = {
+                             decorators: Array[Decorator],
+                             modifiers: Array[Modifier],
+                             name: Identifier,
+                             typeParameters: Array[TypeParameterDeclaration],
+                             heritageClauses: Array[HeritageClause],
+                             members: Array[ClassElement]) = {
     if (((((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.name !== name)) || (node.typeParameters !== typeParameters)) || (node.heritageClauses !== heritageClauses)) || (node.members !== members))) {
-      return updateNode(createClassDeclaration(decorators, modifiers, name,
-              typeParameters, heritageClauses, members, node), node)
+      return updateNode(
+        createClassDeclaration(
+          decorators,
+          modifiers,
+          name,
+          typeParameters,
+          heritageClauses,
+          members,
+          node),
+        node)
 
     }
     return node
 
   }
   def createImportDeclaration(decorators: Array[Decorator],
-      modifiers: Array[Modifier], importClause: ImportClause,
-      moduleSpecifier: Expression, location: TextRange): ImportDeclaration = {
-    val node = createNode(SyntaxKind.ImportDeclaration, location).asInstanceOf[
-        ImportDeclaration]
+                              modifiers: Array[Modifier],
+                              importClause: ImportClause,
+                              moduleSpecifier: Expression,
+                              location: TextRange): ImportDeclaration = {
+    val node = createNode(SyntaxKind.ImportDeclaration, location)
+      .asInstanceOf[ImportDeclaration]
     (node.decorators =
       (if (decorators) createNodeArray(decorators) else undefined))
     (node.modifiers =
@@ -1459,18 +1749,27 @@ object Factory {
 
   }
   def updateImportDeclaration(node: ImportDeclaration,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      importClause: ImportClause, moduleSpecifier: Expression) = {
+                              decorators: Array[Decorator],
+                              modifiers: Array[Modifier],
+                              importClause: ImportClause,
+                              moduleSpecifier: Expression) = {
     if (((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.importClause !== importClause)) || (node.moduleSpecifier !== moduleSpecifier))) {
-      return updateNode(createImportDeclaration(decorators, modifiers,
-              importClause, moduleSpecifier, node), node)
+      return updateNode(
+        createImportDeclaration(
+          decorators,
+          modifiers,
+          importClause,
+          moduleSpecifier,
+          node),
+        node)
 
     }
     return node
 
   }
-  def createImportClause(name: Identifier, namedBindings: NamedImportBindings,
-      location: TextRange): ImportClause = {
+  def createImportClause(name: Identifier,
+                         namedBindings: NamedImportBindings,
+                         location: TextRange): ImportClause = {
     val node =
       createNode(SyntaxKind.ImportClause, location).asInstanceOf[ImportClause]
     (node.name = name)
@@ -1478,8 +1777,9 @@ object Factory {
     return node
 
   }
-  def updateImportClause(node: ImportClause, name: Identifier,
-      namedBindings: NamedImportBindings) = {
+  def updateImportClause(node: ImportClause,
+                         name: Identifier,
+                         namedBindings: NamedImportBindings) = {
     if (((node.name !== name) || (node.namedBindings !== namedBindings))) {
       return updateNode(createImportClause(name, namedBindings, node), node)
 
@@ -1488,9 +1788,9 @@ object Factory {
 
   }
   def createNamespaceImport(name: Identifier,
-      location: TextRange): NamespaceImport = {
-    val node = createNode(SyntaxKind.NamespaceImport, location).asInstanceOf[
-        NamespaceImport]
+                            location: TextRange): NamespaceImport = {
+    val node = createNode(SyntaxKind.NamespaceImport, location)
+      .asInstanceOf[NamespaceImport]
     (node.name = name)
     return node
 
@@ -1504,7 +1804,7 @@ object Factory {
 
   }
   def createNamedImports(elements: Array[ImportSpecifier],
-      location: TextRange): NamedImports = {
+                         location: TextRange): NamedImports = {
     val node =
       createNode(SyntaxKind.NamedImports, location).asInstanceOf[NamedImports]
     (node.elements = createNodeArray(elements))
@@ -1512,7 +1812,7 @@ object Factory {
 
   }
   def updateNamedImports(node: NamedImports,
-      elements: Array[ImportSpecifier]) = {
+                         elements: Array[ImportSpecifier]) = {
     if ((node.elements !== elements)) {
       return updateNode(createNamedImports(elements, node), node)
 
@@ -1520,17 +1820,19 @@ object Factory {
     return node
 
   }
-  def createImportSpecifier(propertyName: Identifier, name: Identifier,
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.ImportSpecifier, location).asInstanceOf[
-        ImportSpecifier]
+  def createImportSpecifier(propertyName: Identifier,
+                            name: Identifier,
+                            location: TextRange) = {
+    val node = createNode(SyntaxKind.ImportSpecifier, location)
+      .asInstanceOf[ImportSpecifier]
     (node.propertyName = propertyName)
     (node.name = name)
     return node
 
   }
-  def updateImportSpecifier(node: ImportSpecifier, propertyName: Identifier,
-      name: Identifier) = {
+  def updateImportSpecifier(node: ImportSpecifier,
+                            propertyName: Identifier,
+                            name: Identifier) = {
     if (((node.propertyName !== propertyName) || (node.name !== name))) {
       return updateNode(createImportSpecifier(propertyName, name, node), node)
 
@@ -1539,10 +1841,12 @@ object Factory {
 
   }
   def createExportAssignment(decorators: Array[Decorator],
-      modifiers: Array[Modifier], isExportEquals: Boolean,
-      expression: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.ExportAssignment, location).asInstanceOf[
-        ExportAssignment]
+                             modifiers: Array[Modifier],
+                             isExportEquals: Boolean,
+                             expression: Expression,
+                             location: TextRange) = {
+    val node = createNode(SyntaxKind.ExportAssignment, location)
+      .asInstanceOf[ExportAssignment]
     (node.decorators =
       (if (decorators) createNodeArray(decorators) else undefined))
     (node.modifiers =
@@ -1553,21 +1857,30 @@ object Factory {
 
   }
   def updateExportAssignment(node: ExportAssignment,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      expression: Expression) = {
+                             decorators: Array[Decorator],
+                             modifiers: Array[Modifier],
+                             expression: Expression) = {
     if ((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.expression !== expression))) {
-      return updateNode(createExportAssignment(decorators, modifiers,
-              node.isExportEquals, expression, node), node)
+      return updateNode(
+        createExportAssignment(
+          decorators,
+          modifiers,
+          node.isExportEquals,
+          expression,
+          node),
+        node)
 
     }
     return node
 
   }
   def createExportDeclaration(decorators: Array[Decorator],
-      modifiers: Array[Modifier], exportClause: NamedExports,
-      moduleSpecifier: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.ExportDeclaration, location).asInstanceOf[
-        ExportDeclaration]
+                              modifiers: Array[Modifier],
+                              exportClause: NamedExports,
+                              moduleSpecifier: Expression,
+                              location: TextRange) = {
+    val node = createNode(SyntaxKind.ExportDeclaration, location)
+      .asInstanceOf[ExportDeclaration]
     (node.decorators =
       (if (decorators) createNodeArray(decorators) else undefined))
     (node.modifiers =
@@ -1578,18 +1891,26 @@ object Factory {
 
   }
   def updateExportDeclaration(node: ExportDeclaration,
-      decorators: Array[Decorator], modifiers: Array[Modifier],
-      exportClause: NamedExports, moduleSpecifier: Expression) = {
+                              decorators: Array[Decorator],
+                              modifiers: Array[Modifier],
+                              exportClause: NamedExports,
+                              moduleSpecifier: Expression) = {
     if (((((node.decorators !== decorators) || (node.modifiers !== modifiers)) || (node.exportClause !== exportClause)) || (node.moduleSpecifier !== moduleSpecifier))) {
-      return updateNode(createExportDeclaration(decorators, modifiers,
-              exportClause, moduleSpecifier, node), node)
+      return updateNode(
+        createExportDeclaration(
+          decorators,
+          modifiers,
+          exportClause,
+          moduleSpecifier,
+          node),
+        node)
 
     }
     return node
 
   }
   def createNamedExports(elements: Array[ExportSpecifier],
-      location: TextRange) = {
+                         location: TextRange) = {
     val node =
       createNode(SyntaxKind.NamedExports, location).asInstanceOf[NamedExports]
     (node.elements = createNodeArray(elements))
@@ -1597,7 +1918,7 @@ object Factory {
 
   }
   def updateNamedExports(node: NamedExports,
-      elements: Array[ExportSpecifier]) = {
+                         elements: Array[ExportSpecifier]) = {
     if ((node.elements !== elements)) {
       return updateNode(createNamedExports(elements, node), node)
 
@@ -1606,9 +1927,10 @@ object Factory {
 
   }
   def createExportSpecifier(name: (String | Identifier),
-      propertyName: (String | Identifier), location: TextRange) = {
-    val node = createNode(SyntaxKind.ExportSpecifier, location).asInstanceOf[
-        ExportSpecifier]
+                            propertyName: (String | Identifier),
+                            location: TextRange) = {
+    val node = createNode(SyntaxKind.ExportSpecifier, location)
+      .asInstanceOf[ExportSpecifier]
     (node.name =
       (if ((typeof(name) === "string")) createIdentifier(name) else name))
     (node.propertyName =
@@ -1617,8 +1939,9 @@ object Factory {
     return node
 
   }
-  def updateExportSpecifier(node: ExportSpecifier, name: Identifier,
-      propertyName: Identifier) = {
+  def updateExportSpecifier(node: ExportSpecifier,
+                            name: Identifier,
+                            propertyName: Identifier) = {
     if (((node.name !== name) || (node.propertyName !== propertyName))) {
       return updateNode(createExportSpecifier(name, propertyName, node), node)
 
@@ -1627,8 +1950,9 @@ object Factory {
 
   }
   def createJsxElement(openingElement: JsxOpeningElement,
-      children: Array[JsxChild], closingElement: JsxClosingElement,
-      location: TextRange) = {
+                       children: Array[JsxChild],
+                       closingElement: JsxClosingElement,
+                       location: TextRange) = {
     val node =
       createNode(SyntaxKind.JsxElement, location).asInstanceOf[JsxElement]
     (node.openingElement = openingElement)
@@ -1637,18 +1961,22 @@ object Factory {
     return node
 
   }
-  def updateJsxElement(node: JsxElement, openingElement: JsxOpeningElement,
-      children: Array[JsxChild], closingElement: JsxClosingElement) = {
+  def updateJsxElement(node: JsxElement,
+                       openingElement: JsxOpeningElement,
+                       children: Array[JsxChild],
+                       closingElement: JsxClosingElement) = {
     if ((((node.openingElement !== openingElement) || (node.children !== children)) || (node.closingElement !== closingElement))) {
-      return updateNode(createJsxElement(openingElement, children,
-              closingElement, node), node)
+      return updateNode(
+        createJsxElement(openingElement, children, closingElement, node),
+        node)
 
     }
     return node
 
   }
   def createJsxSelfClosingElement(tagName: JsxTagNameExpression,
-      attributes: Array[JsxAttributeLike], location: TextRange) = {
+                                  attributes: Array[JsxAttributeLike],
+                                  location: TextRange) = {
     val node = createNode(SyntaxKind.JsxSelfClosingElement, location)
       .asInstanceOf[JsxSelfClosingElement]
     (node.tagName = tagName)
@@ -1657,44 +1985,49 @@ object Factory {
 
   }
   def updateJsxSelfClosingElement(node: JsxSelfClosingElement,
-      tagName: JsxTagNameExpression, attributes: Array[JsxAttributeLike]) = {
+                                  tagName: JsxTagNameExpression,
+                                  attributes: Array[JsxAttributeLike]) = {
     if (((node.tagName !== tagName) || (node.attributes !== attributes))) {
-      return updateNode(createJsxSelfClosingElement(tagName, attributes, node),
-          node)
+      return updateNode(
+        createJsxSelfClosingElement(tagName, attributes, node),
+        node)
 
     }
     return node
 
   }
   def createJsxOpeningElement(tagName: JsxTagNameExpression,
-      attributes: Array[JsxAttributeLike], location: TextRange) = {
-    val node = createNode(SyntaxKind.JsxOpeningElement, location).asInstanceOf[
-        JsxOpeningElement]
+                              attributes: Array[JsxAttributeLike],
+                              location: TextRange) = {
+    val node = createNode(SyntaxKind.JsxOpeningElement, location)
+      .asInstanceOf[JsxOpeningElement]
     (node.tagName = tagName)
     (node.attributes = createNodeArray(attributes))
     return node
 
   }
   def updateJsxOpeningElement(node: JsxOpeningElement,
-      tagName: JsxTagNameExpression, attributes: Array[JsxAttributeLike]) = {
+                              tagName: JsxTagNameExpression,
+                              attributes: Array[JsxAttributeLike]) = {
     if (((node.tagName !== tagName) || (node.attributes !== attributes))) {
-      return updateNode(createJsxOpeningElement(tagName, attributes, node),
-          node)
+      return updateNode(
+        createJsxOpeningElement(tagName, attributes, node),
+        node)
 
     }
     return node
 
   }
   def createJsxClosingElement(tagName: JsxTagNameExpression,
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.JsxClosingElement, location).asInstanceOf[
-        JsxClosingElement]
+                              location: TextRange) = {
+    val node = createNode(SyntaxKind.JsxClosingElement, location)
+      .asInstanceOf[JsxClosingElement]
     (node.tagName = tagName)
     return node
 
   }
   def updateJsxClosingElement(node: JsxClosingElement,
-      tagName: JsxTagNameExpression) = {
+                              tagName: JsxTagNameExpression) = {
     if ((node.tagName !== tagName)) {
       return updateNode(createJsxClosingElement(tagName, node), node)
 
@@ -1703,7 +2036,8 @@ object Factory {
 
   }
   def createJsxAttribute(name: Identifier,
-      initializer: (StringLiteral | JsxExpression), location: TextRange) = {
+                         initializer: (StringLiteral | JsxExpression),
+                         location: TextRange) = {
     val node =
       createNode(SyntaxKind.JsxAttribute, location).asInstanceOf[JsxAttribute]
     (node.name = name)
@@ -1711,8 +2045,9 @@ object Factory {
     return node
 
   }
-  def updateJsxAttribute(node: JsxAttribute, name: Identifier,
-      initializer: (StringLiteral | JsxExpression)) = {
+  def updateJsxAttribute(node: JsxAttribute,
+                         name: Identifier,
+                         initializer: (StringLiteral | JsxExpression)) = {
     if (((node.name !== name) || (node.initializer !== initializer))) {
       return updateNode(createJsxAttribute(name, initializer, node), node)
 
@@ -1728,7 +2063,7 @@ object Factory {
 
   }
   def updateJsxSpreadAttribute(node: JsxSpreadAttribute,
-      expression: Expression) = {
+                               expression: Expression) = {
     if ((node.expression !== expression)) {
       return updateNode(createJsxSpreadAttribute(expression, node), node)
 
@@ -1737,8 +2072,8 @@ object Factory {
 
   }
   def createJsxExpression(expression: Expression, location: TextRange) = {
-    val node = createNode(SyntaxKind.JsxExpression, location).asInstanceOf[
-        JsxExpression]
+    val node = createNode(SyntaxKind.JsxExpression, location)
+      .asInstanceOf[JsxExpression]
     (node.expression = expression)
     return node
 
@@ -1752,16 +2087,17 @@ object Factory {
 
   }
   def createHeritageClause(token: SyntaxKind,
-      types: Array[ExpressionWithTypeArguments], location: TextRange) = {
-    val node = createNode(SyntaxKind.HeritageClause, location).asInstanceOf[
-        HeritageClause]
+                           types: Array[ExpressionWithTypeArguments],
+                           location: TextRange) = {
+    val node = createNode(SyntaxKind.HeritageClause, location)
+      .asInstanceOf[HeritageClause]
     (node.token = token)
     (node.types = createNodeArray(types))
     return node
 
   }
   def updateHeritageClause(node: HeritageClause,
-      types: Array[ExpressionWithTypeArguments]) = {
+                           types: Array[ExpressionWithTypeArguments]) = {
     if ((node.types !== types)) {
       return updateNode(createHeritageClause(node.token, types, node), node)
 
@@ -1769,8 +2105,9 @@ object Factory {
     return node
 
   }
-  def createCaseClause(expression: Expression, statements: Array[Statement],
-      location: TextRange) = {
+  def createCaseClause(expression: Expression,
+                       statements: Array[Statement],
+                       location: TextRange) = {
     val node =
       createNode(SyntaxKind.CaseClause, location).asInstanceOf[CaseClause]
     (node.expression = parenthesizeExpressionForList(expression))
@@ -1778,8 +2115,9 @@ object Factory {
     return node
 
   }
-  def updateCaseClause(node: CaseClause, expression: Expression,
-      statements: Array[Statement]) = {
+  def updateCaseClause(node: CaseClause,
+                       expression: Expression,
+                       statements: Array[Statement]) = {
     if (((node.expression !== expression) || (node.statements !== statements))) {
       return updateNode(createCaseClause(expression, statements, node), node)
 
@@ -1787,16 +2125,14 @@ object Factory {
     return node
 
   }
-  def createDefaultClause(statements: Array[Statement],
-      location: TextRange) = {
-    val node = createNode(SyntaxKind.DefaultClause, location).asInstanceOf[
-        DefaultClause]
+  def createDefaultClause(statements: Array[Statement], location: TextRange) = {
+    val node = createNode(SyntaxKind.DefaultClause, location)
+      .asInstanceOf[DefaultClause]
     (node.statements = createNodeArray(statements))
     return node
 
   }
-  def updateDefaultClause(node: DefaultClause,
-      statements: Array[Statement]) = {
+  def updateDefaultClause(node: DefaultClause, statements: Array[Statement]) = {
     if ((node.statements !== statements)) {
       return updateNode(createDefaultClause(statements, node), node)
 
@@ -1805,7 +2141,8 @@ object Factory {
 
   }
   def createCatchClause(variableDeclaration: (String | VariableDeclaration),
-      block: Block, location: TextRange) = {
+                        block: Block,
+                        location: TextRange) = {
     val node =
       createNode(SyntaxKind.CatchClause, location).asInstanceOf[CatchClause]
     (node.variableDeclaration =
@@ -1817,17 +2154,20 @@ object Factory {
 
   }
   def updateCatchClause(node: CatchClause,
-      variableDeclaration: VariableDeclaration, block: Block) = {
+                        variableDeclaration: VariableDeclaration,
+                        block: Block) = {
     if (((node.variableDeclaration !== variableDeclaration) || (node.block !== block))) {
-      return updateNode(createCatchClause(variableDeclaration, block, node),
-          node)
+      return updateNode(
+        createCatchClause(variableDeclaration, block, node),
+        node)
 
     }
     return node
 
   }
   def createPropertyAssignment(name: (String | PropertyName),
-      initializer: Expression, location: TextRange) = {
+                               initializer: Expression,
+                               location: TextRange) = {
     val node = createNode(SyntaxKind.PropertyAssignment, location)
       .asInstanceOf[PropertyAssignment]
     (node.name =
@@ -1840,18 +2180,22 @@ object Factory {
     return node
 
   }
-  def updatePropertyAssignment(node: PropertyAssignment, name: PropertyName,
-      initializer: Expression) = {
+  def updatePropertyAssignment(node: PropertyAssignment,
+                               name: PropertyName,
+                               initializer: Expression) = {
     if (((node.name !== name) || (node.initializer !== initializer))) {
-      return updateNode(createPropertyAssignment(name, initializer, node),
-          node)
+      return updateNode(
+        createPropertyAssignment(name, initializer, node),
+        node)
 
     }
     return node
 
   }
-  def createShorthandPropertyAssignment(name: (String | Identifier),
-      objectAssignmentInitializer: Expression, location: TextRange) = {
+  def createShorthandPropertyAssignment(
+      name: (String | Identifier),
+      objectAssignmentInitializer: Expression,
+      location: TextRange) = {
     val node = createNode(SyntaxKind.ShorthandPropertyAssignment, location)
       .asInstanceOf[ShorthandPropertyAssignment]
     (node.name =
@@ -1863,11 +2207,17 @@ object Factory {
     return node
 
   }
-  def updateShorthandPropertyAssignment(node: ShorthandPropertyAssignment,
-      name: Identifier, objectAssignmentInitializer: Expression) = {
+  def updateShorthandPropertyAssignment(
+      node: ShorthandPropertyAssignment,
+      name: Identifier,
+      objectAssignmentInitializer: Expression) = {
     if (((node.name !== name) || (node.objectAssignmentInitializer !== objectAssignmentInitializer))) {
-      return updateNode(createShorthandPropertyAssignment(name,
-              objectAssignmentInitializer, node), node)
+      return updateNode(
+        createShorthandPropertyAssignment(
+          name,
+          objectAssignmentInitializer,
+          node),
+        node)
 
     }
     return node
@@ -1946,8 +2296,9 @@ object Factory {
     return node
 
   }
-  def createPartiallyEmittedExpression(expression: Expression, original: Node,
-      location: TextRange) = {
+  def createPartiallyEmittedExpression(expression: Expression,
+                                       original: Node,
+                                       location: TextRange) = {
     val node =
       createNode(SyntaxKind.PartiallyEmittedExpression, (location || original))
         .asInstanceOf[PartiallyEmittedExpression]
@@ -1957,28 +2308,31 @@ object Factory {
 
   }
   def updatePartiallyEmittedExpression(node: PartiallyEmittedExpression,
-      expression: Expression) = {
+                                       expression: Expression) = {
     if ((node.expression !== expression)) {
-      return updateNode(createPartiallyEmittedExpression(expression,
-              node.original, node), node)
+      return updateNode(
+        createPartiallyEmittedExpression(expression, node.original, node),
+        node)
 
     }
     return node
 
   }
   def createComma(left: Expression, right: Expression) = {
-    return createBinary(left, SyntaxKind.CommaToken, right).asInstanceOf[
-        Expression]
+    return createBinary(left, SyntaxKind.CommaToken, right)
+      .asInstanceOf[Expression]
 
   }
-  def createLessThan(left: Expression, right: Expression,
-      location: TextRange) = {
+  def createLessThan(left: Expression,
+                     right: Expression,
+                     location: TextRange) = {
     return createBinary(left, SyntaxKind.LessThanToken, right, location)
       .asInstanceOf[Expression]
 
   }
-  def createAssignment(left: Expression, right: Expression,
-      location: TextRange) = {
+  def createAssignment(left: Expression,
+                       right: Expression,
+                       location: TextRange) = {
     return createBinary(left, SyntaxKind.EqualsToken, right, location)
 
   }
@@ -2018,8 +2372,10 @@ object Factory {
     return createVoid(createLiteral(0))
 
   }
-  def createMemberAccessForPropertyName(target: Expression,
-      memberName: PropertyName, location: TextRange): MemberExpression = {
+  def createMemberAccessForPropertyName(
+      target: Expression,
+      memberName: PropertyName,
+      location: TextRange): MemberExpression = {
     if (isComputedPropertyName(memberName)) {
       return createElementAccess(target, memberName.expression, location)
 
@@ -2029,63 +2385,84 @@ object Factory {
            createPropertyAccess(target, memberName, location)
          else createElementAccess(target, memberName, location))
       (((expression.emitNode || ((expression.emitNode = Map(
-          ))))).flags |= EmitFlags.NoNestedSourceMaps)
+        ))))).flags |= EmitFlags.NoNestedSourceMaps)
       return expression
 
     }
 
   }
   def createRestParameter(name: (String | Identifier)) = {
-    return createParameterDeclaration(undefined, undefined,
-        createToken(SyntaxKind.DotDotDotToken), name, undefined, undefined,
-        undefined)
+    return createParameterDeclaration(
+      undefined,
+      undefined,
+      createToken(SyntaxKind.DotDotDotToken),
+      name,
+      undefined,
+      undefined,
+      undefined)
 
   }
-  def createFunctionCall(func: Expression, thisArg: Expression,
-      argumentsList: Array[Expression], location: TextRange) = {
-    return createCall(createPropertyAccess(func, "call"), undefined,
-        Array(thisArg, argumentsList: _*), location)
+  def createFunctionCall(func: Expression,
+                         thisArg: Expression,
+                         argumentsList: Array[Expression],
+                         location: TextRange) = {
+    return createCall(
+      createPropertyAccess(func, "call"),
+      undefined,
+      Array(thisArg, argumentsList: _*),
+      location)
 
   }
-  def createFunctionApply(func: Expression, thisArg: Expression,
-      argumentsExpression: Expression, location: TextRange) = {
-    return createCall(createPropertyAccess(func, "apply"), undefined,
-        Array(thisArg, argumentsExpression), location)
+  def createFunctionApply(func: Expression,
+                          thisArg: Expression,
+                          argumentsExpression: Expression,
+                          location: TextRange) = {
+    return createCall(
+      createPropertyAccess(func, "apply"),
+      undefined,
+      Array(thisArg, argumentsExpression),
+      location)
 
   }
   def createArraySlice(array: Expression, start: (Int | Expression)) = {
     val argumentsList: Array[Expression] = Array()
     if ((start !== undefined)) {
       argumentsList.push(
-          (if ((typeof(start) === "number")) createLiteral(start) else start))
+        (if ((typeof(start) === "number")) createLiteral(start) else start))
 
     }
-    return createCall(createPropertyAccess(array, "slice"), undefined,
-        argumentsList)
+    return createCall(
+      createPropertyAccess(array, "slice"),
+      undefined,
+      argumentsList)
 
   }
   def createArrayConcat(array: Expression, values: Array[Expression]) = {
     return createCall(createPropertyAccess(array, "concat"), undefined, values)
 
   }
-  def createMathPow(left: Expression, right: Expression,
-      location: TextRange) = {
-    return createCall(createPropertyAccess(createIdentifier("Math"), "pow"),
-        undefined, Array(left, right), location)
+  def createMathPow(left: Expression, right: Expression, location: TextRange) = {
+    return createCall(
+      createPropertyAccess(createIdentifier("Math"), "pow"),
+      undefined,
+      Array(left, right),
+      location)
 
   }
   def createReactNamespace(reactNamespace: String,
-      parent: JsxOpeningLikeElement) = {
+                           parent: JsxOpeningLikeElement) = {
     val react = createIdentifier((reactNamespace || "React"))
     (react.flags &= (~NodeFlags.Synthesized))
     (react.parent = getParseTreeNode(parent))
     return react
 
   }
-  def createReactCreateElement(reactNamespace: String, tagName: Expression,
-      props: Expression, children: Array[Expression],
-      parentElement: JsxOpeningLikeElement,
-      location: TextRange): LeftHandSideExpression = {
+  def createReactCreateElement(reactNamespace: String,
+                               tagName: Expression,
+                               props: Expression,
+                               children: Array[Expression],
+                               parentElement: JsxOpeningLikeElement,
+                               location: TextRange): LeftHandSideExpression = {
     val argumentsList = Array(tagName)
     if (props) {
       argumentsList.push(props)
@@ -2111,60 +2488,80 @@ object Factory {
       }
 
     }
-    return createCall(createPropertyAccess(createReactNamespace(reactNamespace,
-                parentElement), "createElement"), undefined, argumentsList,
-        location)
+    return createCall(
+      createPropertyAccess(
+        createReactNamespace(reactNamespace, parentElement),
+        "createElement"),
+      undefined,
+      argumentsList,
+      location)
 
   }
   def createLetDeclarationList(declarations: Array[VariableDeclaration],
-      location: TextRange) = {
+                               location: TextRange) = {
     return createVariableDeclarationList(declarations, location, NodeFlags.Let)
 
   }
   def createConstDeclarationList(declarations: Array[VariableDeclaration],
-      location: TextRange) = {
-    return createVariableDeclarationList(declarations, location,
-        NodeFlags.Const)
+                                 location: TextRange) = {
+    return createVariableDeclarationList(
+      declarations,
+      location,
+      NodeFlags.Const)
 
   }
   def createHelperName(externalHelpersModuleName: (Identifier | undefined),
-      name: String) = {
+                       name: String) = {
     return (if (externalHelpersModuleName)
               createPropertyAccess(externalHelpersModuleName, name)
             else createIdentifier(name))
 
   }
   def createExtendsHelper(externalHelpersModuleName: (Identifier | undefined),
-      name: Identifier) = {
-    return createCall(createHelperName(externalHelpersModuleName, "__extends"),
-        undefined, Array(name, createIdentifier("_super")))
+                          name: Identifier) = {
+    return createCall(
+      createHelperName(externalHelpersModuleName, "__extends"),
+      undefined,
+      Array(name, createIdentifier("_super")))
 
   }
   def createAssignHelper(externalHelpersModuleName: (Identifier | undefined),
-      attributesSegments: Array[Expression]) = {
-    return createCall(createHelperName(externalHelpersModuleName, "__assign"),
-        undefined, attributesSegments)
+                         attributesSegments: Array[Expression]) = {
+    return createCall(
+      createHelperName(externalHelpersModuleName, "__assign"),
+      undefined,
+      attributesSegments)
 
   }
   def createParamHelper(externalHelpersModuleName: (Identifier | undefined),
-      expression: Expression, parameterOffset: Int, location: TextRange) = {
-    return createCall(createHelperName(externalHelpersModuleName, "__param"),
-        undefined, Array(createLiteral(parameterOffset), expression), location)
+                        expression: Expression,
+                        parameterOffset: Int,
+                        location: TextRange) = {
+    return createCall(
+      createHelperName(externalHelpersModuleName, "__param"),
+      undefined,
+      Array(createLiteral(parameterOffset), expression),
+      location)
 
   }
   def createMetadataHelper(externalHelpersModuleName: (Identifier | undefined),
-      metadataKey: String, metadataValue: Expression) = {
-    return createCall(createHelperName(externalHelpersModuleName,
-            "__metadata"), undefined,
-        Array(createLiteral(metadataKey), metadataValue))
+                           metadataKey: String,
+                           metadataValue: Expression) = {
+    return createCall(
+      createHelperName(externalHelpersModuleName, "__metadata"),
+      undefined,
+      Array(createLiteral(metadataKey), metadataValue))
 
   }
   def createDecorateHelper(externalHelpersModuleName: (Identifier | undefined),
-      decoratorExpressions: Array[Expression], target: Expression,
-      memberName: Expression, descriptor: Expression, location: TextRange) = {
+                           decoratorExpressions: Array[Expression],
+                           target: Expression,
+                           memberName: Expression,
+                           descriptor: Expression,
+                           location: TextRange) = {
     val argumentsArray: Array[Expression] = Array()
-    argumentsArray
-      .push(createArrayLiteral(decoratorExpressions, undefined, true))
+    argumentsArray.push(
+      createArrayLiteral(decoratorExpressions, undefined, true))
     argumentsArray.push(target)
     if (memberName) {
       argumentsArray.push(memberName)
@@ -2174,97 +2571,161 @@ object Factory {
       }
 
     }
-    return createCall(createHelperName(externalHelpersModuleName,
-            "__decorate"), undefined, argumentsArray, location)
+    return createCall(
+      createHelperName(externalHelpersModuleName, "__decorate"),
+      undefined,
+      argumentsArray,
+      location)
 
   }
   def createAwaiterHelper(externalHelpersModuleName: (Identifier | undefined),
-      hasLexicalArguments: Boolean,
-      promiseConstructor: (EntityName | Expression), body: Block) = {
-    val generatorFunc = createFunctionExpression(undefined,
-        createToken(SyntaxKind.AsteriskToken), undefined, undefined, Array(),
-        undefined, body)
+                          hasLexicalArguments: Boolean,
+                          promiseConstructor: (EntityName | Expression),
+                          body: Block) = {
+    val generatorFunc = createFunctionExpression(
+      undefined,
+      createToken(SyntaxKind.AsteriskToken),
+      undefined,
+      undefined,
+      Array(),
+      undefined,
+      body)
     (((generatorFunc.emitNode || ((generatorFunc.emitNode = Map(
-        ))))).flags |= EmitFlags.AsyncFunctionBody)
-    return createCall(createHelperName(externalHelpersModuleName, "__awaiter"),
-        undefined,
-        Array(createThis(),
-            (if (hasLexicalArguments) createIdentifier("arguments")
-             else createVoidZero()),
-            (if (promiseConstructor)
-               createExpressionFromEntityName(promiseConstructor)
-             else createVoidZero()),
-            generatorFunc))
+      ))))).flags |= EmitFlags.AsyncFunctionBody)
+    return createCall(
+      createHelperName(externalHelpersModuleName, "__awaiter"),
+      undefined,
+      Array(
+        createThis(),
+        (if (hasLexicalArguments) createIdentifier("arguments")
+         else createVoidZero()),
+        (if (promiseConstructor)
+           createExpressionFromEntityName(promiseConstructor)
+         else createVoidZero()),
+        generatorFunc))
 
   }
   def createHasOwnProperty(target: LeftHandSideExpression,
-      propertyName: Expression) = {
-    return createCall(createPropertyAccess(target, "hasOwnProperty"),
-        undefined, Array(propertyName))
+                           propertyName: Expression) = {
+    return createCall(
+      createPropertyAccess(target, "hasOwnProperty"),
+      undefined,
+      Array(propertyName))
 
   }
   def createObjectCreate(prototype: Expression) = {
-    return createCall(createPropertyAccess(createIdentifier("Object"),
-            "create"), undefined, Array(prototype))
+    return createCall(
+      createPropertyAccess(createIdentifier("Object"), "create"),
+      undefined,
+      Array(prototype))
 
   }
   def createGeti(target: LeftHandSideExpression) = {
-    return createArrowFunction(undefined, undefined,
-        Array(createParameter("name")), undefined, undefined,
-        createElementAccess(target, createIdentifier("name")))
+    return createArrowFunction(
+      undefined,
+      undefined,
+      Array(createParameter("name")),
+      undefined,
+      undefined,
+      createElementAccess(target, createIdentifier("name")))
 
   }
   def createSeti(target: LeftHandSideExpression) = {
-    return createArrowFunction(undefined, undefined,
-        Array(createParameter("name"), createParameter("value")), undefined,
-        undefined,
-        createAssignment(createElementAccess(target, createIdentifier("name")),
-            createIdentifier("value")))
+    return createArrowFunction(
+      undefined,
+      undefined,
+      Array(createParameter("name"), createParameter("value")),
+      undefined,
+      undefined,
+      createAssignment(
+        createElementAccess(target, createIdentifier("name")),
+        createIdentifier("value")))
 
   }
   def createAdvancedAsyncSuperHelper() = {
-    val createCache = createVariableStatement(undefined,
-        createConstDeclarationList(Array(createVariableDeclaration("cache",
-                    undefined, createObjectCreate(createNull())))))
+    val createCache = createVariableStatement(
+      undefined,
+      createConstDeclarationList(
+        Array(
+          createVariableDeclaration(
+            "cache",
+            undefined,
+            createObjectCreate(createNull())))))
     val getter =
-      createGetAccessor(undefined, undefined, "value", Array(), undefined,
-          createBlock(Array(createReturn(createCall(createIdentifier("geti"),
-                          undefined, Array(createIdentifier("name")))))))
+      createGetAccessor(
+        undefined,
+        undefined,
+        "value",
+        Array(),
+        undefined,
+        createBlock(
+          Array(
+            createReturn(
+              createCall(
+                createIdentifier("geti"),
+                undefined,
+                Array(createIdentifier("name")))))))
     val setter =
-      createSetAccessor(undefined, undefined, "value",
-          Array(createParameter("v")),
-          createBlock(Array(createStatement(
-                      createCall(createIdentifier("seti"), undefined,
-                          Array(createIdentifier("name"),
-                              createIdentifier("v")))))))
+      createSetAccessor(
+        undefined,
+        undefined,
+        "value",
+        Array(createParameter("v")),
+        createBlock(
+          Array(
+            createStatement(
+              createCall(
+                createIdentifier("seti"),
+                undefined,
+                Array(createIdentifier("name"), createIdentifier("v")))))))
     val getOrCreateAccessorsForName = createReturn(
-        createArrowFunction(undefined, undefined,
-            Array(createParameter("name")), undefined, undefined,
-            createLogicalOr(createElementAccess(createIdentifier("cache"),
-                    createIdentifier("name")),
-                createParen(
-                    createAssignment(createElementAccess(createIdentifier(
-                                "cache"), createIdentifier("name")),
-                        createObjectLiteral(Array(getter, setter)))))))
-    return createVariableStatement(undefined,
-        createConstDeclarationList(Array(createVariableDeclaration("_super",
-                    undefined,
-                    createCall(createParen(createFunctionExpression(undefined,
-                                undefined, undefined, undefined,
-                                Array(createParameter("geti"),
-                                    createParameter("seti")),
-                                undefined,
-                                createBlock(Array(createCache,
-                                        getOrCreateAccessorsForName)))),
-                        undefined,
-                        Array(createGeti(createSuper()),
-                            createSeti(createSuper())))))))
+      createArrowFunction(
+        undefined,
+        undefined,
+        Array(createParameter("name")),
+        undefined,
+        undefined,
+        createLogicalOr(
+          createElementAccess(
+            createIdentifier("cache"),
+            createIdentifier("name")),
+          createParen(
+            createAssignment(
+              createElementAccess(
+                createIdentifier("cache"),
+                createIdentifier("name")),
+              createObjectLiteral(Array(getter, setter)))))))
+    return createVariableStatement(
+      undefined,
+      createConstDeclarationList(
+        Array(
+          createVariableDeclaration(
+            "_super",
+            undefined,
+            createCall(
+              createParen(
+                createFunctionExpression(
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined,
+                  Array(createParameter("geti"), createParameter("seti")),
+                  undefined,
+                  createBlock(
+                    Array(createCache, getOrCreateAccessorsForName)))),
+              undefined,
+              Array(createGeti(createSuper()), createSeti(createSuper())))))))
 
   }
   def createSimpleAsyncSuperHelper() = {
-    return createVariableStatement(undefined,
-        createConstDeclarationList(Array(createVariableDeclaration("_super",
-                    undefined, createGeti(createSuper())))))
+    return createVariableStatement(
+      undefined,
+      createConstDeclarationList(
+        Array(
+          createVariableDeclaration(
+            "_super",
+            undefined,
+            createGeti(createSuper())))))
 
   }
   trait CallBinding {
@@ -2272,7 +2733,7 @@ object Factory {
     var thisArg: Expression
   }
   def shouldBeCapturedInTempVariable(node: Expression,
-      cacheIdentifiers: Boolean): Boolean = {
+                                     cacheIdentifiers: Boolean): Boolean = {
     val target = skipParentheses(node)
     target.kind match {
       case SyntaxKind.Identifier =>
@@ -2288,16 +2749,19 @@ object Factory {
         }
         return true
       case SyntaxKind.ObjectLiteralExpression =>
-        return ((target.asInstanceOf[ObjectLiteralExpression]).properties.length > 0)
+        return ((target
+          .asInstanceOf[ObjectLiteralExpression])
+          .properties
+          .length > 0)
       case _ =>
         return true
     }
 
   }
   def createCallBinding(expression: Expression,
-      recordTempVariable: ((Identifier) => Unit),
-      languageVersion: ScriptTarget,
-      cacheIdentifiers: Boolean): CallBinding = {
+                        recordTempVariable: ((Identifier) => Unit),
+                        languageVersion: ScriptTarget,
+                        cacheIdentifiers: Boolean): CallBinding = {
     val callee = skipOuterExpressions(expression, OuterExpressionKinds.All)
     var thisArg: Expression = zeroOfMyType
     var target: LeftHandSideExpression = zeroOfMyType
@@ -2316,13 +2780,16 @@ object Factory {
       callee.kind match {
         case SyntaxKind.PropertyAccessExpression => {
           if (shouldBeCapturedInTempVariable(
-                  (callee.asInstanceOf[PropertyAccessExpression]).expression,
-                  cacheIdentifiers)) {
+                (callee.asInstanceOf[PropertyAccessExpression]).expression,
+                cacheIdentifiers)) {
             (thisArg = createTempVariable(recordTempVariable))
-            (target = createPropertyAccess(createAssignment(thisArg,
-                    (callee.asInstanceOf[PropertyAccessExpression]).expression,
-                    (callee.asInstanceOf[PropertyAccessExpression]).expression),
-                (callee.asInstanceOf[PropertyAccessExpression]).name, callee))
+            (target = createPropertyAccess(
+              createAssignment(
+                thisArg,
+                (callee.asInstanceOf[PropertyAccessExpression]).expression,
+                (callee.asInstanceOf[PropertyAccessExpression]).expression),
+              (callee.asInstanceOf[PropertyAccessExpression]).name,
+              callee))
 
           } else {
             (thisArg =
@@ -2335,14 +2802,18 @@ object Factory {
         }
         case SyntaxKind.ElementAccessExpression => {
           if (shouldBeCapturedInTempVariable(
-                  (callee.asInstanceOf[ElementAccessExpression]).expression,
-                  cacheIdentifiers)) {
+                (callee.asInstanceOf[ElementAccessExpression]).expression,
+                cacheIdentifiers)) {
             (thisArg = createTempVariable(recordTempVariable))
-            (target = createElementAccess(createAssignment(thisArg,
-                    (callee.asInstanceOf[ElementAccessExpression]).expression,
-                    (callee.asInstanceOf[ElementAccessExpression]).expression),
-                (callee.asInstanceOf[ElementAccessExpression]).argumentExpression,
-                callee))
+            (target = createElementAccess(
+              createAssignment(
+                thisArg,
+                (callee.asInstanceOf[ElementAccessExpression]).expression,
+                (callee.asInstanceOf[ElementAccessExpression]).expression),
+              (callee
+                .asInstanceOf[ElementAccessExpression])
+                .argumentExpression,
+              callee))
 
           } else {
             (thisArg =
@@ -2396,29 +2867,37 @@ object Factory {
 
   }
   def createExpressionForObjectLiteralElementLike(
-      node: ObjectLiteralExpression, property: ObjectLiteralElementLike,
+      node: ObjectLiteralExpression,
+      property: ObjectLiteralElementLike,
       receiver: Expression): Expression = {
     property.kind match {
       case SyntaxKind.GetAccessor | SyntaxKind.SetAccessor =>
-        return createExpressionForAccessorDeclaration(node.properties,
-            property.asInstanceOf[AccessorDeclaration], receiver,
-            node.multiLine)
+        return createExpressionForAccessorDeclaration(
+          node.properties,
+          property.asInstanceOf[AccessorDeclaration],
+          receiver,
+          node.multiLine)
       case SyntaxKind.PropertyAssignment =>
         return createExpressionForPropertyAssignment(
-            property.asInstanceOf[PropertyAssignment], receiver)
+          property.asInstanceOf[PropertyAssignment],
+          receiver)
       case SyntaxKind.ShorthandPropertyAssignment =>
         return createExpressionForShorthandPropertyAssignment(
-            property.asInstanceOf[ShorthandPropertyAssignment], receiver)
+          property.asInstanceOf[ShorthandPropertyAssignment],
+          receiver)
       case SyntaxKind.MethodDeclaration =>
         return createExpressionForMethodDeclaration(
-            property.asInstanceOf[MethodDeclaration], receiver)
+          property.asInstanceOf[MethodDeclaration],
+          receiver)
       case _ =>
     }
 
   }
   def createExpressionForAccessorDeclaration(
-      properties: NodeArray[Declaration], property: AccessorDeclaration,
-      receiver: Expression, multiLine: Boolean) = {
+      properties: NodeArray[Declaration],
+      property: AccessorDeclaration,
+      receiver: Expression,
+      multiLine: Boolean) = {
     const fresh3 = getAllAccessorDeclarations(properties, property)
     val firstAccessor = fresh3.firstAccessor
     val getAccessor = fresh3.getAccessor
@@ -2426,33 +2905,47 @@ object Factory {
     if ((property === firstAccessor)) {
       val properties: Array[ObjectLiteralElementLike] = Array()
       if (getAccessor) {
-        val getterFunction = createFunctionExpression(getAccessor.modifiers,
-            undefined, undefined, undefined, getAccessor.parameters, undefined,
-            getAccessor.body, getAccessor)
+        val getterFunction = createFunctionExpression(
+          getAccessor.modifiers,
+          undefined,
+          undefined,
+          undefined,
+          getAccessor.parameters,
+          undefined,
+          getAccessor.body,
+          getAccessor)
         setOriginalNode(getterFunction, getAccessor)
         val getter = createPropertyAssignment("get", getterFunction)
         properties.push(getter)
 
       }
       if (setAccessor) {
-        val setterFunction = createFunctionExpression(setAccessor.modifiers,
-            undefined, undefined, undefined, setAccessor.parameters, undefined,
-            setAccessor.body, setAccessor)
+        val setterFunction = createFunctionExpression(
+          setAccessor.modifiers,
+          undefined,
+          undefined,
+          undefined,
+          setAccessor.parameters,
+          undefined,
+          setAccessor.body,
+          setAccessor)
         setOriginalNode(setterFunction, setAccessor)
         val setter = createPropertyAssignment("set", setterFunction)
         properties.push(setter)
 
       }
-      properties
-        .push(createPropertyAssignment("enumerable", createLiteral(true)))
-      properties
-        .push(createPropertyAssignment("configurable", createLiteral(true)))
+      properties.push(
+        createPropertyAssignment("enumerable", createLiteral(true)))
+      properties.push(
+        createPropertyAssignment("configurable", createLiteral(true)))
       val expression = createCall(
-          createPropertyAccess(createIdentifier("Object"), "defineProperty"),
-          undefined,
-          Array(receiver, createExpressionForPropertyName(property.name),
-              createObjectLiteral(properties, undefined, multiLine)),
-          firstAccessor)
+        createPropertyAccess(createIdentifier("Object"), "defineProperty"),
+        undefined,
+        Array(
+          receiver,
+          createExpressionForPropertyName(property.name),
+          createObjectLiteral(properties, undefined, multiLine)),
+        firstAccessor)
       return aggregateTransformFlags(expression)
 
     }
@@ -2460,44 +2953,71 @@ object Factory {
 
   }
   def createExpressionForPropertyAssignment(property: PropertyAssignment,
-      receiver: Expression) = {
+                                            receiver: Expression) = {
     return aggregateTransformFlags(
-        setOriginalNode(createAssignment(
-                createMemberAccessForPropertyName(receiver, property.name,
-                    property.name), property.initializer, property), property))
+      setOriginalNode(
+        createAssignment(
+          createMemberAccessForPropertyName(
+            receiver,
+            property.name,
+            property.name),
+          property.initializer,
+          property),
+        property))
 
   }
   def createExpressionForShorthandPropertyAssignment(
-      property: ShorthandPropertyAssignment, receiver: Expression) = {
+      property: ShorthandPropertyAssignment,
+      receiver: Expression) = {
     return aggregateTransformFlags(
-        setOriginalNode(
-            createAssignment(createMemberAccessForPropertyName(receiver,
-                    property.name, property.name),
-                getSynthesizedClone(property.name), property), property))
+      setOriginalNode(
+        createAssignment(
+          createMemberAccessForPropertyName(
+            receiver,
+            property.name,
+            property.name),
+          getSynthesizedClone(property.name),
+          property),
+        property))
 
   }
   def createExpressionForMethodDeclaration(method: MethodDeclaration,
-      receiver: Expression) = {
+                                           receiver: Expression) = {
     return aggregateTransformFlags(
-        setOriginalNode(
-            createAssignment(createMemberAccessForPropertyName(receiver,
-                    method.name, method.name),
-                setOriginalNode(createFunctionExpression(method.modifiers,
-                        method.asteriskToken, undefined, undefined,
-                        method.parameters, undefined, method.body, method),
-                    method),
-                method), method))
+      setOriginalNode(
+        createAssignment(
+          createMemberAccessForPropertyName(
+            receiver,
+            method.name,
+            method.name),
+          setOriginalNode(
+            createFunctionExpression(
+              method.modifiers,
+              method.asteriskToken,
+              undefined,
+              undefined,
+              method.parameters,
+              undefined,
+              method.body,
+              method),
+            method),
+          method),
+        method))
 
   }
   def isUseStrictPrologue(node: ExpressionStatement): Boolean = {
-    return ((node.expression.asInstanceOf[StringLiteral]).text === "use strict")
+    return ((node.expression
+      .asInstanceOf[StringLiteral])
+      .text === "use strict")
 
   }
-  def addPrologueDirectives(target: Array[Statement], source: Array[Statement],
-      ensureUseStrict: Boolean,
-      visitor: ((Node) => VisitResult[Node])): Int = {
-    Debug.assert((target.length === 0),
-        "Prologue directives should be at the first statement in the target statements array")
+  def addPrologueDirectives(target: Array[Statement],
+                            source: Array[Statement],
+                            ensureUseStrict: Boolean,
+                            visitor: ((Node) => VisitResult[Node])): Int = {
+    Debug.assert(
+      (target.length === 0),
+      "Prologue directives should be at the first statement in the target statements array")
     var foundUseStrict = false
     var statementOffset = 0
     val numStatements = source.length
@@ -2528,8 +3048,8 @@ object Factory {
         val statement = source(statementOffset)
         if ((getEmitFlags(statement) & EmitFlags.CustomPrologue)) {
           target.push(
-              (if (visitor) visitNode(statement, visitor, isStatement)
-               else statement))
+            (if (visitor) visitNode(statement, visitor, isStatement)
+             else statement))
 
         } else {
           break()
@@ -2563,7 +3083,7 @@ object Factory {
     if ((!foundUseStrict)) {
       val statements: Array[Statement] = Array()
       statements.push(
-          startOnNewLine(createStatement(createLiteral("use strict"))))
+        startOnNewLine(createStatement(createLiteral("use strict"))))
       return updateSourceFileNode(node, statements.concat(node.statements))
 
     }
@@ -2571,21 +3091,26 @@ object Factory {
 
   }
   def parenthesizeBinaryOperand(binaryOperator: SyntaxKind,
-      operand: Expression, isLeftSideOfBinary: Boolean,
-      leftOperand: Expression) = {
+                                operand: Expression,
+                                isLeftSideOfBinary: Boolean,
+                                leftOperand: Expression) = {
     val skipped = skipPartiallyEmittedExpressions(operand)
     if ((skipped.kind === SyntaxKind.ParenthesizedExpression)) {
       return operand
 
     }
-    return (if (binaryOperandNeedsParentheses(binaryOperator, operand,
-                    isLeftSideOfBinary, leftOperand)) createParen(operand)
+    return (if (binaryOperandNeedsParentheses(
+                  binaryOperator,
+                  operand,
+                  isLeftSideOfBinary,
+                  leftOperand)) createParen(operand)
             else operand)
 
   }
   def binaryOperandNeedsParentheses(binaryOperator: SyntaxKind,
-      operand: Expression, isLeftSideOfBinary: Boolean,
-      leftOperand: Expression) = {
+                                    operand: Expression,
+                                    isLeftSideOfBinary: Boolean,
+                                    leftOperand: Expression) = {
     val binaryOperatorPrecedence =
       getOperatorPrecedence(SyntaxKind.BinaryExpression, binaryOperator)
     val binaryOperatorAssociativity =
@@ -2617,7 +3142,7 @@ object Factory {
                    getLiteralKindOfBinaryPlusOperand(leftOperand)
                  else SyntaxKind.Unknown)
               if ((isLiteralKind(leftKind) && (leftKind === getLiteralKindOfBinaryPlusOperand(
-                      emittedOperand)))) {
+                    emittedOperand)))) {
                 return false
 
               }
@@ -2647,18 +3172,20 @@ object Factory {
 
     }
     if (((node.kind === SyntaxKind.BinaryExpression) && ((node
-              .asInstanceOf[BinaryExpression])
+          .asInstanceOf[BinaryExpression])
           .operatorToken
           .kind === SyntaxKind.PlusToken))) {
-      if (((node.asInstanceOf[BinaryPlusExpression]).cachedLiteralKind !== undefined)) {
+      if (((node
+            .asInstanceOf[BinaryPlusExpression])
+            .cachedLiteralKind !== undefined)) {
         return (node.asInstanceOf[BinaryPlusExpression]).cachedLiteralKind
 
       }
       val leftKind = getLiteralKindOfBinaryPlusOperand(
-          (node.asInstanceOf[BinaryExpression]).left)
+        (node.asInstanceOf[BinaryExpression]).left)
       val literalKind =
         (if ((isLiteralKind(leftKind) && (leftKind === getLiteralKindOfBinaryPlusOperand(
-                 (node.asInstanceOf[BinaryExpression]).right)))) leftKind
+               (node.asInstanceOf[BinaryExpression]).right)))) leftKind
          else SyntaxKind.Unknown)
       ((node.asInstanceOf[BinaryPlusExpression]).cachedLiteralKind =
         literalKind)
@@ -2684,9 +3211,8 @@ object Factory {
   }
   def parenthesizeForAccess(expression: Expression): LeftHandSideExpression = {
     val emittedExpression = skipPartiallyEmittedExpressions(expression)
-    if (((isLeftHandSideExpression(emittedExpression) && (((emittedExpression.kind !== SyntaxKind.NewExpression) || (
-            emittedExpression
-              .asInstanceOf[NewExpression])
+    if (((isLeftHandSideExpression(emittedExpression) && (((emittedExpression.kind !== SyntaxKind.NewExpression) || (emittedExpression
+          .asInstanceOf[NewExpression])
           .arguments))) && (emittedExpression.kind !== SyntaxKind.NumericLiteral))) {
       return expression.asInstanceOf[LeftHandSideExpression]
 
@@ -2766,11 +3292,12 @@ object Factory {
 
   }
   def recreatePartiallyEmittedExpressions(originalOuterExpression: Expression,
-      newInnerExpression: Expression) = {
+                                          newInnerExpression: Expression) = {
     if (isPartiallyEmittedExpression(originalOuterExpression)) {
       val clone = getMutableClone(originalOuterExpression)
-      (clone.expression = recreatePartiallyEmittedExpressions(clone.expression,
-          newInnerExpression))
+      (clone.expression = recreatePartiallyEmittedExpressions(
+        clone.expression,
+        newInnerExpression))
       return clone
 
     }
@@ -2792,10 +3319,9 @@ object Factory {
             continue
           case SyntaxKind.CallExpression | SyntaxKind.ElementAccessExpression |
               SyntaxKind.PropertyAccessExpression =>
-            (node = (
-                node
-                  .asInstanceOf[
-                      (CallExpression | PropertyAccessExpression | ElementAccessExpression)])
+            (node = (node
+              .asInstanceOf[
+                (CallExpression | PropertyAccessExpression | ElementAccessExpression)])
               .expression)
             continue
           case SyntaxKind.PartiallyEmittedExpression =>
@@ -2826,10 +3352,10 @@ object Factory {
     case object All extends OuterExpressionKinds
   }
   def skipOuterExpressions(node: Expression,
-      kinds: OuterExpressionKinds): Expression
+                           kinds: OuterExpressionKinds): Expression
   def skipOuterExpressions(node: Node, kinds: OuterExpressionKinds): Node
   def skipOuterExpressions(node: Node,
-      kinds: Nothing = OuterExpressionKinds.All) = {
+                           kinds: Nothing = OuterExpressionKinds.All) = {
     var previousNode: Node = zeroOfMyType
     do {
       {
@@ -2912,7 +3438,7 @@ object Factory {
     val tokenSourceMapRanges = fresh5.tokenSourceMapRanges
     if (((!destEmitNode) && ((((flags || commentRange) || sourceMapRange) || tokenSourceMapRanges))))
       (destEmitNode = Map(
-          ))
+        ))
     if (flags)
       (destEmitNode.flags = flags)
     if (commentRange)
@@ -2921,12 +3447,13 @@ object Factory {
       (destEmitNode.sourceMapRange = sourceMapRange)
     if (tokenSourceMapRanges)
       (destEmitNode.tokenSourceMapRanges = mergeTokenSourceMapRanges(
-          tokenSourceMapRanges, destEmitNode.tokenSourceMapRanges))
+        tokenSourceMapRanges,
+        destEmitNode.tokenSourceMapRanges))
     return destEmitNode
 
   }
   def mergeTokenSourceMapRanges(sourceRanges: Map[TextRange],
-      destRanges: Map[TextRange]) = {
+                                destRanges: Map[TextRange]) = {
     if ((!destRanges))
       (destRanges = createMap[TextRange]())
     copyProperties(sourceRanges, destRanges)
@@ -2960,7 +3487,7 @@ object Factory {
 
       }
       (node.emitNode = Map(
-          ))
+        ))
 
     }
     return node.emitNode
@@ -2981,8 +3508,9 @@ object Factory {
     return node
 
   }
-  def setTokenSourceMapRange[T <: Node](node: T, token: SyntaxKind,
-      range: TextRange) = {
+  def setTokenSourceMapRange[T <: Node](node: T,
+                                        token: SyntaxKind,
+                                        range: TextRange) = {
     val emitNode = getOrCreateEmitNode(node)
     val tokenSourceMapRanges = (emitNode.tokenSourceMapRanges || ((emitNode.tokenSourceMapRanges =
         createMap[TextRange]())))
@@ -3040,13 +3568,15 @@ object Factory {
 
   }
   def setMultiLine[
-      T <: (ObjectLiteralExpression | ArrayLiteralExpression | Block)](node: T,
+      T <: (ObjectLiteralExpression | ArrayLiteralExpression | Block)](
+      node: T,
       multiLine: Boolean): T = {
     (node.multiLine = multiLine)
     return node
 
   }
-  def setHasTrailingComma[T <: Node](nodes: NodeArray[T],
+  def setHasTrailingComma[T <: Node](
+      nodes: NodeArray[T],
       hasTrailingComma: Boolean): NodeArray[T] = {
     (nodes.hasTrailingComma = hasTrailingComma)
     return nodes
@@ -3060,17 +3590,21 @@ object Factory {
       val name = namespaceDeclaration.name
       return (if (isGeneratedIdentifier(name)) name
               else
-                createIdentifier(getSourceTextOfNodeFromSourceFile(sourceFile,
-                        namespaceDeclaration.name)))
+                createIdentifier(
+                  getSourceTextOfNodeFromSourceFile(
+                    sourceFile,
+                    namespaceDeclaration.name)))
 
     }
-    if (((node.kind === SyntaxKind.ImportDeclaration) && (
-            node.asInstanceOf[ImportDeclaration]).importClause)) {
+    if (((node.kind === SyntaxKind.ImportDeclaration) && (node
+          .asInstanceOf[ImportDeclaration])
+          .importClause)) {
       return getGeneratedNameForNode(node)
 
     }
-    if (((node.kind === SyntaxKind.ExportDeclaration) && (
-            node.asInstanceOf[ExportDeclaration]).moduleSpecifier)) {
+    if (((node.kind === SyntaxKind.ExportDeclaration) && (node
+          .asInstanceOf[ExportDeclaration])
+          .moduleSpecifier)) {
       return getGeneratedNameForNode(node)
 
     }
@@ -3079,32 +3613,39 @@ object Factory {
   }
   def getExternalModuleNameLiteral(
       importNode: (ImportDeclaration | ExportDeclaration | ImportEqualsDeclaration),
-      sourceFile: SourceFile, host: EmitHost, resolver: EmitResolver,
+      sourceFile: SourceFile,
+      host: EmitHost,
+      resolver: EmitResolver,
       compilerOptions: CompilerOptions) = {
     val moduleName = getExternalModuleName(importNode)
     if ((moduleName.kind === SyntaxKind.StringLiteral)) {
-      return ((tryGetModuleNameFromDeclaration(importNode, host, resolver,
-          compilerOptions) || tryRenameExternalModule(
-          moduleName.asInstanceOf[StringLiteral],
-          sourceFile)) || getSynthesizedClone(
-          moduleName.asInstanceOf[StringLiteral]))
+      return ((tryGetModuleNameFromDeclaration(
+        importNode,
+        host,
+        resolver,
+        compilerOptions) || tryRenameExternalModule(
+        moduleName.asInstanceOf[StringLiteral],
+        sourceFile)) || getSynthesizedClone(
+        moduleName.asInstanceOf[StringLiteral]))
 
     }
     return undefined
 
   }
   def tryRenameExternalModule(moduleName: LiteralExpression,
-      sourceFile: SourceFile) = {
+                              sourceFile: SourceFile) = {
     if ((sourceFile.renamedDependencies && hasProperty(
-            sourceFile.renamedDependencies, moduleName.text))) {
+          sourceFile.renamedDependencies,
+          moduleName.text))) {
       return createLiteral(sourceFile.renamedDependencies(moduleName.text))
 
     }
     return undefined
 
   }
-  def tryGetModuleNameFromFile(file: SourceFile, host: EmitHost,
-      options: CompilerOptions): StringLiteral = {
+  def tryGetModuleNameFromFile(file: SourceFile,
+                               host: EmitHost,
+                               options: CompilerOptions): StringLiteral = {
     if ((!file)) {
       return undefined
 
@@ -3122,11 +3663,13 @@ object Factory {
   }
   def tryGetModuleNameFromDeclaration(
       declaration: (ImportEqualsDeclaration | ImportDeclaration | ExportDeclaration),
-      host: EmitHost, resolver: EmitResolver,
+      host: EmitHost,
+      resolver: EmitResolver,
       compilerOptions: CompilerOptions) = {
     return tryGetModuleNameFromFile(
-        resolver.getExternalModuleFileFromDeclaration(declaration), host,
-        compilerOptions)
+      resolver.getExternalModuleFileFromDeclaration(declaration),
+      host,
+      compilerOptions)
 
   }
 }

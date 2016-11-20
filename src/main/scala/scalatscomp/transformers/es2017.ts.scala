@@ -55,7 +55,7 @@ object ES2017 {
           return visitMethodDeclaration(node.asInstanceOf[MethodDeclaration])
         case SyntaxKind.FunctionDeclaration =>
           return visitFunctionDeclaration(
-              node.asInstanceOf[FunctionDeclaration])
+            node.asInstanceOf[FunctionDeclaration])
         case SyntaxKind.FunctionExpression =>
           return visitFunctionExpression(node.asInstanceOf[FunctionExpression])
         case SyntaxKind.ArrowFunction =>
@@ -67,8 +67,12 @@ object ES2017 {
 
     }
     def visitAwaitExpression(node: AwaitExpression): Expression = {
-      return setOriginalNode(createYield(undefined,
-              visitNode(node.expression, visitor, isExpression), node), node)
+      return setOriginalNode(
+        createYield(
+          undefined,
+          visitNode(node.expression, visitor, isExpression),
+          node),
+        node)
 
     }
     def visitMethodDeclaration(node: MethodDeclaration) = {
@@ -76,11 +80,16 @@ object ES2017 {
         return node
 
       }
-      val method = createMethod(undefined,
-          visitNodes(node.modifiers, visitor, isModifier), node.asteriskToken,
-          node.name, undefined,
-          visitNodes(node.parameters, visitor, isParameter), undefined,
-          transformFunctionBody(node), node)
+      val method = createMethod(
+        undefined,
+        visitNodes(node.modifiers, visitor, isModifier),
+        node.asteriskToken,
+        node.name,
+        undefined,
+        visitNodes(node.parameters, visitor, isParameter),
+        undefined,
+        transformFunctionBody(node),
+        node)
       setCommentRange(method, node)
       setSourceMapRange(method, moveRangePastDecorators(node))
       setOriginalNode(method, node)
@@ -93,11 +102,16 @@ object ES2017 {
         return node
 
       }
-      val func = createFunctionDeclaration(undefined,
-          visitNodes(node.modifiers, visitor, isModifier), node.asteriskToken,
-          node.name, undefined,
-          visitNodes(node.parameters, visitor, isParameter), undefined,
-          transformFunctionBody(node), node)
+      val func = createFunctionDeclaration(
+        undefined,
+        visitNodes(node.modifiers, visitor, isModifier),
+        node.asteriskToken,
+        node.name,
+        undefined,
+        visitNodes(node.parameters, visitor, isParameter),
+        undefined,
+        transformFunctionBody(node),
+        node)
       setOriginalNode(func, node)
       return func
 
@@ -112,9 +126,15 @@ object ES2017 {
 
       }
       val func =
-        createFunctionExpression(undefined, node.asteriskToken, node.name,
-            undefined, visitNodes(node.parameters, visitor, isParameter),
-            undefined, transformFunctionBody(node), node)
+        createFunctionExpression(
+          undefined,
+          node.asteriskToken,
+          node.name,
+          undefined,
+          visitNodes(node.parameters, visitor, isParameter),
+          undefined,
+          transformFunctionBody(node),
+          node)
       setOriginalNode(func, node)
       return func
 
@@ -125,16 +145,21 @@ object ES2017 {
 
       }
       val func =
-        createArrowFunction(visitNodes(node.modifiers, visitor, isModifier),
-            undefined, visitNodes(node.parameters, visitor, isParameter),
-            undefined, node.equalsGreaterThanToken, transformConciseBody(node),
-            node)
+        createArrowFunction(
+          visitNodes(node.modifiers, visitor, isModifier),
+          undefined,
+          visitNodes(node.parameters, visitor, isParameter),
+          undefined,
+          node.equalsGreaterThanToken,
+          transformConciseBody(node),
+          node)
       setOriginalNode(func, node)
       return func
 
     }
     def transformFunctionBody(
-        node: (MethodDeclaration | AccessorDeclaration | FunctionDeclaration | FunctionExpression)): FunctionBody = {
+        node: (MethodDeclaration | AccessorDeclaration | FunctionDeclaration | FunctionExpression))
+      : FunctionBody = {
       return transformAsyncFunctionBody(node).asInstanceOf[FunctionBody]
 
     }
@@ -156,37 +181,39 @@ object ES2017 {
     def transformAsyncFunctionBody(
         node: FunctionLikeDeclaration): (ConciseBody | FunctionBody) = {
       val nodeType =
-        (if (node.original)(
-             node.original.asInstanceOf[FunctionLikeDeclaration]).`type`
+        (if (node.original)(node.original
+           .asInstanceOf[FunctionLikeDeclaration])
+           .`type`
          else node.`type`)
       val promiseConstructor =
         (if ((languageVersion < ScriptTarget.ES2015))
            getPromiseConstructor(nodeType)
          else undefined)
       val isArrowFunction = (node.kind === SyntaxKind.ArrowFunction)
-      val hasLexicalArguments = (((resolver
-          .getNodeCheckFlags(node) & NodeCheckFlags.CaptureArguments)) !== 0)
+      val hasLexicalArguments = (((resolver.getNodeCheckFlags(node) & NodeCheckFlags.CaptureArguments)) !== 0)
       if ((!isArrowFunction)) {
         val statements: Array[Statement] = Array()
-        val statementOffset = addPrologueDirectives(statements,
-            (node.body.asInstanceOf[Block]).statements, false, visitor)
-        statements
-          .push(
-              createReturn(
-                  createAwaiterHelper(
-                      currentSourceFileExternalHelpersModuleName,
-                      hasLexicalArguments, promiseConstructor,
-                      transformFunctionBodyWorker(
-                          node.body.asInstanceOf[Block], statementOffset))))
+        val statementOffset = addPrologueDirectives(
+          statements,
+          (node.body.asInstanceOf[Block]).statements,
+          false,
+          visitor)
+        statements.push(
+          createReturn(
+            createAwaiterHelper(
+              currentSourceFileExternalHelpersModuleName,
+              hasLexicalArguments,
+              promiseConstructor,
+              transformFunctionBodyWorker(
+                node.body.asInstanceOf[Block],
+                statementOffset))))
         val block = createBlock(statements, node.body, true)
         if ((languageVersion >= ScriptTarget.ES2015)) {
-          if ((resolver
-                .getNodeCheckFlags(node) & NodeCheckFlags.AsyncMethodWithSuperBinding)) {
+          if ((resolver.getNodeCheckFlags(node) & NodeCheckFlags.AsyncMethodWithSuperBinding)) {
             enableSubstitutionForAsyncMethodsWithSuper()
             setEmitFlags(block, EmitFlags.EmitAdvancedSuperHelper)
 
-          } else if ((resolver
-                .getNodeCheckFlags(node) & NodeCheckFlags.AsyncMethodWithSuper)) {
+          } else if ((resolver.getNodeCheckFlags(node) & NodeCheckFlags.AsyncMethodWithSuper)) {
             enableSubstitutionForAsyncMethodsWithSuper()
             setEmitFlags(block, EmitFlags.EmitSuperHelper)
 
@@ -196,15 +223,17 @@ object ES2017 {
         return block
 
       } else {
-        return createAwaiterHelper(currentSourceFileExternalHelpersModuleName,
-            hasLexicalArguments, promiseConstructor,
-            transformConciseBodyWorker(node.body, true).asInstanceOf[Block])
+        return createAwaiterHelper(
+          currentSourceFileExternalHelpersModuleName,
+          hasLexicalArguments,
+          promiseConstructor,
+          transformConciseBodyWorker(node.body, true).asInstanceOf[Block])
 
       }
 
     }
     def transformConciseBodyWorker(body: (Block | Expression),
-        forceBlockFunctionBody: Boolean) = {
+                                   forceBlockFunctionBody: Boolean) = {
       if (isBlock(body)) {
         return transformFunctionBodyWorker(body)
 
@@ -216,7 +245,7 @@ object ES2017 {
         val merged = mergeFunctionBodyLexicalEnvironment(visited, declarations)
         if ((forceBlockFunctionBody && (!isBlock(merged)))) {
           return createBlock(
-              Array(createReturn(merged.asInstanceOf[Expression])))
+            Array(createReturn(merged.asInstanceOf[Expression])))
 
         } else {
           return merged
@@ -259,10 +288,10 @@ object ES2017 {
       node.kind match {
         case SyntaxKind.PropertyAccessExpression =>
           return substitutePropertyAccessExpression(
-              node.asInstanceOf[PropertyAccessExpression])
+            node.asInstanceOf[PropertyAccessExpression])
         case SyntaxKind.ElementAccessExpression =>
           return substituteElementAccessExpression(
-              node.asInstanceOf[ElementAccessExpression])
+            node.asInstanceOf[ElementAccessExpression])
         case SyntaxKind.CallExpression =>
           if ((enabledSubstitutions & ES2017SubstitutionFlags.AsyncMethodsWithSuper)) {
             return substituteCallExpression(node.asInstanceOf[CallExpression])
@@ -277,8 +306,10 @@ object ES2017 {
       if (((enabledSubstitutions & ES2017SubstitutionFlags.AsyncMethodsWithSuper) && (node.expression.kind === SyntaxKind.SuperKeyword))) {
         val flags = getSuperContainerAsyncMethodFlags()
         if (flags) {
-          return createSuperAccessInAsyncMethod(createLiteral(node.name.text),
-              flags, node)
+          return createSuperAccessInAsyncMethod(
+            createLiteral(node.name.text),
+            flags,
+            node)
 
         }
 
@@ -290,8 +321,10 @@ object ES2017 {
       if (((enabledSubstitutions & ES2017SubstitutionFlags.AsyncMethodsWithSuper) && (node.expression.kind === SyntaxKind.SuperKeyword))) {
         val flags = getSuperContainerAsyncMethodFlags()
         if (flags) {
-          return createSuperAccessInAsyncMethod(node.argumentExpression, flags,
-              node)
+          return createSuperAccessInAsyncMethod(
+            node.argumentExpression,
+            flags,
+            node)
 
         }
 
@@ -308,8 +341,10 @@ object ES2017 {
             (if (isPropertyAccessExpression(expression))
                substitutePropertyAccessExpression(expression)
              else substituteElementAccessExpression(expression))
-          return createCall(createPropertyAccess(argumentExpression, "call"),
-              undefined, Array(createThis(), node.arguments: _*))
+          return createCall(
+            createPropertyAccess(argumentExpression, "call"),
+            undefined,
+            Array(createThis(), node.arguments: _*))
 
         }
 
@@ -322,12 +357,13 @@ object ES2017 {
       return (((((kind === SyntaxKind.ClassDeclaration) || (kind === SyntaxKind.Constructor)) || (kind === SyntaxKind.MethodDeclaration)) || (kind === SyntaxKind.GetAccessor)) || (kind === SyntaxKind.SetAccessor))
 
     }
-    def onEmitNode(emitContext: EmitContext, node: Node,
-        emitCallback: ((EmitContext, Node) => Unit)): Unit = {
+    def onEmitNode(emitContext: EmitContext,
+                   node: Node,
+                   emitCallback: ((EmitContext, Node) => Unit)): Unit = {
       val savedApplicableSubstitutions = applicableSubstitutions
       val savedCurrentSuperContainer = currentSuperContainer
       if (((enabledSubstitutions & ES2017SubstitutionFlags.AsyncMethodsWithSuper) && isSuperContainer(
-              node))) {
+            node))) {
         (currentSuperContainer = node)
 
       }
@@ -345,22 +381,32 @@ object ES2017 {
       return node
 
     }
-    def createSuperAccessInAsyncMethod(argumentExpression: Expression,
-        flags: NodeCheckFlags, location: TextRange): LeftHandSideExpression = {
+    def createSuperAccessInAsyncMethod(
+        argumentExpression: Expression,
+        flags: NodeCheckFlags,
+        location: TextRange): LeftHandSideExpression = {
       if ((flags & NodeCheckFlags.AsyncMethodWithSuperBinding)) {
-        return createPropertyAccess(createCall(createIdentifier("_super"),
-                undefined, Array(argumentExpression)), "value", location)
+        return createPropertyAccess(
+          createCall(
+            createIdentifier("_super"),
+            undefined,
+            Array(argumentExpression)),
+          "value",
+          location)
 
       } else {
-        return createCall(createIdentifier("_super"), undefined,
-            Array(argumentExpression), location)
+        return createCall(
+          createIdentifier("_super"),
+          undefined,
+          Array(argumentExpression),
+          location)
 
       }
 
     }
     def getSuperContainerAsyncMethodFlags() = {
       return ((currentSuperContainer !== undefined) && (resolver.getNodeCheckFlags(
-          currentSuperContainer) & ((NodeCheckFlags.AsyncMethodWithSuper | NodeCheckFlags.AsyncMethodWithSuperBinding))))
+        currentSuperContainer) & ((NodeCheckFlags.AsyncMethodWithSuper | NodeCheckFlags.AsyncMethodWithSuperBinding))))
 
     }
 
