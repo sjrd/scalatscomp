@@ -107,46 +107,33 @@ object Core {
 
   def indexOfAnyCharCode(text: String,
                          charCodes: Array[Int],
-                         start: Int): Int = {
-    {
-      var i = (start || 0)
-      var len = text.length
-      while ((i < len)) {
-        {
-          if (contains(charCodes, text.charCodeAt(i))) {
-            return i
-
-          }
-
-        }
-        (i += 1)
+                         start: Int = 0): Int = {
+    var i = start
+    val len = text.length
+    while (i < len) {
+      if (contains(charCodes, text.charAt(i).toInt)) {
+        return i
       }
+      i += 1
     }
-    return (-1)
-
+    return -1
   }
-  def countWhere[T](array: Array[T], predicate: ((T, Int) => Boolean)): Int = {
+
+  def countWhere[T](array: Array[T], predicate: (T, Int) => Boolean): Int = {
     var count = 0
-    if (array) {
-      {
-        var i = 0
-        while ((i < array.length)) {
-          {
-            val v = array(i)
-            if (predicate(v, i)) {
-              (count += 1)
-
-            }
-
-          }
-          (i += 1)
+    if (array != null) {
+      var i = 0
+      while (i < array.length) {
+        val v = array(i)
+        if (predicate(v, i)) {
+          count += 1
         }
+        i += 1
       }
-
     }
     return count
-
   }
+  
   def filter[T, U <: T](array: Array[T], f: ((T) => Boolean)): Array[U]
   def filter[T](array: Array[T], f: ((T) => Boolean)): Array[T]
   def filter[T](array: Array[T], f: ((T) => Boolean)): Array[T] = {
