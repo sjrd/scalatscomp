@@ -57,67 +57,48 @@ object Core {
     return null.asInstanceOf[U]
   }
 
-  def every[T](array: Array[T], callback: ((T, Int) => Boolean)): Boolean = {
-    if (array) {
-      {
-        var i = 0
-        var len = array.length
-        while ((i < len)) {
-          {
-            if ((!callback(array(i), i))) {
-              return false
-
-            }
-
-          }
-          (i += 1)
+  def every[T](array: Array[T], callback: (T, Int) => Boolean): Boolean = {
+    if (array != null) {
+      var i = 0
+      val len = array.length
+      while (i < len) {
+        if (!callback(array(i), i)) {
+          return false
         }
+        i += 1
       }
-
     }
     return true
-
   }
+
   def find[T](array: Array[T],
-              predicate: ((T, Int) => Boolean)): (T | undefined) = {
-    {
-      var i = 0
-      var len = array.length
-      while ((i < len)) {
-        {
-          val value = array(i)
-          if (predicate(value, i)) {
-            return value
-
-          }
-
-        }
-        (i += 1)
+              predicate: (T, Int) => Boolean): T = {
+    var i = 0
+    val len = array.length
+    while (i < len) {
+      val value = array(i)
+      if (predicate(value, i)) {
+        return value
       }
+      i += 1
     }
-    return undefined
-
+    return null.asInstanceOf[T]
   }
+
   def findMap[T, U](array: Array[T],
-                    callback: ((T, Int) => (U | undefined))): U = {
-    {
-      var i = 0
-      var len = array.length
-      while ((i < len)) {
-        {
-          val result = callback(array(i), i)
-          if (result) {
-            return result
-
-          }
-
-        }
-        (i += 1)
+                    callback: (T, Int) => Option[U]): U = {
+    var i = 0
+    var len = array.length
+    while (i < len) {
+      val result = callback(array(i), i)
+      if (result.nonEmpty) {
+        return result.get
       }
+      i += 1
     }
-    Debug.fail()
-
+    throw new AssertionError("debug.fail")
   }
+
   def contains[T](array: Array[T], value: T): Boolean = {
     if (array) {
       (array).foreach { fresh4 =>
