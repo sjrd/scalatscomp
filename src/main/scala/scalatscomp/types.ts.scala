@@ -636,50 +636,65 @@ object Types {
       extends Node(SyntaxKind.BindingElement) with Declaration {
     type NameType = BindingName
   }
-  trait PropertySignature extends TypeElement {
-    var kind: (SyntaxKind.PropertySignature | SyntaxKind.JSDocRecordMember)
-    var name: PropertyName
-    var questionToken: QuestionToken
-    var `type`: TypeNode
-    var initializer: Expression
+
+  // kind: SyntaxKind.PropertySignature | SyntaxKind.JSDocRecordMember
+  final case class PropertySignature(
+      kind: SyntaxKind,
+      name: PropertyName,
+      questionToken: Option[QuestionToken],
+      `type`: Option[TypeNode],
+      initializer: Option[Expression])
+      extends Node(kind) with TypeElement {
+    type NameType = PropertyName
   }
-  trait PropertyDeclaration extends ClassElement {
-    var kind: SyntaxKind.PropertyDeclaration
-    var questionToken: QuestionToken
-    var name: PropertyName
-    var `type`: TypeNode
-    var initializer: Expression
+
+  final case class PropertyDeclaration(
+      questionToken: Option[QuestionToken],
+      name: PropertyName,
+      `type`: Option[PropertyName],
+      initializer: Option[Expression])
+      extends Node(SyntaxKind.PropertyDeclaration) with ClassElement {
+    type NameType = PropertyName
   }
+
   trait ObjectLiteralElement extends Declaration {
-    var _objectLiteralBrandBrand: Any
-    var name: PropertyName
+    type NameType <: PropertyName
   }
-  type ObjectLiteralElementLike =
-    (PropertyAssignment | ShorthandPropertyAssignment | MethodDeclaration | AccessorDeclaration)
-  trait PropertyAssignment extends ObjectLiteralElement {
-    var kind: SyntaxKind.PropertyAssignment
-    var name: PropertyName
-    var questionToken: QuestionToken
-    var initializer: Expression
+
+  sealed trait ObjectLiteralElementLike extends Node
+
+  final case class PropertyAssignment(
+      name: PropertyName,
+      questionToken: Option[QuestionToken],
+      initializer: Option[Expression])
+      extends Node(SyntaxKind.PropertyAssignment)
+      with ObjectLiteralElement with ObjectLiteralElementLike {
+    type NameType = PropertyName
   }
-  trait ShorthandPropertyAssignment extends ObjectLiteralElement {
-    var kind: SyntaxKind.ShorthandPropertyAssignment
-    var name: Identifier
-    var questionToken: QuestionToken
-    var equalsToken: Token[SyntaxKind.EqualsToken]
-    var objectAssignmentInitializer: Expression
+
+  final case class ShorthandPropertyAssignment(
+      name: Identifier,
+      questionToken: Option[QuestionToken],
+      equalsToken: Option[EqualsToken],
+      objectAssignmentInitializer: Option[Expression])
+      extends Node(SyntaxKind.ShorthandPropertyAssignment)
+      with ObjectLiteralElement with ObjectLiteralElementLike {
+    type NameType = Identifier
   }
+
   trait VariableLikeDeclaration extends Declaration {
-    var propertyName: PropertyName
-    var dotDotDotToken: DotDotDotToken
-    var name: DeclarationName
-    var questionToken: QuestionToken
-    var `type`: TypeNode
-    var initializer: Expression
+    type NameType <: DeclarationName
+    val propertyName: PropertyName
+    val dotDotDotToken: Option[DotDotDotToken]
+    val questionToken: Option[QuestionToken]
+    val `type`: Option[TypeNode]
+    val initializer: Option[Expression]
   }
+
   trait PropertyLikeDeclaration extends Declaration {
-    var name: PropertyName
+    type NameType <: PropertyName
   }
+
   trait BindingPattern extends Node with DeclarationName with BindingName {
     var elements: NodeArray[(BindingElement | ArrayBindingElement)]
   }
@@ -712,7 +727,8 @@ object Types {
   trait MethodDeclaration
       extends FunctionLikeDeclaration
       with ClassElement
-      with ObjectLiteralElement {
+      with ObjectLiteralElement
+      with ObjectLiteralElementLike {
     var kind: SyntaxKind.MethodDeclaration
     var name: PropertyName
     var body: FunctionBody
@@ -726,10 +742,14 @@ object Types {
   trait SemicolonClassElement extends ClassElement {
     var kind: SyntaxKind.SemicolonClassElement
   }
+
+  sealed trait AccessorDeclaration extends ObjectLiteralElementLike
+
   trait GetAccessorDeclaration
       extends FunctionLikeDeclaration
       with ClassElement
-      with ObjectLiteralElement {
+      with ObjectLiteralElement
+      with AccessorDeclaration {
     var kind: SyntaxKind.GetAccessor
     var name: PropertyName
     var body: FunctionBody
@@ -737,7 +757,8 @@ object Types {
   trait SetAccessorDeclaration
       extends FunctionLikeDeclaration
       with ClassElement
-      with ObjectLiteralElement {
+      with ObjectLiteralElement
+      with AccessorDeclaration {
     var kind: SyntaxKind.SetAccessor
     var name: PropertyName
     var body: FunctionBody
