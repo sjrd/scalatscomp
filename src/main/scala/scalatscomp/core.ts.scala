@@ -88,7 +88,7 @@ object Core {
   def findMap[T, U](array: Array[T],
                     callback: (T, Int) => Option[U]): U = {
     var i = 0
-    var len = array.length
+    val len = array.length
     while (i < len) {
       val result = callback(array(i), i)
       if (result.nonEmpty) {
@@ -99,43 +99,12 @@ object Core {
     throw new AssertionError("debug.fail")
   }
 
-  def contains[T](array: Array[T], value: T): Boolean = {
-    if (array) {
-      (array).foreach { fresh4 =>
-        val v = zeroOfMyType = fresh4 {
-          if ((v === value)) {
-            return true
+  def contains[T](array: Array[T], value: T): Boolean =
+    array.contains(value)
 
-          }
+  def indexOf[T](array: Array[T], value: T): Int =
+    array.indexOf(value)
 
-        }
-      }
-
-    }
-    return false
-
-  }
-  def indexOf[T](array: Array[T], value: T): Int = {
-    if (array) {
-      {
-        var i = 0
-        var len = array.length
-        while ((i < len)) {
-          {
-            if ((array(i) === value)) {
-              return i
-
-            }
-
-          }
-          (i += 1)
-        }
-      }
-
-    }
-    return (-1)
-
-  }
   def indexOfAnyCharCode(text: String,
                          charCodes: Array[Int],
                          start: Int): Int = {
