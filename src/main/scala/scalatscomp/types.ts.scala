@@ -528,7 +528,8 @@ object Types {
       with PrimaryExpression
       with PropertyName
       with DeclarationName
-      with DeclarationStatementName {
+      with DeclarationStatementName
+      with BindingName {
     var originalKeywordKind: Option[SyntaxKind] = None
     var autoGenerateKind: GeneratedIdentifierKind =
       GeneratedIdentifierKind.None
@@ -568,53 +569,72 @@ object Types {
       extends Node(SyntaxKind.Decorator)
 
   final case class TypeParameterDeclaration(name: Identifier,
-                                            val constraint: Option[TypeNode],
+                                            constraint: Option[TypeNode],
                                             expression: Option[Expression])
       extends Node(SyntaxKind.TypeParameter)
       with Declaration
 
   trait SignatureDeclaration extends Declaration {
-    var name: PropertyName
-    var typeParameters: NodeArray[TypeParameterDeclaration]
-    var parameters: NodeArray[ParameterDeclaration]
-    var `type`: TypeNode
+    type NameType <: PropertyName
+    val typeParameters: NodeArray[TypeParameterDeclaration]
+    val parameters: NodeArray[ParameterDeclaration]
+    val `type`: TypeNode
   }
-  trait CallSignatureDeclaration
-      extends SignatureDeclaration
+
+  object DummyPropertyName extends Identifier("<none>")
+
+  final case class CallSignatureDeclaration(
+      typeParameters: NodeArray[TypeParameterDeclaration],
+      parameters: NodeArray[ParameterDeclaration],
+      `type`: TypeNode)
+      extends Node(SyntaxKind.CallSignature) with SignatureDeclaration
       with TypeElement {
-    var kind: SyntaxKind.CallSignature
+    type NameType = DummyPropertyName.type
+    val name = DummyPropertyName
   }
-  trait ConstructSignatureDeclaration
-      extends SignatureDeclaration
+
+  final case class ConstructSignatureDeclaration(
+      typeParameters: NodeArray[TypeParameterDeclaration],
+      parameters: NodeArray[ParameterDeclaration],
+      `type`: TypeNode)
+      extends Node(SyntaxKind.ConstructSignature) with SignatureDeclaration
       with TypeElement {
-    var kind: SyntaxKind.ConstructSignature
+    type NameType = DummyPropertyName.type
+    val name = DummyPropertyName
   }
-  type BindingName = (Identifier | BindingPattern)
-  trait VariableDeclaration extends Declaration {
-    var kind: SyntaxKind.VariableDeclaration
-    var parent: VariableDeclarationList
-    var name: BindingName
-    var `type`: TypeNode
-    var initializer: Expression
+
+  sealed trait BindingName extends DeclarationName
+
+  final case class VariableDeclaration(
+      override val parent: VariableDeclarationList,
+      name: BindingName,
+      `type`: TypeNode,
+      initializer: Option[Expression])
+      extends Node(SyntaxKind.VariableDeclaration) with Declaration {
+    type NameType = BindingName
   }
-  trait VariableDeclarationList extends Node {
-    var kind: SyntaxKind.VariableDeclarationList
-    var declarations: NodeArray[VariableDeclaration]
+
+  final case class VariableDeclarationList(
+      declarations: NodeArray[VariableDeclaration])
+      extends Node(SyntaxKind.VariableDeclarationList)
+
+  final case class ParameterDeclaration(
+      dotDotDotToken: Option[DotDotDotToken],
+      name: BindingName,
+      questionToken: Option[QuestionToken],
+      `type`: Option[TypeNode],
+      initializer: Option[Expression])
+      extends Node(SyntaxKind.Parameter) with Declaration {
+    type NameType = BindingName
   }
-  trait ParameterDeclaration extends Declaration {
-    var kind: SyntaxKind.Parameter
-    var dotDotDotToken: DotDotDotToken
-    var name: BindingName
-    var questionToken: QuestionToken
-    var `type`: TypeNode
-    var initializer: Expression
-  }
-  trait BindingElement extends Declaration {
-    var kind: SyntaxKind.BindingElement
-    var propertyName: PropertyName
-    var dotDotDotToken: DotDotDotToken
-    var name: BindingName
-    var initializer: Expression
+
+  final case class BindingElement(
+      propertyName: PropertyName,
+      dotDotDotToken: Option[DotDotDotToken],
+      name: BindingName,
+      initializer: Option[Expression])
+      extends Node(SyntaxKind.BindingElement) with Declaration {
+    type NameType = BindingName
   }
   trait PropertySignature extends TypeElement {
     var kind: (SyntaxKind.PropertySignature | SyntaxKind.JSDocRecordMember)
@@ -660,7 +680,7 @@ object Types {
   trait PropertyLikeDeclaration extends Declaration {
     var name: PropertyName
   }
-  trait BindingPattern extends Node with DeclarationName {
+  trait BindingPattern extends Node with DeclarationName with BindingName {
     var elements: NodeArray[(BindingElement | ArrayBindingElement)]
   }
   trait ObjectBindingPattern extends BindingPattern {
