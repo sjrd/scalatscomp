@@ -133,7 +133,7 @@ object Core {
     }
     return count
   }
-  
+
   def filter[T, U <: T](array: Array[T], f: ((T) => Boolean)): Array[U]
   def filter[T](array: Array[T], f: ((T) => Boolean)): Array[T]
   def filter[T](array: Array[T], f: ((T) => Boolean)): Array[T] = {
